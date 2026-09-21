@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,13 @@ AI you already use.
 
 == Changelog ==
 
+= 1.0.9 =
+* Added: Complete 36 ACF field type template patches in the JSON Editor template selector across 6 clean optgroups.
+* Enhanced: Reordered workflow tabs so Tab 1 is "1. Generate with AI" (default) and Tab 2 is "2. JSON Editor & Import".
+* Enhanced: Interactive step guidance animations (pulsing ready states) when fields are queued to direct the user toward generating prompts and pasting responses.
+* Fixed: Standardized button alignments, heights (36px), and flex centering across all action bars.
+* Enhanced: AI prompt generator with compound multi-field examples and full 4-tab token parsing.
+
 = 1.0.8 =
 * Added: Full 4-tab interactive Custom Field Builder (General, Validation, Presentation, Conditional Logic) with dynamic type-adapting controls for return format, choices, sub-fields, layouts, post types, taxonomy, toolbar, button label, min/max/step, allowed MIME types, maxlength, placeholder, prepend, append, textarea rows, wrapper classes, and conditional logic.
 
@@ -170,6 +177,9 @@ AI you already use.
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.9 =
+Upgrade recommended for streamlined AI-first tab workflow, 36 field type template payloads, and enhanced step guidance animations.
 
 = 1.0.8 =
 Upgrade recommended for all users to get full 4-tab interactive Custom Field Builder with dynamic controls for all 36 ACF field types.

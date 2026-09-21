@@ -530,11 +530,15 @@
 
 		const output = document.getElementById( 'acfjp-prompt-output' );
 		const panel = document.getElementById( 'acfjp-prompt-result' );
+		const copyBtn = document.getElementById( 'acfjp-prompt-copy' );
 
 		if ( output ) output.value = response.prompt;
 		if ( panel ) {
 			panel.hidden = false;
 			panel.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+		}
+		if ( copyBtn ) {
+			copyBtn.focus();
 		}
 	}
 
@@ -778,6 +782,19 @@
 			} );
 		}
 
+		function updateGenerateButtonState() {
+			const intentInput = document.getElementById( 'acfjp-prompt-intent' );
+			const buildBtn = document.getElementById( 'acfjp-prompt-build' );
+			const genHint = document.getElementById( 'acfjp-gen-hint' );
+			if ( ! buildBtn ) return;
+
+			const hasText = intentInput && intentInput.value.trim().length > 0;
+			buildBtn.classList.toggle( 'is-ready', hasText );
+			if ( genHint ) {
+				genHint.style.display = hasText ? 'inline-block' : 'none';
+			}
+		}
+
 		function appendIntent( text ) {
 			const intentInput = document.getElementById( 'acfjp-prompt-intent' );
 			if ( ! intentInput || ! text ) return;
@@ -790,6 +807,7 @@
 			}
 			intentInput.focus();
 			intentInput.scrollTop = intentInput.scrollHeight;
+			updateGenerateButtonState();
 		}
 
 		// 4-Tab Custom Field Builder Handler
@@ -1019,16 +1037,24 @@
 			} );
 		}
 
-		// Hash change synchronization
+		// Hash change synchronization (default to AI tab if not specified)
 		function syncTabWithHash() {
 			const hash = ( window.location.hash || '' ).replace( '#', '' );
 			if ( hash && ( 'editor' === hash || 'ai' === hash || 'guide' === hash ) ) {
 				switchTab( hash );
+			} else {
+				switchTab( 'ai' );
 			}
 		}
 
 		syncTabWithHash();
 		window.addEventListener( 'hashchange', syncTabWithHash );
+
+		const intentTextarea = document.getElementById( 'acfjp-prompt-intent' );
+		if ( intentTextarea ) {
+			intentTextarea.addEventListener( 'input', updateGenerateButtonState );
+		}
+		updateGenerateButtonState();
 
 		document.addEventListener( 'click', function ( event ) {
 			const target = event.target;
@@ -1061,6 +1087,7 @@
 				if ( intentInput ) {
 					intentInput.value = '';
 					intentInput.focus();
+					updateGenerateButtonState();
 				}
 				return;
 			}

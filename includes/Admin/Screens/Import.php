@@ -37,13 +37,13 @@ final class Import extends Screen {
 
 			<!-- Top Nav Mode Switcher -->
 			<nav class="nav-tab-wrapper acfjp-nav-tab-wrapper" style="margin-bottom: 20px;" aria-label="<?php esc_attr_e( 'Import modes', 'wp-acf-json-pro' ); ?>">
-				<a href="#editor" class="nav-tab nav-tab-active acfjp-tab" data-tab="editor">
-					<span class="dashicons dashicons-editor-code"></span>
-					<?php esc_html_e( '1. JSON Editor & Import', 'wp-acf-json-pro' ); ?>
-				</a>
-				<a href="#ai" class="nav-tab acfjp-tab" data-tab="ai">
+				<a href="#ai" class="nav-tab nav-tab-active acfjp-tab" data-tab="ai">
 					<span class="dashicons dashicons-superhero-alt"></span>
-					<?php esc_html_e( '2. Generate with AI', 'wp-acf-json-pro' ); ?>
+					<?php esc_html_e( '1. Generate with AI', 'wp-acf-json-pro' ); ?>
+				</a>
+				<a href="#editor" class="nav-tab acfjp-tab" data-tab="editor">
+					<span class="dashicons dashicons-editor-code"></span>
+					<?php esc_html_e( '2. JSON Editor & Import', 'wp-acf-json-pro' ); ?>
 				</a>
 				<a href="#guide" class="nav-tab acfjp-tab" data-tab="guide">
 					<span class="dashicons dashicons-book"></span>
@@ -51,124 +51,8 @@ final class Import extends Screen {
 				</a>
 			</nav>
 
-			<!-- Tab 1: Direct JSON & File Import (Primary Default) -->
-			<div class="acfjp-tab-content is-active" id="acfjp-tab-editor" role="tabpanel">
-				<div class="acfjp-import" id="acfjp-import">
-
-					<div class="acfjp-import__editor">
-						<div class="acfjp-box-header">
-							<h2 class="acfjp-step-heading">
-								<span class="dashicons dashicons-edit"></span>
-								<?php esc_html_e( 'Paste JSON or Upload File', 'wp-acf-json-pro' ); ?>
-							</h2>
-							<p class="description acfjp-step-hint">
-								<?php esc_html_e( 'Accepts WP ACF JSON Pro patches or standard ACF export JSON.', 'wp-acf-json-pro' ); ?>
-							</p>
-						</div>
-
-						<div class="acfjp-editor-toolbar">
-							<div class="acfjp-editor-toolbar__left">
-								<button type="button" class="button button-primary" id="acfjp-paste-clipboard">
-									<span class="dashicons dashicons-clipboard"></span>
-									<?php esc_html_e( 'Paste from Clipboard', 'wp-acf-json-pro' ); ?>
-								</button>
-
-								<div class="acfjp-template-picker">
-									<select id="acfjp-template-select" class="button">
-										<option value=""><?php esc_html_e( '✨ Insert Template...', 'wp-acf-json-pro' ); ?></option>
-										<option value="add_field"><?php esc_html_e( 'Add New Field', 'wp-acf-json-pro' ); ?></option>
-										<option value="update_field"><?php esc_html_e( 'Update Existing Field', 'wp-acf-json-pro' ); ?></option>
-										<option value="repeater"><?php esc_html_e( 'Add Repeater with Subfields', 'wp-acf-json-pro' ); ?></option>
-										<option value="create_group"><?php esc_html_e( 'Create New Field Group', 'wp-acf-json-pro' ); ?></option>
-									</select>
-								</div>
-							</div>
-
-							<div class="acfjp-editor-toolbar__right">
-								<button type="button" class="button" id="acfjp-clear">
-									<span class="dashicons dashicons-trash"></span>
-									<?php esc_html_e( 'Clear', 'wp-acf-json-pro' ); ?>
-								</button>
-							</div>
-						</div>
-
-						<label for="acfjp-json" class="screen-reader-text">
-							<?php esc_html_e( 'JSON payload', 'wp-acf-json-pro' ); ?>
-						</label>
-						<textarea id="acfjp-json" name="json" rows="18" spellcheck="false"
-							placeholder="<?php esc_attr_e( 'Paste JSON here...', 'wp-acf-json-pro' ); ?>"><?php echo esc_textarea( $prefill ); ?></textarea>
-
-						<form method="post" enctype="multipart/form-data" class="acfjp-upload">
-							<?php wp_nonce_field( self::NONCE ); ?>
-							<span class="description"><strong><?php esc_html_e( 'Or upload a .json file:', 'wp-acf-json-pro' ); ?></strong></span>
-							<input type="file" name="acfjp_file" accept="application/json,.json" />
-							<button type="submit" class="button"><?php esc_html_e( 'Load File', 'wp-acf-json-pro' ); ?></button>
-						</form>
-					</div>
-
-					<div class="acfjp-import__controls">
-						<div class="acfjp-box-header">
-							<h2 class="acfjp-step-heading">
-								<span class="dashicons dashicons-visibility"></span>
-								<?php esc_html_e( 'Review & Apply', 'wp-acf-json-pro' ); ?>
-							</h2>
-							<p class="description">
-								<?php esc_html_e( 'Preview calculates exact diffs in-memory. Nothing is written until confirmed.', 'wp-acf-json-pro' ); ?>
-							</p>
-						</div>
-
-						<div class="acfjp-primary-actions">
-							<button type="button" class="button button-primary button-hero" id="acfjp-preview">
-								<span class="dashicons dashicons-visibility"></span>
-								<?php esc_html_e( 'Preview Changes', 'wp-acf-json-pro' ); ?>
-							</button>
-							<button type="button" class="button button-large" id="acfjp-validate">
-								<span class="dashicons dashicons-yes-alt"></span>
-								<?php esc_html_e( 'Validate Only', 'wp-acf-json-pro' ); ?>
-							</button>
-						</div>
-
-						<hr />
-
-						<div class="acfjp-field-row">
-							<label for="acfjp-operation"><strong><?php esc_html_e( 'Import mode override', 'wp-acf-json-pro' ); ?></strong></label>
-							<select id="acfjp-operation" class="widefat">
-								<option value=""><?php esc_html_e( 'Auto - use what the JSON declares', 'wp-acf-json-pro' ); ?></option>
-								<?php foreach ( Operation::cases() as $operation ) : ?>
-									<option value="<?php echo esc_attr( $operation->value ); ?>">
-										<?php echo esc_html( $this->describeOperation( $operation ) ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-							<span class="description"><?php esc_html_e( 'Optional. Only required for plain ACF exports which declare no operation.', 'wp-acf-json-pro' ); ?></span>
-						</div>
-
-						<?php if ( array() !== $groups ) : ?>
-							<details class="acfjp-groups" open>
-								<summary><strong><?php esc_html_e( 'Field groups on this site', 'wp-acf-json-pro' ); ?> (<?php echo count( $groups ); ?>)</strong></summary>
-								<ul>
-									<?php foreach ( $groups as $group ) : ?>
-										<li>
-											<div class="acfjp-group-item">
-												<strong><?php echo esc_html( $group->groupTitle ); ?></strong>
-												<button type="button" class="acfjp-key-badge" data-key="<?php echo esc_attr( $group->groupKey ); ?>" title="<?php esc_attr_e( 'Click to copy group key', 'wp-acf-json-pro' ); ?>">
-													<code><?php echo esc_html( $group->groupKey ); ?></code>
-												</button>
-												<?php if ( ! $group->isPatchable() ) : ?>
-													<span class="acfjp-pill acfjp-pill--warn"><?php esc_html_e( 'read only', 'wp-acf-json-pro' ); ?></span>
-												<?php endif; ?>
-											</div>
-										</li>
-									<?php endforeach; ?>
-								</ul>
-							</details>
-						<?php endif; ?>
-					</div>
-				</div>
-			</div>
-
-			<!-- Tab 2: AI Prompt Builder -->
-			<div class="acfjp-tab-content" id="acfjp-tab-ai" role="tabpanel" hidden>
+			<!-- Tab 1: AI Prompt Builder & Interactive Custom Field Builder (Primary Default) -->
+			<div class="acfjp-tab-content is-active" id="acfjp-tab-ai" role="tabpanel">
 				<div class="acfjp-ai-card">
 					<div class="acfjp-ai-card__header">
 						<span class="dashicons dashicons-superhero-alt acfjp-ai-header-icon"></span>
@@ -226,7 +110,6 @@ final class Import extends Screen {
 									<button type="button" class="acfjp-chip" data-intent="- Add a group container called Contact Info with phone, email, and address fields"><?php esc_html_e( '+ Group Container', 'wp-acf-json-pro' ); ?></button>
 								</div>
 
-								<!-- Custom Field Builder Row -->
 								<!-- Custom Field Builder Box (4 Tabs: General, Validation, Presentation, Conditional Logic) -->
 								<div class="acfjp-builder-box">
 									<div class="acfjp-builder-header">
@@ -510,12 +393,33 @@ final class Import extends Screen {
 								</div>
 							</div>
 
-							<p>
-								<button type="button" class="button button-primary button-large" id="acfjp-prompt-build">
+								<div style="margin-top: 14px; padding: 12px 14px; background: #fdfefe; border: 1px solid #d0e2ff; border-radius: 6px;">
+									<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+										<label for="acfjp-prompt-intent" style="font-size: 13px; font-weight: 600; color: #004b87;">
+											<span class="dashicons dashicons-list-view" style="font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom;"></span>
+											<?php esc_html_e( 'Queued Field Specifications & Intent', 'wp-acf-json-pro' ); ?>
+										</label>
+										<button type="button" class="button-link acfjp-intent-clear" id="acfjp-intent-clear" style="font-size: 11px; color: #b32d2e; text-decoration: none;">
+											<?php esc_html_e( '✕ Clear all', 'wp-acf-json-pro' ); ?>
+										</button>
+									</div>
+									<textarea id="acfjp-prompt-intent" class="widefat" rows="4"
+										placeholder="<?php esc_attr_e( 'All fields added from above appear here line-by-line. You can also type custom instructions directly.', 'wp-acf-json-pro' ); ?>"></textarea>
+									<span class="description" style="font-size: 11px; color: #646970; margin-top: 4px; display: block;">
+										<?php esc_html_e( '💡 Each field will be automatically compiled into your final AI prompt.', 'wp-acf-json-pro' ); ?>
+									</span>
+								</div>
+							</div>
+
+							<div style="margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+								<button type="button" class="button button-primary button-hero acfjp-btn-generate" id="acfjp-prompt-build">
 									<span class="dashicons dashicons-update"></span>
-									<?php esc_html_e( 'Generate AI Prompt', 'wp-acf-json-pro' ); ?>
+									<?php esc_html_e( 'Generate AI Prompt ➔', 'wp-acf-json-pro' ); ?>
 								</button>
-							</p>
+								<span class="acfjp-step-next-hint" id="acfjp-gen-hint" style="font-size: 12px; color: #005a9c; font-weight: 600; display: none;">
+									<?php esc_html_e( '✨ Fields queued! Click above to generate your prompt.', 'wp-acf-json-pro' ); ?>
+								</span>
+							</div>
 						</div>
 
 						<!-- Step B: Copy & Send -->
@@ -530,7 +434,7 @@ final class Import extends Screen {
 							</p>
 
 							<div class="acfjp-prompt-toolbar">
-								<button type="button" class="button button-primary" id="acfjp-prompt-copy">
+								<button type="button" class="button button-primary button-large" id="acfjp-prompt-copy">
 									<span class="dashicons dashicons-admin-page"></span>
 									<?php esc_html_e( 'Copy Prompt', 'wp-acf-json-pro' ); ?>
 								</button>
@@ -561,13 +465,178 @@ final class Import extends Screen {
 									<?php esc_html_e( 'Copy the AI reply (even with markdown code fences), then click below to transfer directly to the JSON Editor:', 'wp-acf-json-pro' ); ?>
 								</p>
 								<p>
-									<button type="button" class="button button-primary button-hero" id="acfjp-paste-and-preview">
+									<button type="button" class="button button-primary button-hero acfjp-pulse-btn" id="acfjp-paste-and-preview">
 										<span class="dashicons dashicons-clipboard"></span>
-										<?php esc_html_e( 'Paste AI Response & Switch to Editor', 'wp-acf-json-pro' ); ?>
+										<?php esc_html_e( 'Paste AI Response & Switch to Editor ➔', 'wp-acf-json-pro' ); ?>
 									</button>
 								</p>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Tab 2: Direct JSON & File Import -->
+			<div class="acfjp-tab-content" id="acfjp-tab-editor" role="tabpanel" hidden>
+				<div class="acfjp-import" id="acfjp-import">
+
+					<div class="acfjp-import__editor">
+						<div class="acfjp-box-header">
+							<h2 class="acfjp-step-heading">
+								<span class="dashicons dashicons-edit"></span>
+								<?php esc_html_e( 'Paste JSON or Upload File', 'wp-acf-json-pro' ); ?>
+							</h2>
+							<p class="description acfjp-step-hint">
+								<?php esc_html_e( 'Accepts WP ACF JSON Pro patches or standard ACF export JSON.', 'wp-acf-json-pro' ); ?>
+							</p>
+						</div>
+
+						<div class="acfjp-editor-toolbar">
+							<div class="acfjp-editor-toolbar__left">
+								<button type="button" class="button button-primary" id="acfjp-paste-clipboard">
+									<span class="dashicons dashicons-clipboard"></span>
+									<?php esc_html_e( 'Paste from Clipboard', 'wp-acf-json-pro' ); ?>
+								</button>
+
+								<div class="acfjp-template-picker">
+									<select id="acfjp-template-select" class="button">
+										<option value=""><?php esc_html_e( '✨ Insert Template (All 36 Types)...', 'wp-acf-json-pro' ); ?></option>
+										<optgroup label="<?php esc_attr_e( 'Common Operations', 'wp-acf-json-pro' ); ?>">
+											<option value="add_field"><?php esc_html_e( 'Add New Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="update_field"><?php esc_html_e( 'Update Existing Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="create_group"><?php esc_html_e( 'Create New Field Group', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( '1. Basic & Text (7 Types)', 'wp-acf-json-pro' ); ?>">
+											<option value="tpl_text"><?php esc_html_e( 'Text Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_textarea"><?php esc_html_e( 'Textarea Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_number"><?php esc_html_e( 'Number Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_range"><?php esc_html_e( 'Range Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_email"><?php esc_html_e( 'Email Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_url"><?php esc_html_e( 'URL Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_password"><?php esc_html_e( 'Password Field', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( '2. Content & Media (6 Types)', 'wp-acf-json-pro' ); ?>">
+											<option value="tpl_wysiwyg"><?php esc_html_e( 'WYSIWYG Editor', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_image"><?php esc_html_e( 'Image Field (Array)', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_file"><?php esc_html_e( 'File Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_gallery"><?php esc_html_e( 'Gallery Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_oembed"><?php esc_html_e( 'oEmbed Video', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_icon_picker"><?php esc_html_e( 'Icon Picker', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( '3. Choice Fields (5 Types)', 'wp-acf-json-pro' ); ?>">
+											<option value="tpl_select"><?php esc_html_e( 'Select Dropdown', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_checkbox"><?php esc_html_e( 'Checkbox Group', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_radio"><?php esc_html_e( 'Radio Buttons', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_button_group"><?php esc_html_e( 'Button Group', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_true_false"><?php esc_html_e( 'True / False Switch', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( '4. Relational & Objects (6 Types)', 'wp-acf-json-pro' ); ?>">
+											<option value="tpl_link"><?php esc_html_e( 'Link (URL & Title)', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_post_object"><?php esc_html_e( 'Post Object', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_page_link"><?php esc_html_e( 'Page Link', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_relationship"><?php esc_html_e( 'Relationship Field', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_taxonomy"><?php esc_html_e( 'Taxonomy Terms', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_user"><?php esc_html_e( 'User Selector', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( '5. Layout & Structure (7 Types)', 'wp-acf-json-pro' ); ?>">
+											<option value="tpl_repeater"><?php esc_html_e( 'Repeater with Subfields', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_group"><?php esc_html_e( 'Group Container', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_flexible_content"><?php esc_html_e( 'Flexible Content (Layouts)', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_accordion"><?php esc_html_e( 'Accordion Section', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_tab"><?php esc_html_e( 'Tab Divider', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_message"><?php esc_html_e( 'Instructional Message', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_clone"><?php esc_html_e( 'Clone Field', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( '6. jQuery & Pickers (5 Types)', 'wp-acf-json-pro' ); ?>">
+											<option value="tpl_google_map"><?php esc_html_e( 'Google Map', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_date_picker"><?php esc_html_e( 'Date Picker', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_date_time_picker"><?php esc_html_e( 'Date Time Picker', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_time_picker"><?php esc_html_e( 'Time Picker', 'wp-acf-json-pro' ); ?></option>
+											<option value="tpl_color_picker"><?php esc_html_e( 'Color Picker', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+									</select>
+								</div>
+							</div>
+
+							<div class="acfjp-editor-toolbar__right">
+								<button type="button" class="button" id="acfjp-clear">
+									<span class="dashicons dashicons-trash"></span>
+									<?php esc_html_e( 'Clear', 'wp-acf-json-pro' ); ?>
+								</button>
+							</div>
+						</div>
+
+						<label for="acfjp-json" class="screen-reader-text">
+							<?php esc_html_e( 'JSON payload', 'wp-acf-json-pro' ); ?>
+						</label>
+						<textarea id="acfjp-json" name="json" rows="18" spellcheck="false"
+							placeholder="<?php esc_attr_e( 'Paste JSON here...', 'wp-acf-json-pro' ); ?>"><?php echo esc_textarea( $prefill ); ?></textarea>
+
+						<form method="post" enctype="multipart/form-data" class="acfjp-upload">
+							<?php wp_nonce_field( self::NONCE ); ?>
+							<span class="description"><strong><?php esc_html_e( 'Or upload a .json file:', 'wp-acf-json-pro' ); ?></strong></span>
+							<input type="file" name="acfjp_file" accept="application/json,.json" />
+							<button type="submit" class="button"><?php esc_html_e( 'Load File', 'wp-acf-json-pro' ); ?></button>
+						</form>
+					</div>
+
+					<div class="acfjp-import__controls">
+						<div class="acfjp-box-header">
+							<h2 class="acfjp-step-heading">
+								<span class="dashicons dashicons-visibility"></span>
+								<?php esc_html_e( 'Review & Apply', 'wp-acf-json-pro' ); ?>
+							</h2>
+							<p class="description">
+								<?php esc_html_e( 'Preview calculates exact diffs in-memory. Nothing is written until confirmed.', 'wp-acf-json-pro' ); ?>
+							</p>
+						</div>
+
+						<div class="acfjp-primary-actions">
+							<button type="button" class="button button-primary" id="acfjp-preview">
+								<span class="dashicons dashicons-visibility"></span>
+								<?php esc_html_e( 'Preview Changes', 'wp-acf-json-pro' ); ?>
+							</button>
+							<button type="button" class="button button-secondary" id="acfjp-validate">
+								<span class="dashicons dashicons-yes-alt"></span>
+								<?php esc_html_e( 'Validate Only', 'wp-acf-json-pro' ); ?>
+							</button>
+						</div>
+
+						<hr />
+
+						<div class="acfjp-field-row">
+							<label for="acfjp-operation"><strong><?php esc_html_e( 'Import mode override', 'wp-acf-json-pro' ); ?></strong></label>
+							<select id="acfjp-operation" class="widefat">
+								<option value=""><?php esc_html_e( 'Auto - use what the JSON declares', 'wp-acf-json-pro' ); ?></option>
+								<?php foreach ( Operation::cases() as $operation ) : ?>
+									<option value="<?php echo esc_attr( $operation->value ); ?>">
+										<?php echo esc_html( $this->describeOperation( $operation ) ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							<span class="description"><?php esc_html_e( 'Optional. Only required for plain ACF exports which declare no operation.', 'wp-acf-json-pro' ); ?></span>
+						</div>
+
+						<?php if ( array() !== $groups ) : ?>
+							<details class="acfjp-groups" open>
+								<summary><strong><?php esc_html_e( 'Field groups on this site', 'wp-acf-json-pro' ); ?> (<?php echo count( $groups ); ?>)</strong></summary>
+								<ul>
+									<?php foreach ( $groups as $group ) : ?>
+										<li>
+											<div class="acfjp-group-item">
+												<strong><?php echo esc_html( $group->groupTitle ); ?></strong>
+												<button type="button" class="acfjp-key-badge" data-key="<?php echo esc_attr( $group->groupKey ); ?>" title="<?php esc_attr_e( 'Click to copy group key', 'wp-acf-json-pro' ); ?>">
+													<code><?php echo esc_html( $group->groupKey ); ?></code>
+												</button>
+												<?php if ( ! $group->isPatchable() ) : ?>
+													<span class="acfjp-pill acfjp-pill--warn"><?php esc_html_e( 'read only', 'wp-acf-json-pro' ); ?></span>
+												<?php endif; ?>
+											</div>
+										</li>
+									<?php endforeach; ?>
+								</ul>
+							</details>
+						<?php endif; ?>
 					</div>
 				</div>
 			</div>
