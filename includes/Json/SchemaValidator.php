@@ -246,7 +246,7 @@ final class SchemaValidator {
 				'string'  => is_string( $value ),
 				'integer' => is_int( $value ),
 				'number'  => is_int( $value ) || is_float( $value ),
-				'boolean' => is_bool( $value ),
+				'boolean' => is_bool( $value ) || 0 === $value || 1 === $value || '0' === $value || '1' === $value,
 				'null'    => null === $value,
 				'array'   => is_array( $value ) && $this->isList( $value ),
 				'object'  => is_array( $value ) && ! $this->isList( $value ),
