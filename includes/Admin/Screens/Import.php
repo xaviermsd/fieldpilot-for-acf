@@ -202,16 +202,83 @@ final class Import extends Screen {
 							</div>
 
 							<div class="acfjp-field-row">
-								<label for="acfjp-prompt-intent"><strong><?php esc_html_e( 'What change would you like to make?', 'wp-acf-json-pro' ); ?></strong></label>
-								<textarea id="acfjp-prompt-intent" class="widefat" rows="3"
-									placeholder="<?php esc_attr_e( 'e.g. Add a repeater named "Team Members" with fields for Full Name (text), Role (text), and Photo (image).', 'wp-acf-json-pro' ); ?>"></textarea>
+								<div style="display: flex; justify-content: space-between; align-items: baseline;">
+									<label for="acfjp-prompt-intent"><strong><?php esc_html_e( 'What change would you like to make?', 'wp-acf-json-pro' ); ?></strong></label>
+									<button type="button" class="button-link acfjp-intent-clear" id="acfjp-intent-clear" style="font-size: 11px; color: #b32d2e; text-decoration: none;">
+										<?php esc_html_e( '✕ Clear text', 'wp-acf-json-pro' ); ?>
+									</button>
+								</div>
+								<textarea id="acfjp-prompt-intent" class="widefat" rows="4"
+									placeholder="<?php esc_attr_e( 'Click any field type below or type your requirements to build your multi-field patch specification in bulk.', 'wp-acf-json-pro' ); ?>"></textarea>
 								
 								<div class="acfjp-quick-chips">
-									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Quick ideas:', 'wp-acf-json-pro' ); ?></span>
-									<button type="button" class="acfjp-chip" data-intent="Add a repeater called Team Members with name, role, and photo fields"><?php esc_html_e( '+ Repeater Field', 'wp-acf-json-pro' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="Add a text field called Custom Heading and make it required"><?php esc_html_e( '+ Required Text Field', 'wp-acf-json-pro' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="Add an image field called Hero Banner with return format array"><?php esc_html_e( '+ Image Field', 'wp-acf-json-pro' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="Add a select field called Status with choices: Draft, Review, Published"><?php esc_html_e( '+ Select Dropdown', 'wp-acf-json-pro' ); ?></button>
+									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Quick add fields (click to append in bulk):', 'wp-acf-json-pro' ); ?></span>
+									<button type="button" class="acfjp-chip" data-intent="- Add a repeater called Team Members with name (text), role (text), and photo (image) fields"><?php esc_html_e( '+ Repeater', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a text field called Custom Heading and make it required"><?php esc_html_e( '+ Required Text', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a wysiwyg editor field called Main Content"><?php esc_html_e( '+ WYSIWYG', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add an image field called Hero Banner with return format array"><?php esc_html_e( '+ Image', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a gallery field called Photo Gallery"><?php esc_html_e( '+ Gallery', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a select field called Status with choices: Draft, Review, Published"><?php esc_html_e( '+ Select Dropdown', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a true_false switch field called Is Featured with default false"><?php esc_html_e( '+ True/False', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a relationship field called Related Posts with max 3"><?php esc_html_e( '+ Relationship', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a flexible_content field called Page Builder with Hero and Features layouts"><?php esc_html_e( '+ Flexible Content', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a date_picker field called Event Date with format Y-m-d"><?php esc_html_e( '+ Date Picker', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="- Add a group container called Contact Info with phone, email, and address fields"><?php esc_html_e( '+ Group Container', 'wp-acf-json-pro' ); ?></button>
+								</div>
+
+								<div class="acfjp-quick-dropdown-row" style="margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Or append any specific ACF field type:', 'wp-acf-json-pro' ); ?></span>
+									<select id="acfjp-quick-field-select" class="button" style="max-width: 300px; font-size: 12px; height: 30px; line-height: 28px;">
+										<option value=""><?php esc_html_e( '⚡ Append all 36 ACF field types...', 'wp-acf-json-pro' ); ?></option>
+										<optgroup label="<?php esc_attr_e( 'Basic & Text', 'wp-acf-json-pro' ); ?>">
+											<option value="- Add a text field named Custom Title and make it required"><?php esc_html_e( 'Text', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a textarea field named Description with 4 rows"><?php esc_html_e( 'Textarea', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a number field named Price with min 0 and step 0.01"><?php esc_html_e( 'Number', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a range field named Rating from 1 to 10"><?php esc_html_e( 'Range', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add an email field named Contact Email"><?php esc_html_e( 'Email', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a url field named External Link"><?php esc_html_e( 'URL', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a password field named Secret Key"><?php esc_html_e( 'Password', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( 'Content & Media', 'wp-acf-json-pro' ); ?>">
+											<option value="- Add a wysiwyg editor named Body Text with full toolbar"><?php esc_html_e( 'WYSIWYG Editor', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add an image field named Thumbnail with array return format"><?php esc_html_e( 'Image', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a file field named Document Attachment with mime types pdf, docx"><?php esc_html_e( 'File', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a gallery field named Photo Album"><?php esc_html_e( 'Gallery', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add an oembed field named Video Player"><?php esc_html_e( 'oEmbed', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add an icon_picker field named Feature Icon"><?php esc_html_e( 'Icon Picker', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( 'Choices', 'wp-acf-json-pro' ); ?>">
+											<option value="- Add a select dropdown named Priority with choices: Low, Medium, High"><?php esc_html_e( 'Select Dropdown', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a checkbox field named Amenities with choices: Wifi, Pool, Parking"><?php esc_html_e( 'Checkbox', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a radio button field named Color Mode with choices: Light, Dark"><?php esc_html_e( 'Radio', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a button_group field named Text Align with choices: Left, Center, Right"><?php esc_html_e( 'Button Group', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a true_false switch named Enable Notifications with default true"><?php esc_html_e( 'True / False', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( 'Relational & Objects', 'wp-acf-json-pro' ); ?>">
+											<option value="- Add a link field named Call To Action with array return format"><?php esc_html_e( 'Link', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a post_object field named Featured Article filtered by post type post"><?php esc_html_e( 'Post Object', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a page_link field named Destination Page"><?php esc_html_e( 'Page Link', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a relationship field named Related Products with max 4"><?php esc_html_e( 'Relationship', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a taxonomy field named Category Selector with taxonomy category"><?php esc_html_e( 'Taxonomy', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a user field named Assigned Manager with role administrator"><?php esc_html_e( 'User', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( 'Layout & Structure', 'wp-acf-json-pro' ); ?>">
+											<option value="- Add a repeater named FAQ Items with question (text) and answer (wysiwyg) subfields"><?php esc_html_e( 'Repeater', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a group container named Metadata with author (text) and date (date_picker) subfields"><?php esc_html_e( 'Group', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a flexible_content field named Page Content with Hero, Grid, and CTA layouts"><?php esc_html_e( 'Flexible Content', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add an accordion section named Advanced Options"><?php esc_html_e( 'Accordion', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a tab divider named Settings Tab"><?php esc_html_e( 'Tab', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a message field named Helper Note with instructional guidance"><?php esc_html_e( 'Message', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a clone field named Reused Address Fields"><?php esc_html_e( 'Clone', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+										<optgroup label="<?php esc_attr_e( 'jQuery & Pickers', 'wp-acf-json-pro' ); ?>">
+											<option value="- Add a google_map field named Venue Location"><?php esc_html_e( 'Google Map', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a date_picker field named Start Date with display format d/m/Y"><?php esc_html_e( 'Date Picker', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a date_time_picker field named Appointment Time"><?php esc_html_e( 'Date Time Picker', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a time_picker field named Opening Time"><?php esc_html_e( 'Time Picker', 'wp-acf-json-pro' ); ?></option>
+											<option value="- Add a color_picker field named Accent Color with default #2271b1"><?php esc_html_e( 'Color Picker', 'wp-acf-json-pro' ); ?></option>
+										</optgroup>
+									</select>
 								</div>
 							</div>
 
@@ -242,16 +309,16 @@ final class Import extends Screen {
 
 								<div class="acfjp-ai-links">
 									<span class="acfjp-ai-links__label"><?php esc_html_e( 'Open AI in new tab:', 'wp-acf-json-pro' ); ?></span>
-									<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+									<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="acfjp-ai-btn">
 										ChatGPT ↗
 									</a>
-									<a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+									<a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="acfjp-ai-btn">
 										Claude ↗
 									</a>
-									<a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+									<a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="acfjp-ai-btn">
 										Gemini ↗
 									</a>
-									<a href="https://cursor.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+									<a href="https://cursor.com" target="_blank" rel="noopener noreferrer" class="acfjp-ai-btn">
 										Cursor ↗
 									</a>
 								</div>

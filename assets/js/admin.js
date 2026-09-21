@@ -766,6 +766,32 @@
 			} );
 		}
 
+		// Quick field type selector change (bulk append)
+		const quickFieldSelect = document.getElementById( 'acfjp-quick-field-select' );
+		if ( quickFieldSelect ) {
+			quickFieldSelect.addEventListener( 'change', function () {
+				const val = quickFieldSelect.value;
+				if ( val ) {
+					appendIntent( val );
+					quickFieldSelect.value = '';
+				}
+			} );
+		}
+
+		function appendIntent( text ) {
+			const intentInput = document.getElementById( 'acfjp-prompt-intent' );
+			if ( ! intentInput || ! text ) return;
+
+			const current = intentInput.value.trim();
+			if ( ! current ) {
+				intentInput.value = text;
+			} else {
+				intentInput.value = current + '\n' + text;
+			}
+			intentInput.focus();
+			intentInput.scrollTop = intentInput.scrollHeight;
+		}
+
 		// Hash change synchronization
 		function syncTabWithHash() {
 			const hash = ( window.location.hash || '' ).replace( '#', '' );
@@ -794,14 +820,24 @@
 				return;
 			}
 
-			// Chips
-			const chip = target.closest( '.acfjp-chip' );
-			if ( chip ) {
+			// Clear intent
+			if ( target.closest( '#acfjp-intent-clear' ) ) {
 				event.preventDefault();
 				const intentInput = document.getElementById( 'acfjp-prompt-intent' );
 				if ( intentInput ) {
-					intentInput.value = chip.dataset.intent || '';
+					intentInput.value = '';
 					intentInput.focus();
+				}
+				return;
+			}
+
+			// Chips (bulk append)
+			const chip = target.closest( '.acfjp-chip' );
+			if ( chip ) {
+				event.preventDefault();
+				const intent = chip.dataset.intent;
+				if ( intent ) {
+					appendIntent( intent );
 				}
 				return;
 			}

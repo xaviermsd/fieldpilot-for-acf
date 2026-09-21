@@ -54,14 +54,11 @@ final class PromptGenerator {
 
 	private function instructions(): string {
 		return <<<'TXT'
-You are generating a configuration patch for the WordPress plugin "WP ACF JSON Pro",
-which applies JSON changes to Advanced Custom Fields field groups.
+You are an expert WordPress & Advanced Custom Fields (ACF) architect generating a configuration patch for "WP ACF JSON Pro".
 
-Reply with ONE JSON object and nothing else. No prose, no explanation, no Markdown
-code fence.
+Reply with EXACTLY ONE raw JSON object and nothing else. No surrounding prose, no explanation, no markdown code fences.
 
-Schema:
-
+Patch Schema:
 {
   "version": "1.0",
   "operation": "create | add | update | delete | move | merge | sync | replace",
@@ -71,25 +68,25 @@ Schema:
     "layout": "layout_name_for_flexible_content"
   },
   "changes": { "field_name": { "setting": value } },
-  "add":     [ { "name": "...", "label": "...", "type": "..." } ],
+  "add":     [ { "name": "...", "label": "...", "type": "...", ...settings } ],
   "delete":  [ "field_name" ],
   "moves":   [ { "field": "...", "to": { "path": [...] }, "position": "first|last|before|after", "anchor": "..." } ],
   "group_changes": { "title": "..." }
 }
 
-Rules:
-
-1. "update" changes ONLY the settings you name. Never restate settings you are not
-   changing; omitting a setting leaves it exactly as it is.
-2. Never invent field names. Use only names that appear in the current structure
-   below, or names you are explicitly adding in this same payload.
-3. Never supply a "key". Keys are generated and existing keys must not change.
-4. Field names must match ^[a-z_][a-z0-9_]*$ - lowercase, digits, underscores.
-5. Nest with "sub_fields" for group and repeater; use "layouts" for flexible_content,
-   each layout having "name", "label" and "sub_fields".
-6. Use "delete" only when removal is clearly requested. It is destructive.
-7. Prefer the smallest operation that does the job: "update" and "add" over "sync",
-   and never "replace" unless a full rebuild is asked for.
+Core Rules:
+1. Field Names: MUST match ^[a-z_][a-z0-9_]*$ (lowercase, digits, underscores).
+2. Field Keys: NEVER generate or include "key" or "ID". The engine automatically mints and preserves cryptographically valid keys.
+3. Operation Selection:
+   - "add": appends new fields in bulk to the target group or container. Existing fields are untouched.
+   - "update": modifies ONLY the specific settings named (e.g. required, label, choices, return_format). Omitting settings preserves current values.
+   - "create": builds a brand new field group from scratch.
+   - "delete": removes specified field names. Use only when explicitly requested.
+   - "sync": brings the group into 100% exact parity with the JSON payload.
+4. Nested Field Trees:
+   - For "repeater" and "group": place nested subfields in the "sub_fields" array.
+   - For "flexible_content": define "layouts", where each layout has "name", "label", and its own "sub_fields" array.
+   - Structural fields (accordion, tab, message) do not require a "name".
 TXT;
 	}
 
@@ -102,7 +99,7 @@ TXT;
 		}
 
 		$lines = array(
-			'Current structure of the target field group:',
+			'Current structure of the target field group in database:',
 			'',
 			sprintf( '%s  (%s)', $tree->group->title, $key ),
 		);
@@ -145,18 +142,120 @@ TXT;
 	private function availableTypes(): string {
 		$types = $this->schemas->installedTypes();
 
-		return "Field types available on this site (use only these):\n\n" . implode( ', ', $types );
+		return <<<TXT
+All 36 ACF Field Types & Standard Settings Reference:
+
+• Basic & Text:
+  - text: {"type": "text", "default_value": "", "placeholder": "", "maxlength": ""}
+  - textarea: {"type": "textarea", "rows": 4, "new_lines": "wpautop|br|"}
+  - number: {"type": "number", "min": 0, "max": 100, "step": 1}
+  - range: {"type": "range", "min": 0, "max": 100, "step": 1}
+  - email: {"type": "email", "placeholder": ""}
+  - url: {"type": "url", "placeholder": ""}
+  - password: {"type": "password"}
+
+• Content & Media:
+  - wysiwyg: {"type": "wysiwyg", "toolbar": "full|basic", "media_upload": 1, "tabs": "all|visual|text"}
+  - image: {"type": "image", "return_format": "array|url|id", "preview_size": "medium", "library": "all"}
+  - file: {"type": "file", "return_format": "array|url|id", "mime_types": "pdf,docx"}
+  - gallery: {"type": "gallery", "return_format": "array|url|id", "min": 0, "max": 10}
+  - oembed: {"type": "oembed", "width": "", "height": ""}
+  - icon_picker: {"type": "icon_picker"}
+
+• Choice Fields:
+  - select: {"type": "select", "choices": {"key": "Value"}, "allow_null": 0, "multiple": 0, "ui": 1}
+  - checkbox: {"type": "checkbox", "choices": {"key": "Value"}, "layout": "vertical|horizontal"}
+  - radio: {"type": "radio", "choices": {"key": "Value"}, "other_choice": 0, "layout": "vertical|horizontal"}
+  - button_group: {"type": "button_group", "choices": {"key": "Value"}, "allow_null": 0}
+  - true_false: {"type": "true_false", "ui": 1, "ui_on_text": "Yes", "ui_off_text": "No", "default_value": 0}
+
+• Relational & WP Objects:
+  - link: {"type": "link", "return_format": "array|url"}
+  - post_object: {"type": "post_object", "post_type": ["post", "page"], "return_format": "object|id", "multiple": 0}
+  - page_link: {"type": "page_link", "post_type": ["page"], "allow_null": 0, "multiple": 0}
+  - relationship: {"type": "relationship", "post_type": ["post"], "filters": ["search", "post_type"], "return_format": "object|id", "min": 0, "max": 5}
+  - taxonomy: {"type": "taxonomy", "taxonomy": "category", "field_type": "checkbox|select|radio", "return_format": "object|id"}
+  - user: {"type": "user", "role": ["administrator", "editor"], "return_format": "array|object|id", "multiple": 0}
+
+• Layout & Structure:
+  - repeater: {"type": "repeater", "layout": "table|block|row", "button_label": "Add Row", "min": 0, "max": 0, "sub_fields": [...]}
+  - group: {"type": "group", "layout": "block|table|row", "sub_fields": [...]}
+  - flexible_content: {"type": "flexible_content", "button_label": "Add Section", "layouts": [{"name": "layout_slug", "label": "Layout Title", "sub_fields": [...]}]}
+  - accordion: {"type": "accordion", "open": 0, "multi_expand": 0, "endpoint": 0}
+  - tab: {"type": "tab", "placement": "top|left", "endpoint": 0}
+  - message: {"type": "message", "message": "Instructions text or HTML", "new_lines": "wpautop"}
+  - clone: {"type": "clone", "clone": ["field_xxxxx"], "display": "seamless|group"}
+
+• jQuery & Pickers:
+  - google_map: {"type": "google_map", "center_lat": "", "center_lng": "", "zoom": 14}
+  - date_picker: {"type": "date_picker", "display_format": "d/m/Y", "return_format": "Y-m-d", "first_day": 1}
+  - date_time_picker: {"type": "date_time_picker", "display_format": "d/m/Y g:i a", "return_format": "Y-m-d H:i:s", "first_day": 1}
+  - time_picker: {"type": "time_picker", "display_format": "g:i a", "return_format": "H:i:s"}
+  - color_picker: {"type": "color_picker", "default_value": "#2271b1", "enable_opacity": 0}
+
+Installed Types on Site:
+TXT . implode( ', ', $types );
 	}
 
 	private function examples(): string {
 		return <<<'TXT'
-Example - make one field required and add another beside it:
+Examples:
 
-{"version":"1.0","operation":"update","target":{"field_group":"Property","path":["Agent"]},"changes":{"email":{"required":true}},"add":[{"name":"whatsapp","label":"WhatsApp","type":"text"}]}
+1. Bulk Multi-Field Addition into an existing group:
+{
+  "version": "1.0",
+  "operation": "add",
+  "target": {
+    "field_group": "Property"
+  },
+  "add": [
+    {
+      "name": "hero_banner",
+      "label": "Hero Banner",
+      "type": "image",
+      "return_format": "array",
+      "required": 1
+    },
+    {
+      "name": "status",
+      "label": "Listing Status",
+      "type": "select",
+      "choices": {
+        "draft": "Draft",
+        "active": "Active",
+        "sold": "Sold"
+      },
+      "default_value": "active"
+    },
+    {
+      "name": "team_members",
+      "label": "Team Members",
+      "type": "repeater",
+      "layout": "table",
+      "sub_fields": [
+        { "name": "full_name", "label": "Full Name", "type": "text", "required": 1 },
+        { "name": "role", "label": "Role", "type": "text" },
+        { "name": "photo", "label": "Photo", "type": "image", "return_format": "array" }
+      ]
+    }
+  ]
+}
 
-Example - add a repeater with two sub-fields:
-
-{"version":"1.0","operation":"add","target":{"field_group":"Property"},"add":[{"name":"gallery_items","label":"Gallery Items","type":"repeater","sub_fields":[{"name":"image","label":"Image","type":"image"},{"name":"caption","label":"Caption","type":"text"}]}]}
+2. Update specific settings of an existing field without restating the rest:
+{
+  "version": "1.0",
+  "operation": "update",
+  "target": {
+    "field_group": "Property",
+    "path": ["Agent"]
+  },
+  "changes": {
+    "email": {
+      "required": true,
+      "instructions": "Enter direct work email only."
+    }
+  }
+}
 TXT;
 	}
 
@@ -164,8 +263,8 @@ TXT;
 		$intent = trim( $intent );
 
 		return '' === $intent
-			? 'Task: (describe the change you want here)'
-			: 'Task: ' . $intent;
+			? 'Task: (describe the change or fields you want to create/update)'
+			: "User Requirements & Task:\n" . $intent;
 	}
 
 	/**

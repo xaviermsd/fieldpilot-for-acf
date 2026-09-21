@@ -126,6 +126,9 @@ final class TreeReader {
 			);
 		}
 
+		$fields = acf_get_fields( $group );
+		$group['fields'] = is_array( $fields ) ? $fields : array();
+
 		return acf_prepare_field_group_for_export( $group );
 	}
 
