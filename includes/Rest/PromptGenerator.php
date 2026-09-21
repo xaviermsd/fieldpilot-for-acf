@@ -54,7 +54,7 @@ final class PromptGenerator {
 
 	private function instructions(): string {
 		return <<<'TXT'
-You are an expert WordPress & Advanced Custom Fields (ACF) architect generating a configuration patch for "WP ACF JSON Pro".
+You are an expert WordPress & Advanced Custom Fields (ACF Free & PRO) Lead Architect generating a deterministic configuration patch for "WP ACF JSON Pro".
 
 Reply with EXACTLY ONE raw JSON object and nothing else. No surrounding prose, no explanation, no markdown code fences.
 
@@ -74,19 +74,42 @@ Patch Schema:
   "group_changes": { "title": "..." }
 }
 
-Core Rules:
-1. Field Names: MUST match ^[a-z_][a-z0-9_]*$ (lowercase, digits, underscores).
-2. Field Keys: NEVER generate or include "key" or "ID". The engine automatically mints and preserves cryptographically valid keys.
-3. Operation Selection:
-   - "add": appends new fields in bulk to the target group or container. Existing fields are untouched.
-   - "update": modifies ONLY the specific settings named (e.g. required, label, choices, return_format). Omitting settings preserves current values.
-   - "create": builds a brand new field group from scratch.
-   - "delete": removes specified field names. Use only when explicitly requested.
-   - "sync": brings the group into 100% exact parity with the JSON payload.
-4. Nested Field Trees:
-   - For "repeater" and "group": place nested subfields in the "sub_fields" array.
-   - For "flexible_content": define "layouts", where each layout has "name", "label", and its own "sub_fields" array.
-   - Structural fields (accordion, tab, message) do not require a "name".
+Core Architectural Rules:
+1. Field Names & Keys:
+   - "name": MUST be lowercase slug matching ^[a-z_][a-z0-9_]*$ (e.g. "hero_banner", "director_bio").
+   - "label": Clear, human-readable title-cased name (e.g. "Hero Banner", "Director Bio").
+   - NEVER generate or include "key" or "ID". The engine automatically mints and preserves cryptographically valid keys.
+
+2. Interactive 4-Tab Builder Syntax Parsing:
+   When the user's task contains lines from the "Interactive Custom Field Builder (All 4 ACF Tabs)", parse every token into its exact ACF JSON counterpart:
+   • General Tab:
+     - 'named "..."' -> derive valid "name" (slug) and "label" (title).
+     - 'return_format: array|url|id|object' -> "return_format": "array" | "url" | "id" | "object".
+     - 'choices: "draft: Draft, active: Active"' -> "choices": {"draft": "Draft", "active": "Active"}. If comma-separated strings without colons (e.g. "Draft, Active"), generate {"draft": "Draft", "active": "Active"}.
+     - 'default: "..."' -> "default_value": "...".
+     - 'post_types: [post, page]' -> "post_type": ["post", "page"].
+     - 'taxonomy: "..."' -> "taxonomy": "...".
+     - 'toolbar: full|basic' -> "toolbar": "full" | "basic".
+     - 'button_label: "..."' -> "button_label": "...".
+     - 'sub_fields: [...]' -> parse nested subfields into "sub_fields" array of objects.
+     - 'layouts: [hero: Hero Banner, ...]' -> parse into "layouts": [{"name": "hero", "label": "Hero Banner", "display": "block", "sub_fields": []}].
+   • Validation Tab:
+     - 'required' -> "required": 1 (or true).
+     - 'min: X, max: Y, step: Z' -> "min": X, "max": Y, "step": Z.
+     - 'maxlength: N' -> "maxlength": N.
+     - 'mime_types: "jpg, png, webp"' -> "mime_types": "jpg, jpeg, png, webp".
+   • Presentation Tab:
+     - 'width: 50%' -> "wrapper": { "width": "50" }.
+     - 'wrapper_class: "..."' -> "wrapper": { "class": "..." }.
+     - 'instructions: "..."' -> "instructions": "...".
+     - 'placeholder: "..."' -> "placeholder": "...".
+     - 'prepend: "$", append: "USD"' -> "prepend": "$", "append": "USD".
+     - 'rows: 4' -> "rows": 4.
+   • Conditional Logic Tab:
+     - 'conditional: master_field == "value"' -> "conditional_logic": [ [ { "field": "master_field", "operator": "==", "value": "value" } ] ].
+
+3. Multi-Field Bulk Requests:
+   When multiple "- Add ..." lines are provided, combine ALL of them into a single "operation": "add" payload containing the full list of fields in the "add": [...] array in the requested order.
 TXT;
 	}
 
@@ -262,6 +285,58 @@ Examples:
       "instructions": "Enter direct work email only."
     }
   }
+}
+
+3. Converting 4-Tab Custom Field Builder Multi-Field Intent into a Clean JSON Patch:
+Input Intent:
+- Add an image field named "Hero Banner" (return_format: array, mime_types: "jpg, png, webp", width: 50%, required, instructions: "Upload high-res banner")
+- Add a select field named "Listing Status" (choices: "draft: Draft, active: Active, sold: Sold", default: "active", width: 50%, required, conditional: status == "active")
+
+Output:
+{
+  "version": "1.0",
+  "operation": "add",
+  "target": {
+    "field_group": "Property"
+  },
+  "add": [
+    {
+      "name": "hero_banner",
+      "label": "Hero Banner",
+      "type": "image",
+      "return_format": "array",
+      "mime_types": "jpg, jpeg, png, webp",
+      "required": 1,
+      "instructions": "Upload high-res banner",
+      "wrapper": {
+        "width": "50"
+      }
+    },
+    {
+      "name": "listing_status",
+      "label": "Listing Status",
+      "type": "select",
+      "choices": {
+        "draft": "Draft",
+        "active": "Active",
+        "sold": "Sold"
+      },
+      "default_value": "active",
+      "required": 1,
+      "wrapper": {
+        "width": "50"
+      },
+      "conditional_logic": [
+        [
+          {
+            "field": "status",
+            "operator": "==",
+            "value": "active"
+          }
+        ]
+      ]
+    }
+  ]
 }
 TXT;
 	}
