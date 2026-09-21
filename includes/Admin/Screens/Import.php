@@ -311,6 +311,20 @@ final class Import extends Screen {
 										</div>
 									</div>
 								</div>
+
+								<!-- Builder Append Action Bar -->
+								<div class="acfjp-builder-actions">
+									<button type="button" class="button button-primary button-large acfjp-custom-add-btn" id="acfjp-custom-add-main">
+										<span class="dashicons dashicons-plus-alt2"></span>
+										<?php esc_html_e( '+ Append Field to Queue', 'wp-acf-json-pro' ); ?>
+									</button>
+									<span class="acfjp-builder-hint">
+										<?php esc_html_e( '💡 Press Enter or click above to append this field specification to your queue below.', 'wp-acf-json-pro' ); ?>
+									</span>
+									<span class="acfjp-added-indicator" id="acfjp-added-indicator" style="display: none;">
+										<span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Appended to Queue!', 'wp-acf-json-pro' ); ?>
+									</span>
+								</div>
 							</div>
 
 							<!-- Quick Ideas & All 36 Types Dropdown -->
@@ -480,10 +494,10 @@ final class Import extends Screen {
 						<div class="acfjp-box-header">
 							<h2 class="acfjp-step-heading">
 								<span class="dashicons dashicons-edit"></span>
-								<?php esc_html_e( 'Paste JSON or Upload File', 'wp-acf-json-pro' ); ?>
+								<?php esc_html_e( 'Paste JSON Configuration or Upload File', 'wp-acf-json-pro' ); ?>
 							</h2>
 							<p class="description acfjp-step-hint">
-								<?php esc_html_e( 'Accepts WP ACF JSON Pro patches or standard ACF export JSON.', 'wp-acf-json-pro' ); ?>
+								<?php esc_html_e( 'Accepts WP ACF JSON Pro patches or standard native ACF export JSON.', 'wp-acf-json-pro' ); ?>
 							</p>
 						</div>
 
@@ -568,37 +582,67 @@ final class Import extends Screen {
 						<textarea id="acfjp-json" name="json" rows="18" spellcheck="false"
 							placeholder="<?php esc_attr_e( 'Paste JSON here...', 'wp-acf-json-pro' ); ?>"><?php echo esc_textarea( $prefill ); ?></textarea>
 
-						<form method="post" enctype="multipart/form-data" class="acfjp-upload">
-							<?php wp_nonce_field( self::NONCE ); ?>
-							<span class="description"><strong><?php esc_html_e( 'Or upload a .json file:', 'wp-acf-json-pro' ); ?></strong></span>
-							<input type="file" name="acfjp_file" accept="application/json,.json" />
-							<button type="submit" class="button"><?php esc_html_e( 'Load File', 'wp-acf-json-pro' ); ?></button>
-						</form>
+						<!-- Editor Bottom Bar: Primary Actions & File Uploader -->
+						<div class="acfjp-editor-bottom-bar">
+							<div class="acfjp-primary-actions">
+								<button type="button" class="button button-primary button-hero acfjp-preview-btn" id="acfjp-preview">
+									<span class="dashicons dashicons-visibility"></span>
+									<?php esc_html_e( 'Preview Changes & Review Diff ➔', 'wp-acf-json-pro' ); ?>
+								</button>
+								<button type="button" class="button button-secondary" id="acfjp-validate">
+									<span class="dashicons dashicons-yes-alt"></span>
+									<?php esc_html_e( 'Validate Only', 'wp-acf-json-pro' ); ?>
+								</button>
+							</div>
+
+							<p class="description" style="margin: 6px 0 12px; font-size: 12px; color: #50575e;">
+								<span class="dashicons dashicons-shield" style="font-size: 15px; width: 15px; height: 15px; vertical-align: text-bottom; color: #008a20;"></span>
+								<?php esc_html_e( 'Calculates exact diffs in-memory. Sibling branches are protected. Nothing is written until confirmed.', 'wp-acf-json-pro' ); ?>
+							</p>
+
+							<form method="post" enctype="multipart/form-data" class="acfjp-upload">
+								<?php wp_nonce_field( self::NONCE ); ?>
+								<span class="description"><strong><?php esc_html_e( 'Or upload a .json file:', 'wp-acf-json-pro' ); ?></strong></span>
+								<input type="file" name="acfjp_file" accept="application/json,.json" />
+								<button type="submit" class="button"><?php esc_html_e( 'Load File', 'wp-acf-json-pro' ); ?></button>
+							</form>
+						</div>
 					</div>
 
+					<!-- Right Sidebar: Quick Workflow Guide, Override & Groups -->
 					<div class="acfjp-import__controls">
 						<div class="acfjp-box-header">
 							<h2 class="acfjp-step-heading">
-								<span class="dashicons dashicons-visibility"></span>
-								<?php esc_html_e( 'Review & Apply', 'wp-acf-json-pro' ); ?>
+								<span class="dashicons dashicons-info-outline"></span>
+								<?php esc_html_e( 'How to Apply (3 Steps)', 'wp-acf-json-pro' ); ?>
 							</h2>
-							<p class="description">
-								<?php esc_html_e( 'Preview calculates exact diffs in-memory. Nothing is written until confirmed.', 'wp-acf-json-pro' ); ?>
-							</p>
 						</div>
 
-						<div class="acfjp-primary-actions">
-							<button type="button" class="button button-primary" id="acfjp-preview">
-								<span class="dashicons dashicons-visibility"></span>
-								<?php esc_html_e( 'Preview Changes', 'wp-acf-json-pro' ); ?>
-							</button>
-							<button type="button" class="button button-secondary" id="acfjp-validate">
-								<span class="dashicons dashicons-yes-alt"></span>
-								<?php esc_html_e( 'Validate Only', 'wp-acf-json-pro' ); ?>
-							</button>
+						<div class="acfjp-sidebar-steps">
+							<div class="acfjp-sidebar-step">
+								<span class="acfjp-s-badge">1</span>
+								<div>
+									<strong><?php esc_html_e( 'Paste JSON', 'wp-acf-json-pro' ); ?></strong>
+									<p><?php esc_html_e( 'Paste payload on left or select a template.', 'wp-acf-json-pro' ); ?></p>
+								</div>
+							</div>
+							<div class="acfjp-sidebar-step">
+								<span class="acfjp-s-badge">2</span>
+								<div>
+									<strong><?php esc_html_e( 'Preview Diff', 'wp-acf-json-pro' ); ?></strong>
+									<p><?php esc_html_e( 'Click Preview Changes to simulate in-memory.', 'wp-acf-json-pro' ); ?></p>
+								</div>
+							</div>
+							<div class="acfjp-sidebar-step">
+								<span class="acfjp-s-badge">3</span>
+								<div>
+									<strong><?php esc_html_e( 'Confirm & Apply', 'wp-acf-json-pro' ); ?></strong>
+									<p><?php esc_html_e( 'Review changes & apply safely to database.', 'wp-acf-json-pro' ); ?></p>
+								</div>
+							</div>
 						</div>
 
-						<hr />
+						<hr style="margin: 16px 0; border-top: 1px solid #f0f0f1;" />
 
 						<div class="acfjp-field-row">
 							<label for="acfjp-operation"><strong><?php esc_html_e( 'Import mode override', 'wp-acf-json-pro' ); ?></strong></label>

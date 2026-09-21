@@ -989,6 +989,15 @@
 
 			appendIntent( spec );
 
+			// Visual indicator
+			const indicator = document.getElementById( 'acfjp-added-indicator' );
+			if ( indicator ) {
+				indicator.style.display = 'inline-flex';
+				window.setTimeout( function () {
+					indicator.style.display = 'none';
+				}, 2200 );
+			}
+
 			// Clean inputs
 			nameInput.value = '';
 			if ( instInput ) instInput.value = '';
@@ -1017,25 +1026,15 @@
 			nameInput.focus();
 		}
 
-		const customNameInput = document.getElementById( 'acfjp-custom-name' );
-		if ( customNameInput ) {
-			customNameInput.addEventListener( 'keydown', function ( e ) {
+		// Attach Enter key triggers to all inputs in the builder box
+		document.querySelectorAll( '.acfjp-builder-box input' ).forEach( function ( input ) {
+			input.addEventListener( 'keydown', function ( e ) {
 				if ( 'Enter' === e.key ) {
 					e.preventDefault();
 					addCustomField();
 				}
 			} );
-		}
-
-		const customInstInput = document.getElementById( 'acfjp-custom-instructions' );
-		if ( customInstInput ) {
-			customInstInput.addEventListener( 'keydown', function ( e ) {
-				if ( 'Enter' === e.key ) {
-					e.preventDefault();
-					addCustomField();
-				}
-			} );
-		}
+		} );
 
 		// Hash change synchronization (default to AI tab if not specified)
 		function syncTabWithHash() {
@@ -1059,8 +1058,8 @@
 		document.addEventListener( 'click', function ( event ) {
 			const target = event.target;
 
-			// Custom field builder add
-			if ( target.closest( '#acfjp-custom-add' ) ) {
+			// Custom field builder add (top or bottom button)
+			if ( target.closest( '#acfjp-custom-add' ) || target.closest( '#acfjp-custom-add-main' ) ) {
 				event.preventDefault();
 				addCustomField();
 				return;

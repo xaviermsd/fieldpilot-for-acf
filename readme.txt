@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.10
+Stable tag: 1.0.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,11 @@ AI you already use.
 
 == Changelog ==
 
+= 1.0.11 =
+* Added: Prominent bottom action bar (+ Append Field to Queue) directly below the 4 ACF tabs in the Custom Field Builder.
+* Added: Instant Enter key triggers on all builder fields to append specifications immediately from any tab.
+* Added: Visual indicator badge confirming when fields are added to the queue.
+
 = 1.0.10 =
 * Added: Comprehensive in-app Schema & Operations Developer Guide in Tab 3 covering all 8 operations, target scope resolution, 4 ACF tabs parameter mapping, 36 field types reference matrix, and 1-click template loaders.
 * Fixed: Resolved DOM hierarchy and removed duplicate intent textarea in AI Prompt tab.
@@ -183,6 +188,9 @@ AI you already use.
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.11 =
+Upgrade recommended for all users to get dual append buttons and Enter key shortcuts in Custom Field Builder.
 
 = 1.0.10 =
 Upgrade recommended for all users to get comprehensive in-app developer guide, single-column workflow, and layout fixes.
