@@ -270,22 +270,38 @@ Rebuilds the entire field group configuration from the provided schema.
 
 ## Defense-in-Depth Safety Systems
 
-### In-Memory Diff Simulation
-Every operation is dry-run through `Engine::plan()`. Diffs are calculated in-memory and classified into risk tiers:
-- **`safe`** (Green): Field additions, non-breaking setting changes.
-- **`caution`** (Yellow): Relocations, field type updates.
-- **`destructive`** (Red): Field deletions, group deletions, layout removals.
+WP ACF JSON Pro is designed around a multi-layered safety model to ensure configuration changes are transparent, deterministic, and verifiable.
 
-### Optimistic Concurrency Fingerprinting
-During `plan()`, a deterministic SHA-256 fingerprint (`stateHash`) of the current field group state is stored. When `apply()` is called:
+### 1. In-Memory Diff Simulation & Target Scope Breadcrumbs
+Every operation is dry-run through `Engine::plan()`. The preview screen displays:
+- **Hierarchical Target Breadcrumb**: `Root Field Group > Target Container (Repeater / Flexible Content / Group)`.
+- **Target Isolation Guarantee**: Clearly indicates that mutations are strictly isolated to the target locus and all unrelated sibling branches remain protected and untouched.
+- **Categorized Change Chips**: Instant summary metrics (`+ Added`, `~ Modified`, `- Deleted`, `🛡️ Protected Outside Target: 0 touched`).
+- **Proportional Risk Engine**:
+  - **`safe`** (Green): Field additions, non-breaking label/instruction updates.
+  - **`caution`** (Yellow): Relocations, field type updates.
+  - **`destructive`** (Red): Field deletions, layout removals, group replacements.
+
+### 2. Pre-Apply Safety Checklist & Interactive Guard
+Before any mutation can occur, developers must explicitly acknowledge the operation:
+- `[x] I have reviewed the target scope and diff above.`
+- `[x] I understand this operation will write changes to the ACF database.`
+- `[x] I acknowledge that this operation contains destructive modifications or deletions.` *(Active on destructive risk or deletions)*
+The **Apply Changes** button remains disabled until all required acknowledgements are checked.
+
+### 3. 1-Click ACF Configuration JSON Export
+A dedicated **`[ 📥 Export Current Configuration (JSON) ]`** button directly in the preview toolbar allows developers to download an exact copy of the current field group state (`acf-export-{groupKey}-{date}.json`) to their local machine for Git version control before applying any changes.
+
+### 4. Optimistic Concurrency Fingerprinting
+During `plan()`, a deterministic SHA-256 fingerprint (`stateHash`) of the current field group state is recorded. When `apply()` is called:
 - If another developer, deployment, or background process modified the group between preview and apply, the hash check fails with `STATE_CHANGED`.
 - The mutation is blocked to prevent applying stale diffs.
 
-### Pre-Mutation Snapshotting & Automatic Compensation
-- Before a single byte is modified, `SnapshotStore::put()` saves the complete raw ACF export array.
-- If `Writer::write()` encounters any unexpected error or exception, the engine triggers immediate automatic rollback (`Engine::rollbackAfterFailure()`) and restores the snapshot.
+### 5. Pre-Mutation Snapshotting & Automatic Compensation
+- Before any database write begins, the engine creates a full, byte-compatible internal snapshot of the ACF configuration.
+- If `Writer::write()` encounters any unexpected error or exception, the engine triggers immediate automatic rollback (`Engine::rollbackAfterFailure()`) and restores the pre-mutation snapshot.
 
-### Post-Apply Verification & Untouched Sibling Protection
+### 6. Post-Apply Verification & Untouched Sibling Protection
 After writing, `Verifier::verify()` re-reads the raw data directly from ACF and verifies:
 - All updated properties match the plan.
 - All new fields and subfields are present with correct keys and parents.
@@ -293,10 +309,13 @@ After writing, `Verifier::verify()` re-reads the raw data directly from ACF and 
 - Flexible Content layout bindings (`parent_layout`, `menu_order`) are intact.
 - **Sibling branches outside the target locus are verified to be byte-identical.**
 
-### Validated Rollback & Audit Journal
-Every change is recorded in the journal table (`wp_acfjp_journal`). You can inspect past diffs and restore previous states with 1 click from **ACF JSON Pro -> History** or via `wp acf-json rollback <id>`.
+### 7. Validated Rollback & Audit Journal
+Every change is recorded in the journal table (`wp_acfjp_journal`). You can inspect past diffs and restore previous states with 1 click from **ACF JSON Pro -> History** or via `wp acf-json rollback <id>`. Rollback verifies the target state hash before restoring to ensure newer legitimate changes are not blindly overwritten.
 
-### Read-Only Guard
+### 8. Clear Product Boundary Disclaimer
+WP ACF JSON Pro's internal snapshots protect ACF field group configurations. They are not a replacement for a full WordPress site/database backup. Developers should maintain regular backups of their WordPress database, media, and server files.
+
+### 9. Read-Only Guard
 Lock down production environments completely against UI and API mutations while keeping previews active:
 ```php
 // In wp-config.php
