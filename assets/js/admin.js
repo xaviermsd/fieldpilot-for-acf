@@ -766,6 +766,17 @@
 			} );
 		}
 
+		// Hash change synchronization
+		function syncTabWithHash() {
+			const hash = ( window.location.hash || '' ).replace( '#', '' );
+			if ( hash && ( 'editor' === hash || 'ai' === hash || 'guide' === hash ) ) {
+				switchTab( hash );
+			}
+		}
+
+		syncTabWithHash();
+		window.addEventListener( 'hashchange', syncTabWithHash );
+
 		document.addEventListener( 'click', function ( event ) {
 			const target = event.target;
 
@@ -773,7 +784,13 @@
 			const tabBtn = target.closest( '.acfjp-tab' );
 			if ( tabBtn ) {
 				event.preventDefault();
-				switchTab( tabBtn.dataset.tab );
+				const tab = tabBtn.dataset.tab;
+				if ( tab ) {
+					switchTab( tab );
+					if ( window.history && window.history.replaceState ) {
+						window.history.replaceState( null, null, '#' + tab );
+					}
+				}
 				return;
 			}
 
