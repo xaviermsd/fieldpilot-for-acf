@@ -226,10 +226,77 @@ final class Import extends Screen {
 									<button type="button" class="acfjp-chip" data-intent="- Add a group container called Contact Info with phone, email, and address fields"><?php esc_html_e( '+ Group Container', 'wp-acf-json-pro' ); ?></button>
 								</div>
 
+								<!-- Custom Field Builder Row -->
+								<div class="acfjp-builder-box" style="background: #f0f6fc; border: 1px solid #cce5ff; border-radius: 4px; padding: 10px 12px; margin-top: 10px;">
+									<div style="font-size: 12px; font-weight: 600; color: #004b87; margin-bottom: 6px;">
+										<?php esc_html_e( '🎯 Custom Field Builder (Specify your own exact field name & type):', 'wp-acf-json-pro' ); ?>
+									</div>
+									<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+										<input type="text" id="acfjp-custom-name" placeholder="<?php esc_attr_e( 'Enter field name / label (e.g. Director Bio, Client Logo)...', 'wp-acf-json-pro' ); ?>" style="flex: 1 1 200px; height: 32px; font-size: 13px;" />
+										<select id="acfjp-custom-type" style="height: 32px; font-size: 13px;">
+											<optgroup label="<?php esc_attr_e( 'Basic & Text', 'wp-acf-json-pro' ); ?>">
+												<option value="text"><?php esc_html_e( 'Text', 'wp-acf-json-pro' ); ?></option>
+												<option value="textarea"><?php esc_html_e( 'Textarea', 'wp-acf-json-pro' ); ?></option>
+												<option value="number"><?php esc_html_e( 'Number', 'wp-acf-json-pro' ); ?></option>
+												<option value="range"><?php esc_html_e( 'Range', 'wp-acf-json-pro' ); ?></option>
+												<option value="email"><?php esc_html_e( 'Email', 'wp-acf-json-pro' ); ?></option>
+												<option value="url"><?php esc_html_e( 'URL', 'wp-acf-json-pro' ); ?></option>
+												<option value="password"><?php esc_html_e( 'Password', 'wp-acf-json-pro' ); ?></option>
+											</optgroup>
+											<optgroup label="<?php esc_attr_e( 'Content & Media', 'wp-acf-json-pro' ); ?>">
+												<option value="wysiwyg"><?php esc_html_e( 'WYSIWYG Editor', 'wp-acf-json-pro' ); ?></option>
+												<option value="image"><?php esc_html_e( 'Image', 'wp-acf-json-pro' ); ?></option>
+												<option value="file"><?php esc_html_e( 'File', 'wp-acf-json-pro' ); ?></option>
+												<option value="gallery"><?php esc_html_e( 'Gallery', 'wp-acf-json-pro' ); ?></option>
+												<option value="oembed"><?php esc_html_e( 'oEmbed', 'wp-acf-json-pro' ); ?></option>
+												<option value="icon_picker"><?php esc_html_e( 'Icon Picker', 'wp-acf-json-pro' ); ?></option>
+											</optgroup>
+											<optgroup label="<?php esc_attr_e( 'Choices', 'wp-acf-json-pro' ); ?>">
+												<option value="select"><?php esc_html_e( 'Select Dropdown', 'wp-acf-json-pro' ); ?></option>
+												<option value="checkbox"><?php esc_html_e( 'Checkbox', 'wp-acf-json-pro' ); ?></option>
+												<option value="radio"><?php esc_html_e( 'Radio', 'wp-acf-json-pro' ); ?></option>
+												<option value="button_group"><?php esc_html_e( 'Button Group', 'wp-acf-json-pro' ); ?></option>
+												<option value="true_false"><?php esc_html_e( 'True / False', 'wp-acf-json-pro' ); ?></option>
+											</optgroup>
+											<optgroup label="<?php esc_attr_e( 'Relational & Objects', 'wp-acf-json-pro' ); ?>">
+												<option value="link"><?php esc_html_e( 'Link', 'wp-acf-json-pro' ); ?></option>
+												<option value="post_object"><?php esc_html_e( 'Post Object', 'wp-acf-json-pro' ); ?></option>
+												<option value="page_link"><?php esc_html_e( 'Page Link', 'wp-acf-json-pro' ); ?></option>
+												<option value="relationship"><?php esc_html_e( 'Relationship', 'wp-acf-json-pro' ); ?></option>
+												<option value="taxonomy"><?php esc_html_e( 'Taxonomy', 'wp-acf-json-pro' ); ?></option>
+												<option value="user"><?php esc_html_e( 'User', 'wp-acf-json-pro' ); ?></option>
+											</optgroup>
+											<optgroup label="<?php esc_attr_e( 'Layout & Structure', 'wp-acf-json-pro' ); ?>">
+												<option value="repeater"><?php esc_html_e( 'Repeater', 'wp-acf-json-pro' ); ?></option>
+												<option value="group"><?php esc_html_e( 'Group Container', 'wp-acf-json-pro' ); ?></option>
+												<option value="flexible_content"><?php esc_html_e( 'Flexible Content', 'wp-acf-json-pro' ); ?></option>
+												<option value="accordion"><?php esc_html_e( 'Accordion', 'wp-acf-json-pro' ); ?></option>
+												<option value="tab"><?php esc_html_e( 'Tab', 'wp-acf-json-pro' ); ?></option>
+												<option value="message"><?php esc_html_e( 'Message', 'wp-acf-json-pro' ); ?></option>
+												<option value="clone"><?php esc_html_e( 'Clone', 'wp-acf-json-pro' ); ?></option>
+											</optgroup>
+											<optgroup label="<?php esc_attr_e( 'jQuery & Pickers', 'wp-acf-json-pro' ); ?>">
+												<option value="google_map"><?php esc_html_e( 'Google Map', 'wp-acf-json-pro' ); ?></option>
+												<option value="date_picker"><?php esc_html_e( 'Date Picker', 'wp-acf-json-pro' ); ?></option>
+												<option value="date_time_picker"><?php esc_html_e( 'Date Time Picker', 'wp-acf-json-pro' ); ?></option>
+												<option value="time_picker"><?php esc_html_e( 'Time Picker', 'wp-acf-json-pro' ); ?></option>
+												<option value="color_picker"><?php esc_html_e( 'Color Picker', 'wp-acf-json-pro' ); ?></option>
+											</optgroup>
+										</select>
+										<label style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">
+											<input type="checkbox" id="acfjp-custom-required" /> <?php esc_html_e( 'Required', 'wp-acf-json-pro' ); ?>
+										</label>
+										<button type="button" class="button button-primary" id="acfjp-custom-add">
+											<span class="dashicons dashicons-plus-alt2"></span>
+											<?php esc_html_e( 'Append Field', 'wp-acf-json-pro' ); ?>
+										</button>
+									</div>
+								</div>
+
 								<div class="acfjp-quick-dropdown-row" style="margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Or append any specific ACF field type:', 'wp-acf-json-pro' ); ?></span>
+									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Or append pre-configured examples:', 'wp-acf-json-pro' ); ?></span>
 									<select id="acfjp-quick-field-select" class="button" style="max-width: 300px; font-size: 12px; height: 30px; line-height: 28px;">
-										<option value=""><?php esc_html_e( '⚡ Append all 36 ACF field types...', 'wp-acf-json-pro' ); ?></option>
+										<option value=""><?php esc_html_e( '⚡ Append example specs for all 36 ACF types...', 'wp-acf-json-pro' ); ?></option>
 										<optgroup label="<?php esc_attr_e( 'Basic & Text', 'wp-acf-json-pro' ); ?>">
 											<option value="- Add a text field named Custom Title and make it required"><?php esc_html_e( 'Text', 'wp-acf-json-pro' ); ?></option>
 											<option value="- Add a textarea field named Description with 4 rows"><?php esc_html_e( 'Textarea', 'wp-acf-json-pro' ); ?></option>

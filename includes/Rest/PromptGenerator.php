@@ -194,7 +194,7 @@ All 36 ACF Field Types & Standard Settings Reference:
   - color_picker: {"type": "color_picker", "default_value": "#2271b1", "enable_opacity": 0}
 
 Installed Types on Site:
-TXT . implode( ', ', $types );
+TXT . "\n" . implode( ', ', $types );
 	}
 
 	private function examples(): string {

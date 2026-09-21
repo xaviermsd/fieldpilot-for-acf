@@ -792,6 +792,43 @@
 			intentInput.scrollTop = intentInput.scrollHeight;
 		}
 
+		function addCustomField() {
+			const nameInput = document.getElementById( 'acfjp-custom-name' );
+			const typeSelect = document.getElementById( 'acfjp-custom-type' );
+			const reqCheckbox = document.getElementById( 'acfjp-custom-required' );
+
+			if ( ! nameInput || ! typeSelect ) return;
+
+			const name = nameInput.value.trim();
+			const type = typeSelect.value || 'text';
+			const isReq = reqCheckbox && reqCheckbox.checked;
+
+			if ( ! name ) {
+				nameInput.focus();
+				return;
+			}
+
+			let spec = '- Add a ' + type + ' field named "' + name + '"';
+			if ( isReq ) {
+				spec += ' and make it required';
+			}
+
+			appendIntent( spec );
+			nameInput.value = '';
+			if ( reqCheckbox ) reqCheckbox.checked = false;
+			nameInput.focus();
+		}
+
+		const customNameInput = document.getElementById( 'acfjp-custom-name' );
+		if ( customNameInput ) {
+			customNameInput.addEventListener( 'keydown', function ( e ) {
+				if ( 'Enter' === e.key ) {
+					e.preventDefault();
+					addCustomField();
+				}
+			} );
+		}
+
 		// Hash change synchronization
 		function syncTabWithHash() {
 			const hash = ( window.location.hash || '' ).replace( '#', '' );
@@ -805,6 +842,13 @@
 
 		document.addEventListener( 'click', function ( event ) {
 			const target = event.target;
+
+			// Custom field builder add
+			if ( target.closest( '#acfjp-custom-add' ) ) {
+				event.preventDefault();
+				addCustomField();
+				return;
+			}
 
 			// Tabs
 			const tabBtn = target.closest( '.acfjp-tab' );
