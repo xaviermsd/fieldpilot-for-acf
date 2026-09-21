@@ -18,7 +18,7 @@ through a UI, one field at a time. Meanwhile every developer has an AI that writ
 JSON perfectly well. The missing piece was never generation - it was **safe
 application**.
 
-WP ACF JSON Pro is a configuration patch engine for ACF. Paste JSON, see exactly
+FieldPilot is an AI & JSON Copilot and configuration patch engine for ACF. Paste JSON, see exactly
 what will change, apply only that, and roll back if you were wrong.
 
 The rule the whole plugin is built around:
@@ -80,10 +80,10 @@ a free install are refused with a clear message rather than a cryptic error.
 
 == Installation ==
 
-1. Upload the plugin to `/wp-content/plugins/wp-acf-json-pro/`, or install it through
+1. Upload the plugin to `/wp-content/plugins/fieldpilot-for-acf/`, or install it through
    Plugins -> Add New.
 2. Activate it. ACF must already be active.
-3. Go to **ACF JSON Pro** in the admin menu.
+3. Go to **FieldPilot** in the admin menu.
 
 == Frequently Asked Questions ==
 

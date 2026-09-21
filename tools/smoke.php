@@ -19,7 +19,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 }
 
 if ( ! class_exists( \ACFJP\Core\Plugin::class ) ) {
-	WP_CLI::error( 'WP ACF JSON Pro is not active.' );
+	WP_CLI::error( 'FieldPilot is not active.' );
 }
 
 wp_set_current_user( 1 );

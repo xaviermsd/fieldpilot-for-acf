@@ -69,7 +69,7 @@ about any of that.
 
 ### Install
 
-Zip the `wp-json-pro` folder and upload it under **Plugins → Add New → Upload**, or
+Zip the `fieldpilot-for-acf` folder and upload it under **Plugins → Add New → Upload**, or
 copy it to `wp-content/plugins/` over SFTP. Activate it. ACF must already be active.
 
 If a requirement is missing the plugin stays dormant and shows a notice explaining
@@ -77,7 +77,7 @@ why - it will not white-screen the site.
 
 ### Run the self-test
 
-**ACF JSON Pro → Diagnostics → Run self-test.**
+**FieldPilot → Diagnostics → Run self-test.**
 
 What it does to your site:
 
@@ -153,7 +153,7 @@ The smoke test proves the engine. Only you can tell me whether the product is an
 
 1. Create a field group in ACF by hand - a realistic one, with a repeater and some
    nesting.
-2. Go to **ACF JSON Pro → Import JSON**.
+2. Go to **FieldPilot → Import JSON**.
 3. Click **Generate an AI prompt**, pick your group, describe a change, copy the
    prompt.
 4. Paste it into ChatGPT or Claude. Take whatever JSON comes back - do not clean it up.
@@ -215,8 +215,7 @@ Not urgent, but they shape what gets built next.
 
 - **Free vs paid split.** The obvious line is: import, preview and apply free; history,
   rollback, REST and CLI paid. I have opinions but no stake.
-- **Name.** "WP ACF JSON Pro" says what it does but reads like an add-on to an add-on.
-  Worth a thought before you build a brand on it.
+- **Name.** FieldPilot – AI & JSON Copilot for ACF (`fieldpilot-for-acf`). Clean, distinctive, and fully compliant with WordPress.org guidelines.
 - **Distribution.** WordPress.org has reach and a review queue; selling direct means
   handling licensing and updates yourself. This affects whether licensing work gets
   scheduled at all.

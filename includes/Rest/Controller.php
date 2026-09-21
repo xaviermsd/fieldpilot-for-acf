@@ -28,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class Controller {
 
-	public const NAMESPACE = 'wp-acf-json-pro/v1';
+	public const NAMESPACE = 'fieldpilot-for-acf/v1';
 
 	public function __construct(
 		private readonly Engine $engine,
@@ -309,7 +309,7 @@ final class Controller {
 	}
 
 	public function schema(): \WP_REST_Response {
-		$path = ACFJP_DIR . 'schemas/wp-acf-json-pro-v1.json';
+		$path = ACFJP_DIR . 'schemas/fieldpilot-for-acf-v1.json';
 
 		$schema = file_exists( $path ) ? json_decode( (string) file_get_contents( $path ), true ) : null; // phpcs:ignore WordPress.WP.AlternativeFunctions
 

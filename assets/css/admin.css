@@ -1,5 +1,5 @@
 /**
- * WP ACF JSON Pro - admin styles.
+ * FieldPilot for ACF - admin styles.
  * Uses WordPress admin colour variables where they exist so the plugin inherits
  * the user's chosen admin scheme rather than fighting it.
  */
@@ -220,7 +220,7 @@
 .acfjp-tab-content { display: none; }
 .acfjp-tab-content.is-active { display: block; }
 
-/* Prevent WP Footer from overlapping anything in ACF JSON Pro */
+/* Prevent WP Footer from overlapping anything in FieldPilot */
 #wpfooter {
 	position: relative !important;
 	clear: both !important;

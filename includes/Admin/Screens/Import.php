@@ -503,7 +503,7 @@ final class Import extends Screen {
 								<?php esc_html_e( 'Paste JSON Configuration or Upload File', 'fieldpilot-for-acf' ); ?>
 							</h2>
 							<p class="description acfjp-step-hint">
-								<?php esc_html_e( 'Accepts WP ACF JSON Pro patches or standard native ACF export JSON.', 'fieldpilot-for-acf' ); ?>
+								<?php esc_html_e( 'Accepts FieldPilot patches or standard native ACF export JSON.', 'fieldpilot-for-acf' ); ?>
 							</p>
 						</div>
 
@@ -711,7 +711,7 @@ final class Import extends Screen {
 							<?php esc_html_e( 'Schema & Operations Developer Guide', 'fieldpilot-for-acf' ); ?>
 						</h2>
 						<p class="description">
-							<?php esc_html_e( 'WP ACF JSON Pro is a declarative, target-scoped configuration patch engine for Advanced Custom Fields. Below is the complete developer reference for operations, scope targeting, the 4 ACF settings tabs, and all 36 ACF field types.', 'fieldpilot-for-acf' ); ?>
+							<?php esc_html_e( 'FieldPilot is a declarative, target-scoped configuration patch engine for Advanced Custom Fields. Below is the complete developer reference for operations, scope targeting, the 4 ACF settings tabs, and all 36 ACF field types.', 'fieldpilot-for-acf' ); ?>
 						</p>
 					</div>
 

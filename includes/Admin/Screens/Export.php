@@ -31,7 +31,7 @@ final class Export extends Screen {
 
 		?>
 		<form method="get" class="acfjp-export-form">
-			<input type="hidden" name="page" value="wp-acf-json-pro-export" />
+			<input type="hidden" name="page" value="fieldpilot-for-acf-export" />
 			<select name="group">
 				<option value=""><?php esc_html_e( 'Choose a field group…', 'fieldpilot-for-acf' ); ?></option>
 				<?php foreach ( $groups as $group ) : ?>
@@ -46,7 +46,7 @@ final class Export extends Screen {
 					<?php esc_html_e( 'Native ACF export', 'fieldpilot-for-acf' ); ?>
 				</option>
 				<option value="acfjp" <?php selected( $dialect, 'acfjp' ); ?>>
-					<?php esc_html_e( 'WP ACF JSON Pro patch skeleton', 'fieldpilot-for-acf' ); ?>
+					<?php esc_html_e( 'FieldPilot patch skeleton', 'fieldpilot-for-acf' ); ?>
 				</option>
 			</select>
 

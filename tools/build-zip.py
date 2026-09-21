@@ -10,8 +10,8 @@ there is no vendor/ directory to think about.
     python tools/build-zip.py
     python tools/build-zip.py --out C:\\Users\\harsh\\Desktop
 
-Produces  wp-acf-json-pro-<version>.zip  whose single top-level folder is
-`wp-acf-json-pro/`, which is what WordPress expects from an uploaded plugin.
+Produces  fieldpilot-for-acf-<version>.zip  whose single top-level folder is
+`fieldpilot-for-acf/`, which is what WordPress expects from an uploaded plugin.
 """
 
 from __future__ import annotations

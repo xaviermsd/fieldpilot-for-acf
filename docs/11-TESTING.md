@@ -15,7 +15,7 @@ vendor/bin/phpunit --testsuite property
 
 # Integration. Needs a real WordPress + ACF.
 npx wp-env start
-npx wp-env run tests-cli --env-cwd=wp-content/plugins/wp-acf-json-pro \
+npx wp-env run tests-cli --env-cwd=wp-content/plugins/fieldpilot-for-acf \
     vendor/bin/phpunit --testsuite integration
 ```
 

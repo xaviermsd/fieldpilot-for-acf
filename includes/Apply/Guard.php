@@ -96,12 +96,12 @@ final class Guard {
 
 		throw new GuardException(
 			ErrorCodes::READ_ONLY_MODE,
-			__( 'WP ACF JSON Pro is in read-only mode. Previews and validation work; nothing can be written.', 'fieldpilot-for-acf' ),
+			__( 'FieldPilot is in read-only mode. Previews and validation work; nothing can be written.', 'fieldpilot-for-acf' ),
 			array( 'read_only' => true ),
 			array(
 				defined( 'ACFJP_READ_ONLY' ) && ACFJP_READ_ONLY
 					? __( 'Remove the ACFJP_READ_ONLY constant from wp-config.php to allow changes.', 'fieldpilot-for-acf' )
-					: __( 'Turn off read-only mode under ACF JSON Pro → Settings to allow changes.', 'fieldpilot-for-acf' ),
+					: __( 'Turn off read-only mode under FieldPilot → Settings to allow changes.', 'fieldpilot-for-acf' ),
 			)
 		);
 	}

@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 final class Dashboard extends Screen {
 
 	protected function title(): string {
-		return __( 'WP ACF JSON Pro', 'fieldpilot-for-acf' );
+		return __( 'FieldPilot for ACF', 'fieldpilot-for-acf' );
 	}
 
 	protected function body(): void {

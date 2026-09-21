@@ -1,5 +1,5 @@
 {
-    "name": "harshprajapati/wp-acf-json-pro",
+    "name": "xaviermsd/fieldpilot-for-acf",
     "description": "A safe, deterministic configuration patch engine for Advanced Custom Fields, driven by JSON.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",

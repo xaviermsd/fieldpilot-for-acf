@@ -1,5 +1,5 @@
 /**
- * WP ACF JSON Pro - admin behaviour.
+ * FieldPilot for ACF - admin behaviour.
  *
  * Plain ES modules against the REST API. The UI is a thin client over the same
  * endpoints a deployment script would call, which is deliberate: if a flow cannot

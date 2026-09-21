@@ -1,4 +1,4 @@
-# CLAUDE.md - WP ACF JSON Pro
+# CLAUDE.md - FieldPilot for ACF
 
 Instructions for any AI agent working in this repository. Read this file first, then
 `docs/00-OVERVIEW.md`, then the doc for the layer you are touching.
@@ -62,7 +62,7 @@ feature that bypasses the pipeline, you are adding it in the wrong place.
 - **PHP 8.1+.** Use typed properties, constructor promotion, readonly where it fits,
   enums, `never`/`static` return types, first-class callables, named arguments.
 - **PSR-4**, namespace root `ACFJP\` → `includes/`. One class per file, file named
-  after the class. No procedural code outside `wp-acf-json-pro.php` and `uninstall.php`.
+  after the class. No procedural code outside `fieldpilot-for-acf.php` and `uninstall.php`.
 - **WordPress Coding Standards** for naming of hooks, options, meta and DB columns
   (snake_case), **PSR-12 formatting** for PHP structure (braces, spacing, imports).
   Where the two conflict, PSR-12 wins for code layout, WPCS wins for identifiers.
@@ -73,12 +73,12 @@ feature that bypasses the pipeline, you are adding it in the wrong place.
   is used at runtime. `vendor/autoload.php` is loaded only when present and only for tests.
 - **Every public method has a docblock** with `@param`/`@return`/`@throws`. Private
   methods only when non-obvious.
-- **Text domain**: `wp-acf-json-pro`. Every user-facing string is translated.
+- **Text domain**: `fieldpilot-for-acf`. Every user-facing string is translated.
 - **Escaping**: `esc_html__()`, `esc_attr()`, `wp_json_encode()` at the point of output.
   Never build HTML by concatenating unescaped model values.
 - **Prefixes**: PHP namespace `ACFJP\`; constants `ACFJP_*`; options `acfjp_*`;
   DB tables `{$wpdb->prefix}acfjp_*`; hooks `acfjp/*`; CSS/JS handles `acfjp-*`;
-  REST namespace `wp-acf-json-pro/v1`; JS global `window.ACFJP`.
+  REST namespace `fieldpilot-for-acf/v1`; JS global `window.ACFJP`.
 
 ## Error handling
 
@@ -138,7 +138,7 @@ add them. See `docs/00-OVERVIEW.md §5`.
 | `docs/00-OVERVIEW.md` | Product definition, scope, non-goals, success criteria |
 | `docs/11-TESTING.md` | Test tiers, invariants, gates, how to add a case |
 | `docs/13-EXTENSIBILITY.md` | Public hooks, filters, the Engine API, REST and WP-CLI |
-| `schemas/wp-acf-json-pro-v1.json` | Machine-readable schema (also served to AI and to the prompt generator) |
+| `schemas/fieldpilot-for-acf-v1.json` | Machine-readable schema (also served to AI and to the prompt generator) |
 | `readme.txt` | WordPress.org readme |
 
 Layer-level design notes live in the class docblocks rather than in separate

@@ -1,6 +1,6 @@
 # 00 - Product Overview
 
-**WP ACF JSON Pro** · v1.0 · WordPress 6.5+ · PHP 8.1+ · ACF 6.2+ (Free & Pro) · GPL-2.0-or-later
+**FieldPilot for ACF** · v1.0 · WordPress 6.5+ · PHP 8.1+ · ACF 6.2+ (Free & Pro) · GPL-2.0-or-later
 
 ---
 
@@ -119,7 +119,7 @@ uses whatever model they already pay for.
 ```
 ChatGPT ─┐
 Claude ──┤
-Gemini ──┼──▶  WP ACF JSON Pro schema  ──▶  JSON  ──▶  Plugin
+Gemini ──┼──▶  FieldPilot schema  ──▶  JSON  ──▶  Plugin
 Cursor ──┤
 by hand ─┘
 ```
@@ -131,7 +131,7 @@ story is "works with your AI", which is stronger than "has an AI built in."
 
 ## 6. Competitive position
 
-| | ACF core | ACF Extended | WP ACF JSON Pro |
+| | ACF core | ACF Extended | FieldPilot |
 |---|---|---|---|
 | Whole-group import | ✔ | ✔ | ✔ |
 | Partial field update | ✘ | ✘ | ✔ |

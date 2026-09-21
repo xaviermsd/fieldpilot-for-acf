@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  * End-to-end against a real WordPress + ACF, via wp-env.
  *
  *   npx wp-env start
- *   npx wp-env run tests-cli --env-cwd=wp-content/plugins/wp-acf-json-pro \
+ *   npx wp-env run tests-cli --env-cwd=wp-content/plugins/fieldpilot-for-acf \
  *       vendor/bin/phpunit --testsuite integration
  *
  * These tests write to a real database. They are the only place the Writer,

@@ -16,8 +16,8 @@ declare( strict_types = 1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 define( 'ACFJP_DIR', dirname( __DIR__ ) . '/' );
-define( 'ACFJP_URL', 'https://example.test/wp-content/plugins/wp-acf-json-pro/' );
-define( 'ACFJP_VERSION', '1.0.0' );
+define( 'ACFJP_URL', 'https://example.test/wp-content/plugins/fieldpilot-for-acf/' );
+define( 'ACFJP_VERSION', '1.0.12' );
 define( 'DAY_IN_SECONDS', 86400 );
 define( 'HOUR_IN_SECONDS', 3600 );
 

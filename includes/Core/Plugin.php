@@ -99,7 +99,7 @@ final class Plugin {
 		}
 
 		/**
-		 * Fires once WP ACF JSON Pro is ready. Add-ons should hook here.
+		 * Fires once FieldPilot is ready. Add-ons should hook here.
 		 *
 		 * @param Container $container
 		 */

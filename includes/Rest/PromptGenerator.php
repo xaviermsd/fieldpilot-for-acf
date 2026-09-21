@@ -54,7 +54,7 @@ final class PromptGenerator {
 
 	private function instructions(): string {
 		return <<<'TXT'
-You are an expert WordPress & Advanced Custom Fields (ACF Free & PRO) Lead Architect generating a deterministic configuration patch for "WP ACF JSON Pro".
+You are an expert WordPress & Advanced Custom Fields (ACF Free & PRO) Lead Architect generating a deterministic configuration patch for "FieldPilot for ACF".
 
 Reply with EXACTLY ONE raw JSON object and nothing else. No surrounding prose, no explanation, no markdown code fences.
 

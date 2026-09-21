@@ -53,7 +53,7 @@ final class Requirements {
 
 		// Feature detection, not version sniffing: a function we actually call.
 		if ( ! function_exists( 'acf_get_field_groups' ) ) {
-			$this->failures[] = __( 'Advanced Custom Fields is not active. WP ACF JSON Pro extends ACF and cannot run without it.', 'fieldpilot-for-acf' );
+			$this->failures[] = __( 'Advanced Custom Fields is not active. FieldPilot extends ACF and cannot run without it.', 'fieldpilot-for-acf' );
 		} elseif ( defined( 'ACF_VERSION' ) && version_compare( ACF_VERSION, ACFJP_MIN_ACF, '<' ) ) {
 			$this->failures[] = sprintf(
 				/* translators: 1: required ACF version, 2: current ACF version */
@@ -105,7 +105,7 @@ final class Requirements {
 
 				printf(
 					'<div class="notice notice-error"><p><strong>%s</strong></p><ul style="list-style:disc;margin-left:20px">%s</ul></div>',
-					esc_html__( 'WP ACF JSON Pro is inactive.', 'fieldpilot-for-acf' ),
+					esc_html__( 'FieldPilot is inactive.', 'fieldpilot-for-acf' ),
 					implode(
 						'',
 						array_map(

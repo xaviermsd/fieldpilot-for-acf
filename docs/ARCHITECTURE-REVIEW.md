@@ -1,7 +1,7 @@
-# Architecture Review - WP ACF JSON Pro
+# Architecture Review - FieldPilot for ACF
 
 **Reviewer:** lead architect
-**Baseline:** *WP ACF JSON Pro - Full Developer Technical Plan v1.0* (PDF)
+**Baseline:** *FieldPilot for ACF - Full Developer Technical Plan v1.0* (PDF)
 **Verified against:** Advanced Custom Fields **6.8.10** (current release), source read directly
 **Date:** 2026-09-21
 **Status:** approved with substantive changes
@@ -778,8 +778,8 @@ dissolved - security is not a module, it is a property of the boundaries, and a 
 named `Security/` invites developers to believe the checks live somewhere else.
 
 ```
-wp-acf-json-pro/
-├── wp-acf-json-pro.php          # bootstrap only; ~60 lines, no logic
+fieldpilot-for-acf/
+├── fieldpilot-for-acf.php          # bootstrap only; ~60 lines, no logic
 ├── uninstall.php
 ├── composer.json                # dev-only deps
 ├── readme.txt
@@ -855,7 +855,7 @@ wp-acf-json-pro/
 ├── assets/  {js,css}            # no build step; ES modules + wp_enqueue_code_editor()
 ├── templates/
 ├── schemas/
-│   ├── wp-acf-json-pro-v1.json
+│   ├── fieldpilot-for-acf-v1.json
 │   └── prompt/ai-instructions.md
 └── tests/ {Unit,Integration,Property,fixtures}
 ```

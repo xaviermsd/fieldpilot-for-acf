@@ -3,7 +3,7 @@
 > **A declarative, target-scoped configuration patch engine for Advanced Custom Fields (ACF Free & PRO).**  
 > Diff before you apply. Snapshot before you write. Roll back whenever you need. Zero runtime dependencies.
 
-[![Version](https://img.shields.io/badge/Version-1.0.12-blue.svg?style=flat-square)](https://github.com/xaviermsd/wp-json-pro)
+[![Version](https://img.shields.io/badge/Version-1.0.12-blue.svg?style=flat-square)](https://github.com/xaviermsd/fieldpilot-for-acf)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%20--%208.4-777bb4.svg?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5%20--%206.8%2B-21759b.svg?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org/)
 [![ACF Compatibility](https://img.shields.io/badge/ACF%20%2F%20PRO-6.2%20--%206.8%2B-00a32a.svg?style=flat-square)](https://www.advancedcustomfields.com/)
@@ -15,7 +15,7 @@
 
 ## Table of Contents
 
-- [Why WP ACF JSON Pro?](#why-wp-acf-json-pro)
+- [Why FieldPilot?](#why-fieldpilot)
 - [The Mental Model & Architecture](#the-mental-model--architecture)
 - [Target Resolution Engine](#target-resolution-engine)
 - [Supported JSON Patch Operations](#supported-json-patch-operations)
@@ -28,12 +28,6 @@
   - [7. sync (Caution - Mirror Parity)](#7-sync-caution---mirror-parity)
   - [8. replace (Destructive - Full Rebuild)](#8-replace-destructive---full-rebuild)
 - [Defense-in-Depth Safety Systems](#defense-in-depth-safety-systems)
-  - [In-Memory Diff Simulation & Target Scope Breadcrumbs](#1-in-memory-diff-simulation--target-scope-breadcrumbs)
-  - [Pre-Apply Safety Checklist & Interactive Guard](#2-pre-apply-safety-checklist--interactive-guard)
-  - [1-Click ACF Configuration JSON Export](#3-1-click-acf-configuration-json-export)
-  - [Optimistic Concurrency Fingerprinting](#4-optimistic-concurrency-fingerprinting)
-  - [Pre-Mutation Snapshotting & Automatic Compensation](#5-pre-mutation-snapshotting--automatic-compensation)
-  - [Post-Apply Verification & Untouched Sibling Protection](#6-post-apply-verification--untouched-sibling-protection)
   - [Validated Rollback & Audit Journal](#7-validated-rollback--audit-journal)
   - [Clear Product Boundary Disclaimer](#8-clear-product-boundary-disclaimer)
   - [Read-Only Guard](#9-read-only-guard)
@@ -56,13 +50,13 @@
 
 ---
 
-## Why WP ACF JSON Pro?
+## Why FieldPilot?
 
 For years, authoring and maintaining complex ACF field groups required clicking through the WordPress admin UI, one field at a time. Native ACF JSON exports exist, but importing them through standard tools is an **all-or-nothing full replacement** that wipes un-exported settings, risks orphan keys, and cannot apply surgical updates.
 
 Meanwhile, modern engineering teams and AI models (ChatGPT, Claude, Gemini, Cursor, Copilot) can write JSON configurations effortlessly. The bottleneck was never *generating* JSON - it was **safely validating, scoping, simulating, and applying targeted patches**.
 
-**WP ACF JSON Pro is a configuration patch engine.** It operates as a compiler pipeline:
+**FieldPilot is a configuration patch engine.** It operates as a compiler pipeline:
 1. **Target-Scoped**: Modify a single sub-field deep inside a Repeater or Flexible Content layout without risking adjacent branches.
 2. **Partial Patches**: Update `required: true` and `instructions: "..."` on one field; untouched properties and sibling fields remain 100% byte-identical.
 3. **Deterministic Identity**: Existing ACF field keys (`field_64abc123`) are preserved to safeguard your database postmeta relationships.
@@ -72,7 +66,7 @@ Meanwhile, modern engineering teams and AI models (ChatGPT, Claude, Gemini, Curs
 
 ## The Mental Model & Architecture
 
-WP ACF JSON Pro treats an ACF Field Group as a **hierarchical configuration tree**, not a flat database table.
+FieldPilot treats an ACF Field Group as a **hierarchical configuration tree**, not a flat database table.
 
 ```
 JSON Request (Payload / Native ACF Export)
@@ -145,7 +139,7 @@ If a requested target matches multiple fields (for example, two subfields named 
 
 ## Supported JSON Patch Operations
 
-All patch operations conform to the `wp-acf-json-pro-v1.json` JSON Schema.
+All patch operations conform to the `fieldpilot-for-acf-v1.json` JSON Schema.
 
 ### 1. `add` (Safe)
 Appends new fields or subfields to the specified target. Existing fields remain untouched.
@@ -284,7 +278,7 @@ Rebuilds the entire field group configuration from the provided schema.
 
 ## Defense-in-Depth Safety Systems
 
-WP ACF JSON Pro is designed around a multi-layered safety model to ensure configuration changes are transparent, deterministic, and verifiable.
+FieldPilot is designed around a multi-layered safety model to ensure configuration changes are transparent, deterministic, and verifiable.
 
 ### 1. In-Memory Diff Simulation & Target Scope Breadcrumbs
 Every operation is dry-run through `Engine::plan()`. The preview screen displays:
@@ -324,10 +318,10 @@ After writing, `Verifier::verify()` re-reads the raw data directly from ACF and 
 - **Sibling branches outside the target locus are verified to be byte-identical.**
 
 ### 7. Validated Rollback & Audit Journal
-Every change is recorded in the journal table (`wp_acfjp_journal`). You can inspect past diffs and restore previous states with 1 click from **ACF JSON Pro -> History** or via `wp acfjp rollback <id>`. Rollback restores complete field trees byte-for-byte.
+Every change is recorded in the journal table (`wp_acfjp_journal`). You can inspect past diffs and restore previous states with 1 click from **FieldPilot -> History** or via `wp acfjp rollback <id>`. Rollback restores complete field trees byte-for-byte.
 
 ### 8. Clear Product Boundary Disclaimer
-WP ACF JSON Pro's internal snapshots protect ACF field group configurations. They are not a replacement for a full WordPress site/database backup. Developers should maintain regular backups of their WordPress database, media, and server files.
+FieldPilot's internal snapshots protect ACF field group configurations. They are not a replacement for a full WordPress site/database backup. Developers should maintain regular backups of their WordPress database, media, and server files.
 
 ### 9. Read-Only Guard
 Lock down production environments completely against UI and API mutations while keeping previews active:
@@ -340,7 +334,7 @@ define( 'ACFJP_READ_ONLY', true );
 
 ## Interactive Admin Workflow (3-Tab Navigation)
 
-The main admin interface (**ACF JSON Pro -> Import JSON**) features a segmented 3-tab layout synchronized with URL hashes (`#ai`, `#editor`, `#guide`):
+The main admin interface (**FieldPilot -> Import JSON**) features a segmented 3-tab layout synchronized with URL hashes (`#ai`, `#editor`, `#guide`):
 
 ### Tab 1: AI Prompt Builder & Custom Field Generator (Default)
 - Zero external API keys needed; zero monthly cost.
@@ -382,7 +376,7 @@ The **Custom Field Builder** in Tab 1 allows developers and content architects t
 
 ## The 4 ACF Tabs & JSON Property Mapping Guide
 
-In ACF's native admin modal, every field's configuration is divided into **4 distinct tabs**: **General**, **Validation**, **Presentation**, and **Conditional Logic**. WP ACF JSON Pro maps these 1-to-1 into declarative JSON properties.
+In ACF's native admin modal, every field's configuration is divided into **4 distinct tabs**: **General**, **Validation**, **Presentation**, and **Conditional Logic**. FieldPilot maps these 1-to-1 into declarative JSON properties.
 
 ### 1. General Tab
 Defines the field's fundamental identity, data storage, and return shape.
@@ -456,7 +450,7 @@ Controls dynamic display rules based on values of other fields within the same g
 
 ## Complete 36 ACF Field Types Reference
 
-WP ACF JSON Pro provides complete first-class support for all 36 ACF field types across Free and PRO editions:
+FieldPilot provides complete first-class support for all 36 ACF field types across Free and PRO editions:
 
 | Category | Type | Common General Settings | Validation Settings | Presentation Settings |
 |---|---|---|---|---|
@@ -501,7 +495,7 @@ WP ACF JSON Pro provides complete first-class support for all 36 ACF field types
 
 ## REST API Reference
 
-All operations are fully accessible over REST under `/wp-json/wp-acf-json-pro/v1`.
+All operations are fully accessible over REST under `/wp-json/fieldpilot-for-acf/v1`.
 
 ### Authentication
 - **Browser/Admin UI**: Standard WordPress REST Nonce (`X-WP-Nonce: wp_create_nonce('wp_rest')`).
@@ -511,16 +505,16 @@ All operations are fully accessible over REST under `/wp-json/wp-acf-json-pro/v1
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/wp-json/wp-acf-json-pro/v1/validate` | `POST` | Parse and schema-validate JSON without reading ACF state. |
-| `/wp-json/wp-acf-json-pro/v1/plan` | `POST` | Resolve target, compute ChangeSet, calculate diff, and return plan. |
-| `/wp-json/wp-acf-json-pro/v1/apply` | `POST` | Apply a planned changeset by `plan_id` with optional conflict resolutions. |
-| `/wp-json/wp-acf-json-pro/v1/prompt` | `GET` | Generate an AI-optimized prompt for a specific field group. |
-| `/wp-json/wp-acf-json-pro/v1/field-groups` | `GET` | List all field groups, their mutability classification, and available field types. |
-| `/wp-json/wp-acf-json-pro/v1/field-groups/:key` | `GET` | Fetch raw field group tree and mutability report. |
-| `/wp-json/wp-acf-json-pro/v1/history` | `GET` | Query change journal entries. |
-| `/wp-json/wp-acf-json-pro/v1/history/:id/rollback`| `POST` | Roll back a historical change set. |
-| `/wp-json/wp-acf-json-pro/v1/self-test` | `POST` | Run diagnostics and integration self-tests. |
-| `/wp-json/wp-acf-json-pro/v1/schema` | `GET` | Retrieve the active JSON Schema definition. |
+| `/wp-json/fieldpilot-for-acf/v1/validate` | `POST` | Parse and schema-validate JSON without reading ACF state. |
+| `/wp-json/fieldpilot-for-acf/v1/plan` | `POST` | Resolve target, compute ChangeSet, calculate diff, and return plan. |
+| `/wp-json/fieldpilot-for-acf/v1/apply` | `POST` | Apply a planned changeset by `plan_id` with optional conflict resolutions. |
+| `/wp-json/fieldpilot-for-acf/v1/prompt` | `GET` | Generate an AI-optimized prompt for a specific field group. |
+| `/wp-json/fieldpilot-for-acf/v1/field-groups` | `GET` | List all field groups, their mutability classification, and available field types. |
+| `/wp-json/fieldpilot-for-acf/v1/field-groups/:key` | `GET` | Fetch raw field group tree and mutability report. |
+| `/wp-json/fieldpilot-for-acf/v1/history` | `GET` | Query change journal entries. |
+| `/wp-json/fieldpilot-for-acf/v1/history/:id/rollback`| `POST` | Roll back a historical change set. |
+| `/wp-json/fieldpilot-for-acf/v1/self-test` | `POST` | Run diagnostics and integration self-tests. |
+| `/wp-json/fieldpilot-for-acf/v1/schema` | `GET` | Retrieve the active JSON Schema definition. |
 
 ---
 
@@ -598,15 +592,15 @@ vendor/bin/phpcs
 1. Download or clone this repository into your WordPress plugins directory:
    ```bash
    cd wp-content/plugins/
-   git clone https://github.com/xaviermsd/wp-json-pro.git wp-acf-json-pro
+   git clone https://github.com/xaviermsd/fieldpilot-for-acf.git fieldpilot-for-acf
    ```
 2. Ensure **Advanced Custom Fields** (Free or PRO) is active.
-3. Activate **WP ACF JSON Pro** in **Plugins -> Installed Plugins** (or `wp plugin activate wp-acf-json-pro`).
-4. Navigate to **ACF JSON Pro** in your WordPress admin menu.
+3. Activate **FieldPilot** in **Plugins -> Installed Plugins** (or `wp plugin activate fieldpilot-for-acf`).
+4. Navigate to **FieldPilot** in your WordPress admin menu.
 5. Use the **AI Generator** or paste JSON into the **JSON Editor** to preview and apply your first configuration patch!
 
 ---
 
 ## License
 
-WP ACF JSON Pro is open-source software licensed under the [GNU General Public License v2 or later](https://www.gnu.org/licenses/gpl-2.0.html).
+FieldPilot is open-source software licensed under the [GNU General Public License v2 or later](https://www.gnu.org/licenses/gpl-2.0.html).

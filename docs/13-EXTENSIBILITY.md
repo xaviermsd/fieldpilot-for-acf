@@ -197,7 +197,7 @@ script is exactly where an accidental delete does the most damage.
 
 ## REST
 
-Namespace `wp-acf-json-pro/v1`. Capability-guarded; cookie-authenticated requests
+Namespace `fieldpilot-for-acf/v1`. Capability-guarded; cookie-authenticated requests
 need the standard `X-WP-Nonce` header.
 
 | Method | Route | Purpose |
