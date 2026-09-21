@@ -3,7 +3,7 @@
 Build a distributable WordPress plugin zip.
 
 Ships ONLY what the plugin needs at runtime. Everything used to develop, test or
-analyse it — tests, docs, CI config, composer/npm manifests, the wp-env setup —
+analyse it - tests, docs, CI config, composer/npm manifests, the wp-env setup -
 stays out. The plugin has zero Composer runtime dependencies (see CLAUDE.md), so
 there is no vendor/ directory to think about.
 
@@ -97,7 +97,7 @@ def main() -> int:
     files = collect()
 
     if not files:
-        print("Nothing to package — are you running this from the plugin root?")
+        print("Nothing to package - are you running this from the plugin root?")
         return 1
 
     # Directories that get a silence file, the WordPress convention against

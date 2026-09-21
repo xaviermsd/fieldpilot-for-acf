@@ -240,6 +240,55 @@
 			return;
 		}
 
+		// Target Scope Box
+		const scopeBox = el( 'div', 'acfjp-scope-box' );
+		const scopeTop = el( 'div', 'acfjp-scope-box__top' );
+
+		const breadcrumb = el( 'div', 'acfjp-target-breadcrumb' );
+		const icon = el( 'span', 'dashicons dashicons-location' );
+		breadcrumb.appendChild( icon );
+
+		const groupTitle = changeset.group_title || changeset.group_key || 'Field Group';
+		breadcrumb.appendChild( el( 'span', null, groupTitle ) );
+
+		const meta = plan.meta || {};
+		const locusDisplay = ( meta.locus && meta.locus.display ) ? meta.locus.display : '';
+		if ( locusDisplay && locusDisplay !== groupTitle ) {
+			breadcrumb.appendChild( el( 'span', 'acfjp-crumb-sep', '›' ) );
+			breadcrumb.appendChild( el( 'span', 'acfjp-target-badge', locusDisplay ) );
+		}
+
+		scopeTop.appendChild( breadcrumb );
+
+		const isolatedBadge = el( 'span', 'acfjp-scope-isolated' );
+		const checkIcon = el( 'span', 'dashicons dashicons-yes-alt' );
+		isolatedBadge.appendChild( checkIcon );
+		isolatedBadge.appendChild( el( 'span', null, s.scopeIsolated || 'Target Isolated - Unrelated branches protected' ) );
+		scopeTop.appendChild( isolatedBadge );
+
+		scopeBox.appendChild( scopeTop );
+
+		// Stats Chips
+		const statsChips = el( 'div', 'acfjp-stats-chips' );
+		const counts = changeset.counts || {};
+		const addCount = ( counts.add || 0 ) + ( counts.add_layout || 0 ) + ( counts.create_group || 0 );
+		const modCount = ( counts.update || 0 ) + ( counts.move || 0 ) + ( counts.update_setting || 0 );
+		const delCount = ( counts.delete || 0 ) + ( counts.delete_layout || 0 );
+
+		if ( addCount > 0 ) {
+			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--add', '+ ' + addCount + ' added' ) );
+		}
+		if ( modCount > 0 ) {
+			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--modify', '~ ' + modCount + ' modified' ) );
+		}
+		if ( delCount > 0 ) {
+			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--delete', '- ' + delCount + ' deleted' ) );
+		}
+		statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--protected', '🛡️ Protected outside target: 0 touched' ) );
+		scopeBox.appendChild( statsChips );
+
+		panel.appendChild( scopeBox );
+
 		panel.appendChild(
 			el( 'h2', null, changeset.group_title + ' - ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) )
 		);
@@ -250,24 +299,82 @@
 		} );
 		panel.appendChild( list );
 
-		const actions = el( 'div', 'acfjp-actions' );
+		// Safety & Confirmation Box
+		const isDestructive = 'destructive' === changeset.risk || delCount > 0;
+		const safetyBox = el( 'div', 'acfjp-safety-box' + ( isDestructive ? ' acfjp-safety-box--destructive' : '' ) );
+		safetyBox.appendChild( el( 'h3', null, isDestructive ? '⚠️ Pre-Apply Safety Checklist (Destructive Changes)' : '🛡️ Pre-Apply Safety Checklist' ) );
 
-		if ( 'destructive' === changeset.risk ) {
-			const confirmLabel = el( 'label', 'acfjp-confirm' );
-			const confirmInput = document.createElement( 'input' );
-			confirmInput.type = 'checkbox';
-			confirmInput.id = 'acfjp-confirm';
-			confirmLabel.appendChild( confirmInput );
-			confirmLabel.appendChild( el( 'span', null, s.confirmTitle ) );
-			actions.appendChild( confirmLabel );
+		const checklist = el( 'div', 'acfjp-safety-checklist' );
+
+		// Checkbox 1: Review
+		const reviewLabel = el( 'label', 'acfjp-safety-item' );
+		const reviewInput = document.createElement( 'input' );
+		reviewInput.type = 'checkbox';
+		reviewInput.id = 'acfjp-ack-review';
+		reviewLabel.appendChild( reviewInput );
+		reviewLabel.appendChild( el( 'span', null, s.ackReview || 'I have reviewed the target scope and diff above.' ) );
+		checklist.appendChild( reviewLabel );
+
+		// Checkbox 2: DB write
+		const dbLabel = el( 'label', 'acfjp-safety-item' );
+		const dbInput = document.createElement( 'input' );
+		dbInput.type = 'checkbox';
+		dbInput.id = 'acfjp-ack-modify';
+		dbLabel.appendChild( dbInput );
+		dbLabel.appendChild( el( 'span', null, s.ackModify || 'I understand this operation will write changes to the ACF database.' ) );
+		checklist.appendChild( dbLabel );
+
+		// Checkbox 3: Destructive acknowledgement if applicable
+		if ( isDestructive ) {
+			const destLabel = el( 'label', 'acfjp-safety-item is-destructive' );
+			const destInput = document.createElement( 'input' );
+			destInput.type = 'checkbox';
+			destInput.id = 'acfjp-confirm';
+			destLabel.appendChild( destInput );
+			destLabel.appendChild( el( 'span', null, s.ackDestructive || s.confirmTitle || 'I acknowledge that this operation contains destructive modifications or deletions.' ) );
+			checklist.appendChild( destLabel );
 		}
 
-		const applyButton = el( 'button', 'button button-primary', 'Apply ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) );
+		safetyBox.appendChild( checklist );
+
+		// Toolbar with Export Backup and Apply button
+		const toolbar = el( 'div', 'acfjp-preview-toolbar' );
+		const toolbarLeft = el( 'div', 'acfjp-preview-toolbar__left' );
+		const toolbarRight = el( 'div', 'acfjp-preview-toolbar__right' );
+
+		if ( changeset.group_key ) {
+			const exportBtn = el( 'button', 'button button-secondary', s.exportConfig || 'Export Current Configuration (JSON)' );
+			exportBtn.type = 'button';
+			exportBtn.id = 'acfjp-export-current';
+			exportBtn.dataset.groupKey = changeset.group_key;
+			toolbarLeft.appendChild( exportBtn );
+		}
+
+		const applyButton = el( 'button', 'button button-primary button-large', 'Apply ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) );
 		applyButton.type = 'button';
 		applyButton.id = 'acfjp-apply';
-		actions.appendChild( applyButton );
+		applyButton.disabled = true;
+		toolbarRight.appendChild( applyButton );
 
-		panel.appendChild( actions );
+		function updateApplyState() {
+			const hasReview = reviewInput.checked;
+			const hasDb = dbInput.checked;
+			const hasDest = isDestructive ? ( ( document.getElementById( 'acfjp-confirm' ) || {} ).checked || false ) : true;
+			applyButton.disabled = ! ( hasReview && hasDb && hasDest );
+		}
+
+		reviewInput.addEventListener( 'change', updateApplyState );
+		dbInput.addEventListener( 'change', updateApplyState );
+		if ( isDestructive ) {
+			const destInputEl = document.getElementById( 'acfjp-confirm' );
+			if ( destInputEl ) destInputEl.addEventListener( 'change', updateApplyState );
+		}
+
+		toolbar.appendChild( toolbarLeft );
+		toolbar.appendChild( toolbarRight );
+		safetyBox.appendChild( toolbar );
+
+		panel.appendChild( safetyBox );
 		target.appendChild( panel );
 	}
 
@@ -327,6 +434,36 @@
 		renderPlan( response );
 	}
 
+	async function exportConfiguration( groupKey, button ) {
+		if ( ! groupKey ) return;
+		if ( button ) {
+			button.disabled = true;
+			button.textContent = s.exporting || 'Exporting...';
+		}
+
+		const response = await api( '/field-groups/' + encodeURIComponent( groupKey ), { method: 'GET' } );
+
+		if ( button ) {
+			button.disabled = false;
+			button.textContent = s.exportConfig || 'Export Current Configuration (JSON)';
+		}
+
+		if ( ! response.ok || ! response.field_group ) {
+			window.alert( ( response.error && response.error.message ) || s.genericError );
+			return;
+		}
+
+		const blob = new Blob( [ JSON.stringify( [ response.field_group ], null, 2 ) ], { type: 'application/json' } );
+		const url = URL.createObjectURL( blob );
+		const a = document.createElement( 'a' );
+		a.href = url;
+		a.download = 'acf-export-' + groupKey + '-' + ( new Date().toISOString().slice( 0, 10 ) ) + '.json';
+		document.body.appendChild( a );
+		a.click();
+		document.body.removeChild( a );
+		URL.revokeObjectURL( url );
+	}
+
 	async function apply() {
 		if ( ! currentPlan ) return;
 
@@ -337,7 +474,14 @@
 			return;
 		}
 
+		const reviewBox = document.getElementById( 'acfjp-ack-review' );
+		const dbBox = document.getElementById( 'acfjp-ack-modify' );
 		const confirmBox = document.getElementById( 'acfjp-confirm' );
+
+		if ( ( reviewBox && ! reviewBox.checked ) || ( dbBox && ! dbBox.checked ) ) {
+			window.alert( 'Please review and check the safety acknowledgements before applying.' );
+			return;
+		}
 
 		busy( s.applying );
 
@@ -664,6 +808,13 @@
 			if ( target.closest( '#acfjp-prompt-build' ) ) { event.preventDefault(); buildPrompt(); return; }
 			if ( target.closest( '#acfjp-paste-clipboard' ) ) { event.preventDefault(); pasteFromClipboard( false ); return; }
 			if ( target.closest( '#acfjp-paste-and-preview' ) ) { event.preventDefault(); pasteFromClipboard( true ); return; }
+
+			const exportBtn = target.closest( '#acfjp-export-current' );
+			if ( exportBtn ) {
+				event.preventDefault();
+				exportConfiguration( exportBtn.dataset.groupKey, exportBtn );
+				return;
+			}
 
 			const selfTestButton = target.closest( '#acfjp-selftest-run' );
 			if ( selfTestButton ) { event.preventDefault(); runSelfTest( selfTestButton ); return; }

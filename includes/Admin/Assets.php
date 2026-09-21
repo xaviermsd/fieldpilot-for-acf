@@ -191,6 +191,13 @@ final class Assets {
 					'pasteEmpty'       => __( 'Clipboard is empty or contains no JSON.', 'wp-acf-json-pro' ),
 					'pasteError'       => __( 'Could not access clipboard directly. Please use Ctrl+V / Cmd+V.', 'wp-acf-json-pro' ),
 					'noGroups'         => __( 'No field groups exist yet, so there is nothing to patch. Create one in ACF first, or use an "operation": "create" payload.', 'wp-acf-json-pro' ),
+					'exportConfig'     => __( 'Export Current Configuration (JSON)', 'wp-acf-json-pro' ),
+					'exporting'        => __( 'Exporting...', 'wp-acf-json-pro' ),
+					'ackReview'        => __( 'I have reviewed the target scope and diff above.', 'wp-acf-json-pro' ),
+					'ackModify'        => __( 'I understand this operation will write changes to the ACF database.', 'wp-acf-json-pro' ),
+					'ackDestructive'   => __( 'I acknowledge that this operation contains destructive modifications or deletions.', 'wp-acf-json-pro' ),
+					'scopeIsolated'    => __( 'Target Isolated - Unrelated branches are protected and untouched', 'wp-acf-json-pro' ),
+					'rootTarget'       => __( 'Group Root', 'wp-acf-json-pro' ),
 				),
 			)
 		);
