@@ -1,13 +1,28 @@
-# Dependencies
+# Dependencies & Package Manifests
 /vendor/
 /node_modules/
+/composer.json
+/composer.lock
+/package.json
+/package-lock.json
 
-# Local environment
+# Local Environment & Configs
 /.wp-env/
+/.wp-env.json
 /.wp-env.override.json
 /phpunit.xml
+/phpunit.xml.dist
 /phpcs.xml
+/.phpcs.xml.dist
 /phpstan.neon
+/phpstan.neon.dist
+
+# Internal Tooling, Tests & Docs
+/.github/
+/docs/
+/tests/
+/tools/
+/CLAUDE.md
 
 # Tooling output
 /.phpunit.result.cache
@@ -15,12 +30,10 @@
 /coverage/
 /phpunit.phar
 
-# OS
+# OS & Editors
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Editors
 /.idea/
 /.vscode/
 *.sublime-*
