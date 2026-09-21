@@ -3,7 +3,7 @@
 > **A declarative, target-scoped configuration patch engine for Advanced Custom Fields (ACF Free & PRO).**  
 > Diff before you apply. Snapshot before you write. Roll back whenever you need. Zero runtime dependencies.
 
-[![Version](https://img.shields.io/badge/Version-1.0.11-blue.svg?style=flat-square)](https://github.com/xaviermsd/wp-json-pro)
+[![Version](https://img.shields.io/badge/Version-1.0.12-blue.svg?style=flat-square)](https://github.com/xaviermsd/wp-json-pro)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%20--%208.4-777bb4.svg?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5%20--%206.8%2B-21759b.svg?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org/)
 [![ACF Compatibility](https://img.shields.io/badge/ACF%20%2F%20PRO-6.2%20--%206.8%2B-00a32a.svg?style=flat-square)](https://www.advancedcustomfields.com/)
@@ -345,16 +345,18 @@ The main admin interface (**ACF JSON Pro -> Import JSON**) features a segmented 
 ### Tab 1: AI Prompt Builder & Custom Field Generator (Default)
 - Zero external API keys needed; zero monthly cost.
 - **Target Field Group Selector**: Embeds your live field names, keys, and types directly into the prompt so the AI never hallucinates non-existent field names.
-- **Interactive 4-Tab Custom Field Builder**: Configure General, Validation, Presentation, and Conditional Logic across all 36 ACF types and click `+ Append Field to Queue`.
+- **Interactive 4-Tab Custom Field Builder**: Configure General, Validation, Presentation, and Conditional Logic across all 36 ACF types and click `Append Field to Queue ➔`.
 - **Bulk Multi-Field Quick Add**: Click quick chips (`+ Text`, `+ Repeater`, `+ Image`, `+ WYSIWYG`, `+ Select`) to append multiple field specifications on separate lines without overwriting.
-- **Smart Step Guidance & Animations**: Pulsing ready states guide developers seamlessly from queuing fields $\to$ generating the AI prompt $\to$ launching the AI assistant $\to$ pasting back the response.
-- **1-Click AI Launchers**: Direct new-tab links to ChatGPT, Claude, Gemini, and Cursor.
+- **Clear 2-Step Sequential AI Workflow**: Sub-step 2A (`1. Copy Prompt to Clipboard` & 1-click launchers for ChatGPT, Claude, Gemini, Cursor) followed by Sub-step 2B (`2. Paste AI Response & Switch to Editor ➔`).
 - **"Paste AI Response & Switch to Editor"**: Strips markdown code fences (````json ... ````) and jumps straight to the preview.
 
-### Tab 2: JSON Editor & Direct Import
+### Tab 2: JSON Editor & Side-by-Side Review Workbench
+- **Side-by-Side Split Review Layout**: The left column houses the JSON Editor and action bar, while the right column dynamically renders the **Live Diff Review Workbench** (Target Scope Breadcrumb, stats chips, change diffs, and Pre-Apply Safety Checklist) with zero vertical scrolling required.
 - Monospace JSON editor with real-time linting (CodeMirror integrated).
+- **Target Field Group Selector**: Pick which field group templates should target directly from the editor toolbar.
 - **1-Click "Paste from Clipboard"** button.
 - **"✨ Insert Template..."** picker with categorized templates covering **all 36 ACF field types** and common patch operations (`Add New Field`, `Update Existing Field`, `Add Repeater`, `Create New Field Group`, etc.).
+- **Pulsing Animated Apply Button**: The `Apply Changes` action illuminates with a glowing green pulse once all safety checklist checkboxes are confirmed.
 - `.json` file uploader.
 - Instant in-memory **"Preview Changes"** and **"Validate Only"** actions with standardized button alignments.
 - Interactive list of all database field groups with 1-click key copy buttons.

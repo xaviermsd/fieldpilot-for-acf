@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.11
+Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -131,6 +131,13 @@ AI you already use.
 5. Dashboard showing which field groups are editable
 
 == Changelog ==
+
+= 1.0.12 =
+* Added: Side-by-side split review workbench in Tab 2 with live diff preview rendering directly alongside JSON editor.
+* Added: Target field group selector in JSON editor toolbar for dynamic template group assignment.
+* Added: Glowing pulse animation on Apply button once safety checklist checkboxes are confirmed.
+* Enhanced: Step 2 in AI tab split into clear sequential sub-steps (2A: Copy & Open AI, 2B: Paste AI Output).
+* Fixed: Cleaned up append button labeling to avoid double plus signs.
 
 = 1.0.11 =
 * Added: Prominent bottom action bar (+ Append Field to Queue) directly below the 4 ACF tabs in the Custom Field Builder.

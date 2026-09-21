@@ -45,15 +45,27 @@
 		return document.getElementById( 'acfjp-result' );
 	}
 
+	function showSidebarGuide( show ) {
+		const guide = document.getElementById( 'acfjp-sidebar-guide' );
+		if ( guide ) {
+			guide.style.display = show ? 'block' : 'none';
+		}
+	}
+
 	function clear() {
 		const target = result();
 		if ( target ) target.innerHTML = '';
+		showSidebarGuide( true );
 		return target;
 	}
 
 	function busy( message ) {
-		const target = clear();
-		if ( target ) target.appendChild( el( 'p', 'acfjp-busy', message ) );
+		showSidebarGuide( false );
+		const target = result();
+		if ( target ) {
+			target.innerHTML = '';
+			target.appendChild( el( 'p', 'acfjp-busy', message ) );
+		}
 	}
 
 	function payload() {
@@ -69,8 +81,10 @@
 	// ---- Rendering ---------------------------------------------------------
 
 	function renderError( error ) {
-		const target = clear();
+		showSidebarGuide( false );
+		const target = result();
 		if ( ! target ) return;
+		target.innerHTML = '';
 
 		const box = el( 'div', 'acfjp-panel acfjp-panel--error' );
 		box.appendChild( el( 'h2', null, error.message || s.genericError ) );
@@ -219,8 +233,10 @@
 	}
 
 	function renderPlan( plan ) {
-		const target = clear();
+		showSidebarGuide( false );
+		const target = result();
 		if ( ! target ) return;
+		target.innerHTML = '';
 
 		currentPlan = plan;
 
@@ -360,7 +376,9 @@
 			const hasReview = reviewInput.checked;
 			const hasDb = dbInput.checked;
 			const hasDest = isDestructive ? ( ( document.getElementById( 'acfjp-confirm' ) || {} ).checked || false ) : true;
-			applyButton.disabled = ! ( hasReview && hasDb && hasDest );
+			const isReady = ( hasReview && hasDb && hasDest );
+			applyButton.disabled = ! isReady;
+			applyButton.classList.toggle( 'is-ready-to-apply', isReady );
 		}
 
 		reviewInput.addEventListener( 'change', updateApplyState );
@@ -379,8 +397,10 @@
 	}
 
 	function renderApplied( data ) {
-		const target = clear();
+		showSidebarGuide( false );
+		const target = result();
 		if ( ! target ) return;
+		target.innerHTML = '';
 
 		const panel = el( 'div', 'acfjp-panel acfjp-panel--success' );
 		panel.appendChild( el( 'h2', null, s.applied ) );
@@ -758,15 +778,46 @@
 			editor.codemirror.on( 'change', syncLint );
 		}
 
-		// Template selector change
+		// Template selector & target group selector change
 		const templateSelect = document.getElementById( 'acfjp-template-select' );
+		const templateGroupSelect = document.getElementById( 'acfjp-template-group-select' );
+
 		if ( templateSelect ) {
 			templateSelect.addEventListener( 'change', function () {
 				const val = templateSelect.value;
 				if ( ! val || ! cfg.examples || ! cfg.examples[ val ] ) return;
 
-				setEditorValue( JSON.stringify( cfg.examples[ val ].payload, null, 2 ) );
+				const templatePayload = JSON.parse( JSON.stringify( cfg.examples[ val ].payload ) );
+
+				// Target group override from user selector
+				const selectedGroup = templateGroupSelect ? templateGroupSelect.value : '';
+				if ( selectedGroup && templatePayload.target && templatePayload.target.field_group !== undefined ) {
+					templatePayload.target.field_group = selectedGroup;
+				}
+
+				setEditorValue( JSON.stringify( templatePayload, null, 2 ) );
 				templateSelect.value = '';
+			} );
+		}
+
+		if ( templateGroupSelect ) {
+			templateGroupSelect.addEventListener( 'change', function () {
+				const selectedGroup = templateGroupSelect.value;
+				if ( ! selectedGroup ) return;
+
+				// If editor currently has a JSON payload with target.field_group, update it live!
+				const raw = editor ? editor.codemirror.getValue() : ( document.getElementById( 'acfjp-json' ) || {} ).value;
+				if ( raw && raw.trim() ) {
+					try {
+						const parsed = JSON.parse( raw );
+						if ( parsed && parsed.target && parsed.target.field_group !== undefined ) {
+							parsed.target.field_group = selectedGroup;
+							setEditorValue( JSON.stringify( parsed, null, 2 ) );
+						}
+					} catch ( err ) {
+						/* ignore unparseable json */
+					}
+				}
 			} );
 		}
 
@@ -1107,6 +1158,11 @@
 			if ( keyBadge ) {
 				event.preventDefault();
 				const key = keyBadge.dataset.key;
+				const title = keyBadge.dataset.title;
+				const tGroupSelect = document.getElementById( 'acfjp-template-group-select' );
+				if ( title && tGroupSelect ) {
+					tGroupSelect.value = title;
+				}
 				if ( key && navigator.clipboard && navigator.clipboard.writeText ) {
 					navigator.clipboard.writeText( key );
 					const originalText = keyBadge.innerHTML;
@@ -1146,10 +1202,15 @@
 				event.preventDefault();
 				const output = document.getElementById( 'acfjp-prompt-output' );
 				if ( output ) {
-					const original = promptCopy.textContent;
+					const original = promptCopy.innerHTML;
 					copyFrom( output, promptCopy );
-					promptCopy.textContent = s.promptCopied || original;
-					window.setTimeout( function () { promptCopy.textContent = original; }, 2200 );
+					promptCopy.innerHTML = '<span class="dashicons dashicons-yes"></span> ' + ( s.promptCopied || '1. Copied! Now paste into AI ➔' );
+					window.setTimeout( function () { promptCopy.innerHTML = original; }, 2500 );
+
+					const step2b = document.getElementById( 'acfjp-prompt-step2b' );
+					if ( step2b ) {
+						step2b.classList.add( 'is-active-step' );
+					}
 				}
 				return;
 			}
