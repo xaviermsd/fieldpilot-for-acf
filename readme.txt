@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,9 +43,9 @@ come out byte-identical.
 * **Snapshot and rollback.** Every batch is snapshotted with its complete field tree.
   One click restores the exact prior configuration. If a write fails verification,
   it rolls back automatically.
-* **Interactive Custom Field Builder.** Type exact field names, choose from all 36
-  ACF field types, select presentation width (100%, 50%, 33%, 25%), toggle required,
-  add instructions, and append multi-field specifications in bulk.
+* **Interactive Custom Field Builder (All 4 ACF Tabs).** Dynamic controls for General,
+  Validation, Presentation, and Conditional Logic across all 36 ACF field types with
+  responsive width, return formats, choices, sub-fields, layouts, and bulk appending.
 * **Deep 4-Tab Settings Mapping.** Full parameter mapping for General, Validation,
   Presentation, and Conditional Logic across all 36 ACF field types.
 * **Deep nesting.** Groups, Repeaters, Flexible Content layouts and Clone fields,
@@ -132,6 +132,9 @@ AI you already use.
 
 == Changelog ==
 
+= 1.0.8 =
+* Added: Full 4-tab interactive Custom Field Builder (General, Validation, Presentation, Conditional Logic) with dynamic type-adapting controls for return format, choices, sub-fields, layouts, post types, taxonomy, toolbar, button label, min/max/step, allowed MIME types, maxlength, placeholder, prepend, append, textarea rows, wrapper classes, and conditional logic.
+
 = 1.0.7 =
 * Added: Complete 4-tab parameter mapping (General, Validation, Presentation, Conditional Logic) and comprehensive specifications across all 36 ACF field types.
 * Added: Width and instructions controls in the Interactive Custom Field Builder with Enter key shortcuts.
@@ -168,5 +171,5 @@ AI you already use.
 
 == Upgrade Notice ==
 
-= 1.0.7 =
-Upgrade recommended for all users to get full 4-tab settings mapping, 36 ACF field type specifications, and Custom Field Builder controls.
+= 1.0.8 =
+Upgrade recommended for all users to get full 4-tab interactive Custom Field Builder with dynamic controls for all 36 ACF field types.

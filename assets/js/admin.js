@@ -792,6 +792,68 @@
 			intentInput.scrollTop = intentInput.scrollHeight;
 		}
 
+		// 4-Tab Custom Field Builder Handler
+		function updateBuilderFieldVisibility() {
+			const typeSelect = document.getElementById( 'acfjp-custom-type' );
+			if ( ! typeSelect ) return;
+			const type = typeSelect.value || 'text';
+
+			const wrapReturn = document.getElementById( 'acfjp-bwrap-return-format' );
+			const wrapChoices = document.getElementById( 'acfjp-bwrap-choices' );
+			const wrapDefault = document.getElementById( 'acfjp-bwrap-default' );
+			const wrapSubfields = document.getElementById( 'acfjp-bwrap-subfields' );
+			const wrapLayouts = document.getElementById( 'acfjp-bwrap-layouts' );
+			const wrapPosttypes = document.getElementById( 'acfjp-bwrap-posttypes' );
+			const wrapTaxonomy = document.getElementById( 'acfjp-bwrap-taxonomy' );
+			const wrapToolbar = document.getElementById( 'acfjp-bwrap-toolbar' );
+			const wrapBtnlabel = document.getElementById( 'acfjp-bwrap-btnlabel' );
+
+			const isMedia = [ 'image', 'file', 'gallery', 'link' ].indexOf( type ) !== -1;
+			const isChoice = [ 'select', 'checkbox', 'radio', 'button_group' ].indexOf( type ) !== -1;
+			const isStructure = [ 'repeater', 'group' ].indexOf( type ) !== -1;
+			const isFlex = 'flexible_content' === type;
+			const isRelational = [ 'post_object', 'relationship', 'page_link' ].indexOf( type ) !== -1;
+			const isTaxonomy = 'taxonomy' === type;
+			const isWysiwyg = 'wysiwyg' === type;
+
+			if ( wrapReturn ) wrapReturn.style.display = ( isMedia || isRelational || isTaxonomy ) ? 'block' : 'none';
+			if ( wrapChoices ) wrapChoices.style.display = isChoice ? 'block' : 'none';
+			if ( wrapDefault ) wrapDefault.style.display = ( isChoice || [ 'text', 'textarea', 'number', 'range', 'email', 'url', 'color_picker' ].indexOf( type ) !== -1 ) ? 'block' : 'none';
+			if ( wrapSubfields ) wrapSubfields.style.display = isStructure ? 'block' : 'none';
+			if ( wrapLayouts ) wrapLayouts.style.display = isFlex ? 'block' : 'none';
+			if ( wrapPosttypes ) wrapPosttypes.style.display = isRelational ? 'block' : 'none';
+			if ( wrapTaxonomy ) wrapTaxonomy.style.display = isTaxonomy ? 'block' : 'none';
+			if ( wrapToolbar ) wrapToolbar.style.display = isWysiwyg ? 'block' : 'none';
+			if ( wrapBtnlabel ) wrapBtnlabel.style.display = ( isStructure || isFlex ) ? 'block' : 'none';
+		}
+
+		const customTypeSelect = document.getElementById( 'acfjp-custom-type' );
+		if ( customTypeSelect ) {
+			customTypeSelect.addEventListener( 'change', updateBuilderFieldVisibility );
+			updateBuilderFieldVisibility();
+		}
+
+		// Builder sub-tabs switching
+		document.addEventListener( 'click', function ( e ) {
+			const bTab = e.target.closest( '.acfjp-builder-tab' );
+			if ( bTab ) {
+				e.preventDefault();
+				const targetTab = bTab.dataset.builderTab;
+				document.querySelectorAll( '.acfjp-builder-tab' ).forEach( function ( t ) {
+					t.classList.remove( 'is-active' );
+				} );
+				bTab.classList.add( 'is-active' );
+
+				document.querySelectorAll( '.acfjp-builder-panel' ).forEach( function ( p ) {
+					p.classList.remove( 'is-active' );
+				} );
+				const activePanel = document.getElementById( 'acfjp-bpanel-' + targetTab );
+				if ( activePanel ) {
+					activePanel.classList.add( 'is-active' );
+				}
+			}
+		} );
+
 		function addCustomField() {
 			const nameInput = document.getElementById( 'acfjp-custom-name' );
 			const typeSelect = document.getElementById( 'acfjp-custom-type' );
@@ -814,19 +876,126 @@
 
 			let spec = '- Add a ' + type + ' field named "' + name + '"';
 			const extras = [];
+
+			// Tab 1: General settings
+			const returnSelect = document.getElementById( 'acfjp-b-return-format' );
+			const choicesInput = document.getElementById( 'acfjp-b-choices' );
+			const defaultInput = document.getElementById( 'acfjp-b-default' );
+			const subfieldsInput = document.getElementById( 'acfjp-b-subfields' );
+			const layoutsInput = document.getElementById( 'acfjp-b-layouts' );
+			const posttypesInput = document.getElementById( 'acfjp-b-posttypes' );
+			const taxonomyInput = document.getElementById( 'acfjp-b-taxonomy' );
+			const toolbarSelect = document.getElementById( 'acfjp-b-toolbar' );
+			const btnlabelInput = document.getElementById( 'acfjp-b-btnlabel' );
+
+			const isMedia = [ 'image', 'file', 'gallery', 'link' ].indexOf( type ) !== -1;
+			const isChoice = [ 'select', 'checkbox', 'radio', 'button_group' ].indexOf( type ) !== -1;
+			const isStructure = [ 'repeater', 'group' ].indexOf( type ) !== -1;
+			const isFlex = 'flexible_content' === type;
+			const isRelational = [ 'post_object', 'relationship', 'page_link' ].indexOf( type ) !== -1;
+			const isTaxonomy = 'taxonomy' === type;
+			const isWysiwyg = 'wysiwyg' === type;
+
+			if ( ( isMedia || isRelational || isTaxonomy ) && returnSelect && returnSelect.value ) {
+				extras.push( 'return_format: ' + returnSelect.value );
+			}
+			if ( isChoice && choicesInput && choicesInput.value.trim() ) {
+				extras.push( 'choices: "' + choicesInput.value.trim() + '"' );
+			}
+			if ( defaultInput && defaultInput.value.trim() ) {
+				extras.push( 'default: "' + defaultInput.value.trim() + '"' );
+			}
+			if ( isStructure && subfieldsInput && subfieldsInput.value.trim() ) {
+				extras.push( 'sub_fields: [' + subfieldsInput.value.trim() + ']' );
+			}
+			if ( isFlex && layoutsInput && layoutsInput.value.trim() ) {
+				extras.push( 'layouts: [' + layoutsInput.value.trim() + ']' );
+			}
+			if ( isRelational && posttypesInput && posttypesInput.value.trim() ) {
+				extras.push( 'post_types: [' + posttypesInput.value.trim() + ']' );
+			}
+			if ( isTaxonomy && taxonomyInput && taxonomyInput.value.trim() ) {
+				extras.push( 'taxonomy: "' + taxonomyInput.value.trim() + '"' );
+			}
+			if ( isWysiwyg && toolbarSelect && toolbarSelect.value ) {
+				extras.push( 'toolbar: ' + toolbarSelect.value );
+			}
+			if ( ( isStructure || isFlex ) && btnlabelInput && btnlabelInput.value.trim() ) {
+				extras.push( 'button_label: "' + btnlabelInput.value.trim() + '"' );
+			}
+
+			// Tab 2: Validation settings
 			if ( isReq ) extras.push( 'required' );
-			if ( width ) extras.push( 'width ' + width );
+
+			const minInput = document.getElementById( 'acfjp-b-min' );
+			const maxInput = document.getElementById( 'acfjp-b-max' );
+			const stepInput = document.getElementById( 'acfjp-b-step' );
+			const maxlenInput = document.getElementById( 'acfjp-b-maxlength' );
+			const mimesInput = document.getElementById( 'acfjp-b-mimes' );
+
+			if ( minInput && minInput.value.trim() ) extras.push( 'min: ' + minInput.value.trim() );
+			if ( maxInput && maxInput.value.trim() ) extras.push( 'max: ' + maxInput.value.trim() );
+			if ( stepInput && stepInput.value.trim() ) extras.push( 'step: ' + stepInput.value.trim() );
+			if ( maxlenInput && maxlenInput.value.trim() ) extras.push( 'maxlength: ' + maxlenInput.value.trim() );
+			if ( mimesInput && mimesInput.value.trim() ) extras.push( 'mime_types: "' + mimesInput.value.trim() + '"' );
+
+			// Tab 3: Presentation settings
+			if ( width ) extras.push( 'width: ' + width );
 			if ( instructions ) extras.push( 'instructions: "' + instructions + '"' );
+
+			const phInput = document.getElementById( 'acfjp-b-placeholder' );
+			const prepInput = document.getElementById( 'acfjp-b-prepend' );
+			const appInput = document.getElementById( 'acfjp-b-append' );
+			const rowsInput = document.getElementById( 'acfjp-b-rows' );
+			const classInput = document.getElementById( 'acfjp-b-class' );
+
+			if ( phInput && phInput.value.trim() ) extras.push( 'placeholder: "' + phInput.value.trim() + '"' );
+			if ( prepInput && prepInput.value.trim() ) extras.push( 'prepend: "' + prepInput.value.trim() + '"' );
+			if ( appInput && appInput.value.trim() ) extras.push( 'append: "' + appInput.value.trim() + '"' );
+			if ( 'textarea' === type && rowsInput && rowsInput.value.trim() ) extras.push( 'rows: ' + rowsInput.value.trim() );
+			if ( classInput && classInput.value.trim() ) extras.push( 'wrapper_class: "' + classInput.value.trim() + '"' );
+
+			// Tab 4: Conditional Logic
+			const condField = document.getElementById( 'acfjp-b-cond-field' );
+			const condOp = document.getElementById( 'acfjp-b-cond-op' );
+			const condVal = document.getElementById( 'acfjp-b-cond-val' );
+
+			if ( condField && condField.value.trim() && condVal && condVal.value.trim() ) {
+				const op = condOp ? condOp.value : '==';
+				extras.push( 'conditional: ' + condField.value.trim() + ' ' + op + ' "' + condVal.value.trim() + '"' );
+			}
 
 			if ( extras.length > 0 ) {
 				spec += ' (' + extras.join( ', ' ) + ')';
 			}
 
 			appendIntent( spec );
+
+			// Clean inputs
 			nameInput.value = '';
 			if ( instInput ) instInput.value = '';
 			if ( widthSelect ) widthSelect.value = '';
 			if ( reqCheckbox ) reqCheckbox.checked = false;
+			if ( choicesInput ) choicesInput.value = '';
+			if ( defaultInput ) defaultInput.value = '';
+			if ( subfieldsInput ) subfieldsInput.value = '';
+			if ( layoutsInput ) layoutsInput.value = '';
+			if ( posttypesInput ) posttypesInput.value = '';
+			if ( taxonomyInput ) taxonomyInput.value = '';
+			if ( btnlabelInput ) btnlabelInput.value = '';
+			if ( minInput ) minInput.value = '';
+			if ( maxInput ) maxInput.value = '';
+			if ( stepInput ) stepInput.value = '';
+			if ( maxlenInput ) maxlenInput.value = '';
+			if ( mimesInput ) mimesInput.value = '';
+			if ( phInput ) phInput.value = '';
+			if ( prepInput ) prepInput.value = '';
+			if ( appInput ) appInput.value = '';
+			if ( rowsInput ) rowsInput.value = '';
+			if ( classInput ) classInput.value = '';
+			if ( condField ) condField.value = '';
+			if ( condVal ) condVal.value = '';
+
 			nameInput.focus();
 		}
 

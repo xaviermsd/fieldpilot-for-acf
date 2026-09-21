@@ -227,11 +227,20 @@ final class Import extends Screen {
 								</div>
 
 								<!-- Custom Field Builder Row -->
-								<div class="acfjp-builder-box" style="background: #f0f6fc; border: 1px solid #cce5ff; border-radius: 4px; padding: 12px 14px; margin-top: 10px;">
-									<div style="font-size: 12px; font-weight: 600; color: #004b87; margin-bottom: 8px;">
-										<?php esc_html_e( '🎯 Custom Field Builder (Configure exact field properties across General, Validation & Presentation):', 'wp-acf-json-pro' ); ?>
+								<!-- Custom Field Builder Box (4 Tabs: General, Validation, Presentation, Conditional Logic) -->
+								<div class="acfjp-builder-box">
+									<div class="acfjp-builder-header">
+										<div class="acfjp-builder-title">
+											<span class="dashicons dashicons-forms"></span>
+											<?php esc_html_e( 'Interactive Custom Field Builder (All 4 ACF Tabs)', 'wp-acf-json-pro' ); ?>
+										</div>
+										<span class="description" style="font-size: 11px; margin: 0;">
+											<?php esc_html_e( 'Select type to auto-configure General, Validation, Presentation & Logic settings.', 'wp-acf-json-pro' ); ?>
+										</span>
 									</div>
-									<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+
+									<!-- Top Primary Row -->
+									<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
 										<input type="text" id="acfjp-custom-name" placeholder="<?php esc_attr_e( 'Field Label / Name (e.g. Director Bio, Hero Banner)...', 'wp-acf-json-pro' ); ?>" style="flex: 1 1 200px; height: 32px; font-size: 13px;" />
 										<select id="acfjp-custom-type" style="height: 32px; font-size: 13px;">
 											<optgroup label="<?php esc_attr_e( 'Basic & Text', 'wp-acf-json-pro' ); ?>">
@@ -297,8 +306,151 @@ final class Import extends Screen {
 											<?php esc_html_e( 'Append Field', 'wp-acf-json-pro' ); ?>
 										</button>
 									</div>
-									<div style="margin-top: 8px;">
-										<input type="text" id="acfjp-custom-instructions" placeholder="<?php esc_attr_e( 'Optional presentation instructions (e.g. Upload JPG/PNG minimum 1200x800px)...', 'wp-acf-json-pro' ); ?>" style="width: 100%; height: 28px; font-size: 12px;" />
+
+									<!-- 4 ACF Tabs Bar -->
+									<div class="acfjp-builder-subtabs">
+										<button type="button" class="acfjp-builder-tab is-active" data-builder-tab="general">
+											<?php esc_html_e( '⚙️ General', 'wp-acf-json-pro' ); ?>
+										</button>
+										<button type="button" class="acfjp-builder-tab" data-builder-tab="validation">
+											<?php esc_html_e( '🛡️ Validation', 'wp-acf-json-pro' ); ?>
+										</button>
+										<button type="button" class="acfjp-builder-tab" data-builder-tab="presentation">
+											<?php esc_html_e( '🎨 Presentation', 'wp-acf-json-pro' ); ?>
+										</button>
+										<button type="button" class="acfjp-builder-tab" data-builder-tab="logic">
+											<?php esc_html_e( '🔀 Conditional Logic', 'wp-acf-json-pro' ); ?>
+										</button>
+									</div>
+
+									<!-- 4 ACF Tab Panels -->
+									<div class="acfjp-builder-panels">
+										<!-- Tab 1: General Settings -->
+										<div class="acfjp-builder-panel is-active" id="acfjp-bpanel-general">
+											<div class="acfjp-builder-grid">
+												<div class="acfjp-builder-field" id="acfjp-bwrap-return-format">
+													<label for="acfjp-b-return-format"><?php esc_html_e( 'Return Format', 'wp-acf-json-pro' ); ?></label>
+													<select id="acfjp-b-return-format">
+														<option value="array"><?php esc_html_e( 'Array (recommended)', 'wp-acf-json-pro' ); ?></option>
+														<option value="url"><?php esc_html_e( 'URL', 'wp-acf-json-pro' ); ?></option>
+														<option value="id"><?php esc_html_e( 'ID', 'wp-acf-json-pro' ); ?></option>
+														<option value="object"><?php esc_html_e( 'Object', 'wp-acf-json-pro' ); ?></option>
+													</select>
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-choices">
+													<label for="acfjp-b-choices"><?php esc_html_e( 'Choices (key: Value or comma-separated)', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-choices" placeholder="<?php esc_attr_e( 'draft: Draft, active: Active, sold: Sold', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-default">
+													<label for="acfjp-b-default"><?php esc_html_e( 'Default Value', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-default" placeholder="<?php esc_attr_e( 'e.g. active or 1', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-subfields">
+													<label for="acfjp-b-subfields"><?php esc_html_e( 'Sub-fields (Repeater / Group)', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-subfields" placeholder="<?php esc_attr_e( 'full_name (text), role (text), photo (image)', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-layouts">
+													<label for="acfjp-b-layouts"><?php esc_html_e( 'Flexible Layouts (name: Label)', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-layouts" placeholder="<?php esc_attr_e( 'hero: Hero Banner, features: Feature Grid', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-posttypes">
+													<label for="acfjp-b-posttypes"><?php esc_html_e( 'Post Types', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-posttypes" placeholder="<?php esc_attr_e( 'post, page, property', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-taxonomy">
+													<label for="acfjp-b-taxonomy"><?php esc_html_e( 'Taxonomy Slug', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-taxonomy" placeholder="<?php esc_attr_e( 'category, post_tag, genre', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-toolbar">
+													<label for="acfjp-b-toolbar"><?php esc_html_e( 'WYSIWYG Toolbar', 'wp-acf-json-pro' ); ?></label>
+													<select id="acfjp-b-toolbar">
+														<option value="full"><?php esc_html_e( 'Full Toolbar', 'wp-acf-json-pro' ); ?></option>
+														<option value="basic"><?php esc_html_e( 'Basic Toolbar', 'wp-acf-json-pro' ); ?></option>
+													</select>
+												</div>
+												<div class="acfjp-builder-field" id="acfjp-bwrap-btnlabel">
+													<label for="acfjp-b-btnlabel"><?php esc_html_e( 'Button Label', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-btnlabel" placeholder="<?php esc_attr_e( 'e.g. Add Row, Add Slide', 'wp-acf-json-pro' ); ?>" />
+												</div>
+											</div>
+										</div>
+
+										<!-- Tab 2: Validation Settings -->
+										<div class="acfjp-builder-panel" id="acfjp-bpanel-validation">
+											<div class="acfjp-builder-grid">
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-min"><?php esc_html_e( 'Minimum (Value / Items / Width)', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-min" placeholder="<?php esc_attr_e( 'e.g. 0, 1, or 800', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-max"><?php esc_html_e( 'Maximum (Value / Items / Width)', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-max" placeholder="<?php esc_attr_e( 'e.g. 10, 100, or 2500', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-step"><?php esc_html_e( 'Step Size', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-step" placeholder="<?php esc_attr_e( 'e.g. 1 or 0.01', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-maxlength"><?php esc_html_e( 'Character Limit (Maxlength)', 'wp-acf-json-pro' ); ?></label>
+													<input type="number" id="acfjp-b-maxlength" placeholder="<?php esc_attr_e( 'e.g. 150', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-mimes"><?php esc_html_e( 'Allowed MIME Types', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-mimes" placeholder="<?php esc_attr_e( 'jpg, jpeg, png, webp, pdf', 'wp-acf-json-pro' ); ?>" />
+												</div>
+											</div>
+										</div>
+
+										<!-- Tab 3: Presentation Settings -->
+										<div class="acfjp-builder-panel" id="acfjp-bpanel-presentation">
+											<div class="acfjp-builder-grid">
+												<div class="acfjp-builder-field" style="grid-column: 1 / -1;">
+													<label for="acfjp-custom-instructions"><?php esc_html_e( 'Instructions (Help copy shown below field)', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-custom-instructions" placeholder="<?php esc_attr_e( 'e.g. Upload JPG/PNG minimum 1200x800px...', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-placeholder"><?php esc_html_e( 'Placeholder Text', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-placeholder" placeholder="<?php esc_attr_e( 'e.g. Enter full title...', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-prepend"><?php esc_html_e( 'Prepend Text', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-prepend" placeholder="<?php esc_attr_e( 'e.g. $ or https://', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-append"><?php esc_html_e( 'Append Text', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-append" placeholder="<?php esc_attr_e( 'e.g. USD, %, or px', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-rows"><?php esc_html_e( 'Textarea Rows', 'wp-acf-json-pro' ); ?></label>
+													<input type="number" id="acfjp-b-rows" placeholder="<?php esc_attr_e( '4', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-class"><?php esc_html_e( 'Wrapper Class / ID', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-class" placeholder="<?php esc_attr_e( 'e.g. custom-col highlight', 'wp-acf-json-pro' ); ?>" />
+												</div>
+											</div>
+										</div>
+
+										<!-- Tab 4: Conditional Logic -->
+										<div class="acfjp-builder-panel" id="acfjp-bpanel-logic">
+											<div class="acfjp-builder-grid">
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-cond-field"><?php esc_html_e( 'Conditional Parent Field Name', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-cond-field" placeholder="<?php esc_attr_e( 'e.g. status, has_hero, is_featured', 'wp-acf-json-pro' ); ?>" />
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-cond-op"><?php esc_html_e( 'Operator', 'wp-acf-json-pro' ); ?></label>
+													<select id="acfjp-b-cond-op">
+														<option value="=="><?php esc_html_e( '== (Equal to)', 'wp-acf-json-pro' ); ?></option>
+														<option value="!="><?php esc_html_e( '!= (Not equal to)', 'wp-acf-json-pro' ); ?></option>
+													</select>
+												</div>
+												<div class="acfjp-builder-field">
+													<label for="acfjp-b-cond-val"><?php esc_html_e( 'Expected Value', 'wp-acf-json-pro' ); ?></label>
+													<input type="text" id="acfjp-b-cond-val" placeholder="<?php esc_attr_e( 'e.g. active, 1, or custom', 'wp-acf-json-pro' ); ?>" />
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 
