@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,12 +34,17 @@ come out byte-identical.
   replace a whole field group; this changes precisely what you named.
 * **Diff preview.** Every change is shown before anything is written - added,
   removed, moved, and every setting that differs, old value to new.
+* **Target Isolation & Sibling Protection.** Target any node in a nested ACF tree
+  (Repeater subfield, Flexible Content layout) with guarantees that sibling branches
+  are untouched.
 * **Conflict detection.** Changing a field's type, renaming a field that holds
   content, deleting something with data in it - each stops and asks, with the
   trade-offs spelled out. It never guesses.
-* **Snapshot and rollback.** Every batch is snapshotted first. One click restores
-  the exact prior configuration. If a write fails verification, it rolls back on
-  its own and tells you nothing was changed.
+* **Snapshot and rollback.** Every batch is snapshotted with its complete field tree.
+  One click restores the exact prior configuration. If a write fails verification,
+  it rolls back automatically.
+* **Interactive Custom Field Builder.** Type exact field names, choose from all 36
+  ACF field types, toggle required, and append multi-field specifications in bulk.
 * **Deep nesting.** Groups, Repeaters, Flexible Content layouts and Clone fields,
   at any depth, targeted by human path: `["Agent", "Contact", "Social"]`.
 * **Reads sloppy JSON.** AI output uses `group` for `field_group`, `description` for
@@ -72,7 +77,7 @@ a free install are refused with a clear message rather than a cryptic error.
 == Installation ==
 
 1. Upload the plugin to `/wp-content/plugins/wp-acf-json-pro/`, or install it through
-   Plugins → Add New.
+   Plugins -> Add New.
 2. Activate it. ACF must already be active.
 3. Go to **ACF JSON Pro** in the admin menu.
 
@@ -116,32 +121,44 @@ AI you already use.
 
 == Screenshots ==
 
-1. Import screen with JSON editor and prompt generator
-2. Diff preview showing exactly what will change
+1. Import screen with JSON editor, Custom Field Builder, and prompt generator
+2. Diff preview showing exact target locus, scope isolation, and changes
 3. Conflict resolution with the trade-offs spelled out
 4. History with one-click rollback
 5. Dashboard showing which field groups are editable
 
 == Changelog ==
 
+= 1.0.6 =
+* Added: Interactive Custom Field Builder in AI tab allowing developers to specify project-specific field names, choose from all 36 ACF types, toggle required flags, and append specs into prompt.
+* Enhanced: AI prompt generator with deep parameter rules, return formats, choice schemas, and bulk multi-field addition examples.
+
+= 1.0.5 =
+* Fixed: SchemaValidator now accepts 0/1 integer booleans alongside boolean true/false to prevent false warning notices with ACF internal storage format.
+
+= 1.0.4 =
+* Added: Multi-field bulk append without overwriting when clicking quick idea chips.
+* Added: Categorized quick dropdown covering all 36 ACF field types.
+* Added: Quick "Clear text" action in AI prompt tab.
+
+= 1.0.3 =
+* Fixed: TreeReader exportArray now populates complete field trees via acf_get_fields prior to export, guaranteeing byte-for-byte snapshot and rollback integrity.
+* Enhanced: Standardized button heights, flex vertical centering, Dashicons alignment, and AI launcher pills.
+
+= 1.0.2 =
+* Fixed: Diagnostics SelfTest export method to prevent TypeError on live ACF installs.
+* Added: Tab navigation URL hash synchronization (#editor, #ai, #guide).
+
 = 1.0.1 =
-* Fixed: adding a field produced a spurious "Does not match the required format" warning about its key. A new field has no key yet - the engine mints one - so there was nothing to validate.
-* Import screen rewritten around numbered steps, so it is clear the AI prompt goes to your AI and its reply comes back into the JSON box.
-* Added "Insert an example", which fills the editor with a working payload aimed at a field group that actually exists on your site.
-* The JSON editor no longer shows a parse error before you have typed anything.
-* Added read-only mode (`define( 'ACFJP_READ_ONLY', true );`) for trying the plugin on a site where no writes should be possible.
-* Added Diagnostics: run the full engine self-test against your own ACF install from the admin, or with `wp acfjp self-test`.
+* Fixed: adding a field produced a spurious warning about its key.
+* Import screen rewritten around numbered steps and tabs.
+* Added "Insert an example" template picker.
+* Added read-only mode and Diagnostics Self-Test runner.
 
 = 1.0.0 =
 * Initial release.
-* Operations: create, add, update, delete, move, merge, sync, replace.
-* Diff preview, conflict detection, snapshots and rollback.
-* Nested Group, Repeater, Flexible Content and Clone support.
-* Native ACF JSON compatibility in both directions.
-* REST API and WP-CLI with full UI parity.
-* AI prompt generator.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
-Initial release.
+= 1.0.6 =
+Upgrade recommended for all users to get full 36 ACF field type support, interactive field builder, and snapshot integrity improvements.
