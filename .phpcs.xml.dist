@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<ruleset name="WP ACF JSON Pro">
+    <description>
+        WordPress Coding Standards for identifiers, hooks, options and DB columns;
+        PSR-12 for code layout. Where the two disagree on formatting, PSR-12 wins;
+        where they disagree on naming, WPCS wins.
+    </description>
+
+    <file>includes</file>
+    <file>tools</file>
+    <file>wp-acf-json-pro.php</file>
+    <file>uninstall.php</file>
+
+    <exclude-pattern>/vendor/*</exclude-pattern>
+    <exclude-pattern>/node_modules/*</exclude-pattern>
+    <exclude-pattern>/tests/*</exclude-pattern>
+
+    <arg name="basepath" value="."/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg value="sp"/>
+    <arg name="parallel" value="8"/>
+
+    <config name="minimum_wp_version" value="6.5"/>
+    <config name="testVersion" value="8.1-"/>
+
+    <rule ref="WordPress-Extra">
+        <!-- PSR-4 requires ClassName.php, which WPCS's class-file-name rule rejects. -->
+        <exclude name="WordPress.Files.FileName"/>
+        <!-- Modern PHP: short array syntax and typed properties are used throughout. -->
+        <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+        <!-- Yoda conditions are used where they read naturally, not universally. -->
+        <exclude name="WordPress.PHP.YodaConditions"/>
+        <!-- PSR-12 OOP camelCase method and property/variable naming -->
+        <exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName"/>
+    </rule>
+
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="wp-acf-json-pro"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="acfjp"/>
+                <element value="ACFJP"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

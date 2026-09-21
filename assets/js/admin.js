@@ -1,0 +1,708 @@
+/**
+ * WP ACF JSON Pro - admin behaviour.
+ *
+ * Plain ES modules against the REST API. The UI is a thin client over the same
+ * endpoints a deployment script would call, which is deliberate: if a flow cannot
+ * be expressed as plan-then-apply over REST, it does not belong in the product.
+ */
+( function () {
+	'use strict';
+
+	const cfg = window.ACFJP || {};
+	const s = cfg.strings || {};
+
+	let editor = null;
+	let currentPlan = null;
+
+	/** REST helper. Always resolves to { ok, ...data } or { ok:false, error }. */
+	async function api( path, options ) {
+		const response = await fetch( cfg.root + path, Object.assign(
+			{
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': cfg.nonce,
+				},
+				credentials: 'same-origin',
+			},
+			options || {}
+		) );
+
+		try {
+			return await response.json();
+		} catch ( e ) {
+			return { ok: false, error: { code: 'BAD_RESPONSE', message: s.genericError } };
+		}
+	}
+
+	function el( tag, className, text ) {
+		const node = document.createElement( tag );
+		if ( className ) node.className = className;
+		if ( undefined !== text && null !== text ) node.textContent = text;
+		return node;
+	}
+
+	function result() {
+		return document.getElementById( 'acfjp-result' );
+	}
+
+	function clear() {
+		const target = result();
+		if ( target ) target.innerHTML = '';
+		return target;
+	}
+
+	function busy( message ) {
+		const target = clear();
+		if ( target ) target.appendChild( el( 'p', 'acfjp-busy', message ) );
+	}
+
+	function payload() {
+		const raw = editor ? editor.codemirror.getValue() : ( document.getElementById( 'acfjp-json' ) || {} ).value;
+		const operation = ( document.getElementById( 'acfjp-operation' ) || {} ).value || '';
+
+		const body = { json: raw };
+		if ( operation ) body.operation = operation;
+
+		return JSON.stringify( body );
+	}
+
+	// ---- Rendering ---------------------------------------------------------
+
+	function renderError( error ) {
+		const target = clear();
+		if ( ! target ) return;
+
+		const box = el( 'div', 'acfjp-panel acfjp-panel--error' );
+		box.appendChild( el( 'h2', null, error.message || s.genericError ) );
+
+		if ( error.pointer ) {
+			box.appendChild( el( 'p', 'acfjp-pointer', error.pointer ) );
+		}
+
+		if ( error.suggestions && error.suggestions.length ) {
+			const list = el( 'ul', 'acfjp-suggestions' );
+			error.suggestions.forEach( function ( suggestion ) {
+				list.appendChild( el( 'li', null, suggestion ) );
+			} );
+			box.appendChild( list );
+		}
+
+		target.appendChild( box );
+	}
+
+	function renderIssues( validation, container ) {
+		[ 'errors', 'warnings' ].forEach( function ( bucket ) {
+			( validation[ bucket ] || [] ).forEach( function ( issue ) {
+				const row = el( 'div', 'acfjp-issue acfjp-issue--' + ( 'errors' === bucket ? 'error' : 'warning' ) );
+				row.appendChild( el( 'strong', null, issue.message ) );
+
+				if ( issue.pointer ) {
+					row.appendChild( el( 'code', 'acfjp-pointer', issue.pointer ) );
+				}
+
+				( issue.suggestions || [] ).forEach( function ( suggestion ) {
+					row.appendChild( el( 'span', 'acfjp-suggestion', '→ ' + suggestion ) );
+				} );
+
+				container.appendChild( row );
+			} );
+		} );
+	}
+
+	function markerFor( type ) {
+		if ( 'add' === type || 'add_layout' === type || 'create_group' === type ) return '+';
+		if ( 'delete' === type || 'delete_layout' === type ) return '−';
+		if ( 'move' === type ) return '»';
+		return '~';
+	}
+
+	function renderChange( change ) {
+		const row = el( 'div', 'acfjp-change acfjp-change--' + change.type + ' acfjp-change--risk-' + change.risk );
+
+		const head = el( 'div', 'acfjp-change__head' );
+		head.appendChild( el( 'span', 'acfjp-marker', markerFor( change.type ) ) );
+		head.appendChild( el( 'span', 'acfjp-change__label', change.label ) );
+		head.appendChild( el( 'span', 'acfjp-change__summary', change.summary || '' ) );
+
+		if ( 'safe' !== change.risk ) {
+			head.appendChild( el( 'span', 'acfjp-pill acfjp-pill--' + change.risk, change.risk ) );
+		}
+
+		row.appendChild( head );
+		row.appendChild( el( 'div', 'acfjp-change__path', change.path || '' ) );
+
+		if ( change.setting_diffs ) {
+			const table = el( 'table', 'acfjp-diffs' );
+
+			Object.keys( change.setting_diffs ).forEach( function ( setting ) {
+				const diff = change.setting_diffs[ setting ];
+				const tr = el( 'tr' );
+				tr.appendChild( el( 'th', null, setting ) );
+				tr.appendChild( el( 'td', 'acfjp-from', format( diff.from ) ) );
+				tr.appendChild( el( 'td', 'acfjp-arrow', '→' ) );
+				tr.appendChild( el( 'td', 'acfjp-to', format( diff.to ) ) );
+				table.appendChild( tr );
+			} );
+
+			row.appendChild( table );
+		}
+
+		if ( change.conflict ) {
+			row.appendChild( renderConflict( change.conflict ) );
+		}
+
+		return row;
+	}
+
+	function format( value ) {
+		if ( null === value || undefined === value ) return '-';
+		if ( 'boolean' === typeof value ) return value ? 'true' : 'false';
+		if ( '' === value ) return '""';
+		if ( 'object' === typeof value ) return Array.isArray( value ) ? value.length + ' items' : 'object';
+		return String( value );
+	}
+
+	function renderConflict( conflict ) {
+		const box = el( 'div', 'acfjp-conflict' );
+		box.appendChild( el( 'h4', null, conflict.title ) );
+		box.appendChild( el( 'p', null, conflict.message ) );
+
+		const options = el( 'div', 'acfjp-conflict__options' );
+
+		( conflict.options || [] ).forEach( function ( option ) {
+			const id = 'acfjp-c-' + conflict.id + '-' + option.id;
+
+			const wrap = el( 'label', 'acfjp-conflict__option' + ( option.destructive ? ' is-destructive' : '' ) );
+
+			const input = document.createElement( 'input' );
+			input.type = 'radio';
+			input.name = 'acfjp-conflict-' + conflict.id;
+			input.value = option.id;
+			input.id = id;
+			input.dataset.conflict = conflict.id;
+			input.checked = conflict.resolution ? conflict.resolution === option.id : false;
+
+			wrap.appendChild( input );
+			wrap.appendChild( el( 'strong', null, option.label ) );
+			wrap.appendChild( el( 'span', null, option.description ) );
+
+			options.appendChild( wrap );
+		} );
+
+		box.appendChild( options );
+
+		if ( conflict.suggested ) {
+			box.appendChild( el( 'p', 'description', 'Suggested: ' + conflict.suggested ) );
+		}
+
+		return box;
+	}
+
+	function collectResolutions() {
+		const resolutions = {};
+
+		document.querySelectorAll( 'input[type=radio][data-conflict]:checked' ).forEach( function ( input ) {
+			resolutions[ input.dataset.conflict ] = input.value;
+		} );
+
+		return resolutions;
+	}
+
+	function countConflicts() {
+		const ids = new Set();
+
+		document.querySelectorAll( 'input[type=radio][data-conflict]' ).forEach( function ( input ) {
+			ids.add( input.dataset.conflict );
+		} );
+
+		return ids.size;
+	}
+
+	function renderPlan( plan ) {
+		const target = clear();
+		if ( ! target ) return;
+
+		currentPlan = plan;
+
+		const panel = el( 'div', 'acfjp-panel' );
+
+		if ( plan.validation && ( plan.validation.errors.length || plan.validation.warnings.length ) ) {
+			const issues = el( 'div', 'acfjp-issues' );
+			renderIssues( plan.validation, issues );
+			panel.appendChild( issues );
+		}
+
+		const changeset = plan.changeset || { changes: [] };
+
+		if ( ! changeset.changes.length ) {
+			panel.appendChild( el( 'p', 'acfjp-empty', s.noChanges ) );
+			target.appendChild( panel );
+			return;
+		}
+
+		panel.appendChild(
+			el( 'h2', null, changeset.group_title + ' - ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) )
+		);
+
+		const list = el( 'div', 'acfjp-changes' );
+		changeset.changes.forEach( function ( change ) {
+			list.appendChild( renderChange( change ) );
+		} );
+		panel.appendChild( list );
+
+		const actions = el( 'div', 'acfjp-actions' );
+
+		if ( 'destructive' === changeset.risk ) {
+			const confirmLabel = el( 'label', 'acfjp-confirm' );
+			const confirmInput = document.createElement( 'input' );
+			confirmInput.type = 'checkbox';
+			confirmInput.id = 'acfjp-confirm';
+			confirmLabel.appendChild( confirmInput );
+			confirmLabel.appendChild( el( 'span', null, s.confirmTitle ) );
+			actions.appendChild( confirmLabel );
+		}
+
+		const applyButton = el( 'button', 'button button-primary', 'Apply ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) );
+		applyButton.type = 'button';
+		applyButton.id = 'acfjp-apply';
+		actions.appendChild( applyButton );
+
+		panel.appendChild( actions );
+		target.appendChild( panel );
+	}
+
+	function renderApplied( data ) {
+		const target = clear();
+		if ( ! target ) return;
+
+		const panel = el( 'div', 'acfjp-panel acfjp-panel--success' );
+		panel.appendChild( el( 'h2', null, s.applied ) );
+		panel.appendChild(
+			el( 'p', null, data.count + ' change' + ( 1 === data.count ? '' : 's' ) + ' applied to "' + data.group_title + '".' )
+		);
+
+		( data.warnings || [] ).forEach( function ( warning ) {
+			panel.appendChild( el( 'p', 'acfjp-issue acfjp-issue--warning', warning ) );
+		} );
+
+		panel.appendChild( el( 'p', 'description', s.rollbackHint ) );
+		target.appendChild( panel );
+
+		currentPlan = null;
+	}
+
+	// ---- Actions -----------------------------------------------------------
+
+	async function validate() {
+		busy( s.validating );
+
+		const response = await api( '/validate', { method: 'POST', body: payload() } );
+
+		if ( ! response.ok ) {
+			renderError( response.error || {} );
+			return;
+		}
+
+		const target = clear();
+		const panel = el( 'div', 'acfjp-panel' );
+
+		if ( response.validation.valid && ! response.validation.warnings.length ) {
+			panel.appendChild( el( 'p', 'acfjp-ok', s.valid ) );
+		}
+
+		renderIssues( response.validation, panel );
+		target.appendChild( panel );
+	}
+
+	async function preview() {
+		busy( s.planning );
+
+		const response = await api( '/plan', { method: 'POST', body: payload() } );
+
+		if ( ! response.ok ) {
+			renderError( response.error || {} );
+			return;
+		}
+
+		renderPlan( response );
+	}
+
+	async function apply() {
+		if ( ! currentPlan ) return;
+
+		const resolutions = collectResolutions();
+
+		if ( Object.keys( resolutions ).length < countConflicts() ) {
+			window.alert( s.unresolved );
+			return;
+		}
+
+		const confirmBox = document.getElementById( 'acfjp-confirm' );
+
+		busy( s.applying );
+
+		const response = await api( '/apply', {
+			method: 'POST',
+			body: JSON.stringify( {
+				plan_id: currentPlan.plan_id,
+				resolutions: resolutions,
+				confirm: confirmBox ? confirmBox.checked : false,
+			} ),
+		} );
+
+		if ( ! response.ok ) {
+			renderError( response.error || {} );
+			return;
+		}
+
+		renderApplied( response );
+	}
+
+	async function rollback( id, button ) {
+		button.disabled = true;
+
+		const response = await api( '/history/' + id + '/rollback', { method: 'POST' } );
+
+		if ( ! response.ok ) {
+			button.disabled = false;
+			window.alert( ( response.error && response.error.message ) || s.genericError );
+			return;
+		}
+
+		window.location.reload();
+	}
+
+	async function buildPrompt() {
+		const group = ( document.getElementById( 'acfjp-prompt-group' ) || {} ).value || '';
+		const intent = ( document.getElementById( 'acfjp-prompt-intent' ) || {} ).value || '';
+
+		const query = '/prompt?group_key=' + encodeURIComponent( group ) + '&intent=' + encodeURIComponent( intent );
+		const response = await api( query, { method: 'GET' } );
+
+		if ( ! response.ok ) {
+			renderError( response.error || {} );
+			return;
+		}
+
+		const output = document.getElementById( 'acfjp-prompt-output' );
+		const panel = document.getElementById( 'acfjp-prompt-result' );
+
+		if ( output ) output.value = response.prompt;
+		if ( panel ) {
+			panel.hidden = false;
+			panel.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+		}
+	}
+
+	function copyFrom( node, button ) {
+		node.select();
+
+		try {
+			document.execCommand( 'copy' );
+			const original = button.textContent;
+			button.textContent = s.copied || 'Copied';
+			window.setTimeout( function () { button.textContent = original; }, 1500 );
+		} catch ( e ) { /* clipboard unavailable; the text is selected for manual copy */ }
+	}
+
+	async function runSelfTest( button ) {
+		const output = document.getElementById( 'acfjp-selftest-output' );
+		if ( ! output ) return;
+
+		button.disabled = true;
+		const originalLabel = button.textContent;
+		button.textContent = s.selfTestRunning || 'Running…';
+
+		output.innerHTML = '';
+		output.appendChild( el( 'p', 'acfjp-busy', s.selfTestRunning || 'Running…' ) );
+
+		const response = await api( '/self-test', { method: 'POST' } );
+
+		button.disabled = false;
+		button.textContent = originalLabel;
+
+		if ( ! response.ok ) {
+			output.innerHTML = '';
+			renderErrorInto( output, response.error || {} );
+			return;
+		}
+
+		renderSelfTest( output, response.self_test );
+	}
+
+	function renderErrorInto( target, error ) {
+		const box = el( 'div', 'acfjp-panel acfjp-panel--error' );
+		box.appendChild( el( 'h2', null, error.message || s.genericError ) );
+		( error.suggestions || [] ).forEach( function ( suggestion ) {
+			box.appendChild( el( 'p', 'acfjp-suggestion', '→ ' + suggestion ) );
+		} );
+		target.appendChild( box );
+	}
+
+	function renderSelfTest( target, data ) {
+		target.innerHTML = '';
+
+		const headline = el(
+			'div',
+			'acfjp-panel ' + ( data.ok ? 'acfjp-panel--success' : ( data.critical ? 'acfjp-panel--error' : 'acfjp-panel--warn' ) )
+		);
+
+		headline.appendChild(
+			el( 'h2', null, data.ok
+				? ( s.selfTestPass || 'All checks passed.' )
+				: ( data.failed + ' check' + ( 1 === data.failed ? '' : 's' ) + ' failed.' ) )
+		);
+
+		headline.appendChild(
+			el( 'p', null, data.passed + ' passed · ' + data.failed + ' failed · ' + data.skipped + ' skipped · ' + data.duration + 'ms' )
+		);
+
+		if ( data.ok ) {
+			headline.appendChild( el( 'p', 'description', s.selfTestPassHint || '' ) );
+		} else if ( data.critical ) {
+			headline.appendChild( el( 'p', 'acfjp-critical', s.selfTestCritical || '' ) );
+		}
+
+		target.appendChild( headline );
+
+		Object.keys( data.sections || {} ).forEach( function ( section ) {
+			const wrap = el( 'div', 'acfjp-selftest__section' );
+			wrap.appendChild( el( 'h3', null, section ) );
+
+			data.sections[ section ].forEach( function ( check ) {
+				const row = el( 'div', 'acfjp-selftest__check is-' + check.status );
+
+				const mark = 'pass' === check.status ? '✓' : ( 'fail' === check.status ? '✗' : '‒' );
+				row.appendChild( el( 'span', 'acfjp-selftest__mark', mark ) );
+
+				const body = el( 'div', 'acfjp-selftest__body' );
+				body.appendChild( el( 'span', 'acfjp-selftest__name', check.name ) );
+
+				if ( check.detail ) {
+					body.appendChild( el( 'span', 'acfjp-selftest__detail', check.detail ) );
+				}
+
+				if ( check.critical && 'fail' === check.status ) {
+					body.appendChild( el( 'span', 'acfjp-pill acfjp-pill--destructive', s.selfTestBlocking || 'blocking' ) );
+				}
+
+				row.appendChild( body );
+				wrap.appendChild( row );
+			} );
+
+			target.appendChild( wrap );
+		} );
+	}
+
+	function cleanJson( text ) {
+		if ( ! text ) return '';
+		let cleaned = text.trim();
+		// Strip markdown code fences if wrapped in ```json or ```
+		const fenceMatch = cleaned.match( /^```(?:json)?\s*([\s\S]*?)\s*```$/i );
+		if ( fenceMatch ) {
+			cleaned = fenceMatch[1].trim();
+		}
+		// Try parsing and pretty printing
+		try {
+			const parsed = JSON.parse( cleaned );
+			return JSON.stringify( parsed, null, 2 );
+		} catch ( e ) {
+			return cleaned;
+		}
+	}
+
+	function switchTab( tabName ) {
+		document.querySelectorAll( '.acfjp-tab' ).forEach( function ( btn ) {
+			const isActive = btn.dataset.tab === tabName;
+			btn.classList.toggle( 'is-active', isActive );
+			btn.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+		} );
+
+		document.querySelectorAll( '.acfjp-tab-content' ).forEach( function ( content ) {
+			const isActive = content.id === 'acfjp-tab-' + tabName;
+			content.classList.toggle( 'is-active', isActive );
+			content.hidden = ! isActive;
+		} );
+
+		if ( 'editor' === tabName && editor && editor.codemirror ) {
+			window.setTimeout( function () {
+				editor.codemirror.refresh();
+			}, 50 );
+		}
+	}
+
+	async function pasteFromClipboard( autoPreview ) {
+		let text = '';
+		try {
+			if ( navigator.clipboard && navigator.clipboard.readText ) {
+				text = await navigator.clipboard.readText();
+			}
+		} catch ( err ) {
+			/* clipboard permissions or not supported */
+		}
+
+		if ( ! text ) {
+			switchTab( 'editor' );
+			setEditorValue( '' );
+			window.alert( s.pasteError || 'Please press Ctrl+V or Cmd+V directly into the editor.' );
+			return;
+		}
+
+		const formatted = cleanJson( text );
+		setEditorValue( formatted );
+
+		switchTab( 'editor' );
+
+		const editorEl = document.getElementById( 'acfjp-import' );
+		if ( editorEl ) {
+			editorEl.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+		}
+
+		if ( autoPreview ) {
+			window.setTimeout( function () {
+				preview();
+			}, 300 );
+		}
+	}
+
+	function setEditorValue( value ) {
+		if ( editor ) {
+			editor.codemirror.setValue( value );
+			editor.codemirror.focus();
+			return;
+		}
+
+		const textarea = document.getElementById( 'acfjp-json' );
+		if ( textarea ) {
+			textarea.value = value;
+			textarea.focus();
+		}
+	}
+
+	/**
+	 * CodeMirror's JSON linter reports "unexpected EOF" on an empty document,
+	 * which greets every first-time visitor with a red error before they have
+	 * typed anything. Lint only once there is something to lint.
+	 */
+	function syncLint() {
+		if ( ! editor ) return;
+
+		const cm = editor.codemirror;
+		const empty = '' === cm.getValue().trim();
+
+		cm.setOption( 'lint', empty ? false : ( cfg.editor && cfg.editor.codemirror && cfg.editor.codemirror.lint ) || true );
+
+		if ( empty && cm.clearGutter ) {
+			try { cm.clearGutter( 'CodeMirror-lint-markers' ); } catch ( e ) {}
+		}
+	}
+
+	// ---- Wiring ------------------------------------------------------------
+
+	document.addEventListener( 'DOMContentLoaded', function () {
+		const textarea = document.getElementById( 'acfjp-json' );
+
+		if ( textarea && cfg.editor && window.wp && window.wp.codeEditor ) {
+			editor = window.wp.codeEditor.initialize( textarea, cfg.editor );
+			syncLint();
+			editor.codemirror.on( 'change', syncLint );
+		}
+
+		// Template selector change
+		const templateSelect = document.getElementById( 'acfjp-template-select' );
+		if ( templateSelect ) {
+			templateSelect.addEventListener( 'change', function () {
+				const val = templateSelect.value;
+				if ( ! val || ! cfg.examples || ! cfg.examples[ val ] ) return;
+
+				setEditorValue( JSON.stringify( cfg.examples[ val ].payload, null, 2 ) );
+				templateSelect.value = '';
+			} );
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			const target = event.target;
+
+			// Tabs
+			const tabBtn = target.closest( '.acfjp-tab' );
+			if ( tabBtn ) {
+				event.preventDefault();
+				switchTab( tabBtn.dataset.tab );
+				return;
+			}
+
+			// Chips
+			const chip = target.closest( '.acfjp-chip' );
+			if ( chip ) {
+				event.preventDefault();
+				const intentInput = document.getElementById( 'acfjp-prompt-intent' );
+				if ( intentInput ) {
+					intentInput.value = chip.dataset.intent || '';
+					intentInput.focus();
+				}
+				return;
+			}
+
+			// Key badges
+			const keyBadge = target.closest( '.acfjp-key-badge' );
+			if ( keyBadge ) {
+				event.preventDefault();
+				const key = keyBadge.dataset.key;
+				if ( key && navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard.writeText( key );
+					const originalText = keyBadge.innerHTML;
+					keyBadge.innerHTML = '<code>' + ( s.copied || 'Copied!' ) + '</code>';
+					window.setTimeout( function () { keyBadge.innerHTML = originalText; }, 1500 );
+				}
+				return;
+			}
+
+			// Buttons
+			if ( target.closest( '#acfjp-validate' ) ) { event.preventDefault(); validate(); return; }
+			if ( target.closest( '#acfjp-preview' ) ) { event.preventDefault(); preview(); return; }
+			if ( target.closest( '#acfjp-apply' ) ) { event.preventDefault(); apply(); return; }
+			if ( target.closest( '#acfjp-prompt-build' ) ) { event.preventDefault(); buildPrompt(); return; }
+			if ( target.closest( '#acfjp-paste-clipboard' ) ) { event.preventDefault(); pasteFromClipboard( false ); return; }
+			if ( target.closest( '#acfjp-paste-and-preview' ) ) { event.preventDefault(); pasteFromClipboard( true ); return; }
+
+			const selfTestButton = target.closest( '#acfjp-selftest-run' );
+			if ( selfTestButton ) { event.preventDefault(); runSelfTest( selfTestButton ); return; }
+
+			if ( target.closest( '#acfjp-clear' ) ) {
+				event.preventDefault();
+				setEditorValue( '' );
+				clear();
+				return;
+			}
+
+			const promptCopy = target.closest( '#acfjp-prompt-copy' );
+			if ( promptCopy ) {
+				event.preventDefault();
+				const output = document.getElementById( 'acfjp-prompt-output' );
+				if ( output ) {
+					const original = promptCopy.textContent;
+					copyFrom( output, promptCopy );
+					promptCopy.textContent = s.promptCopied || original;
+					window.setTimeout( function () { promptCopy.textContent = original; }, 2200 );
+				}
+				return;
+			}
+
+			const copyButton = target.closest( '.acfjp-copy' );
+			if ( copyButton ) {
+				event.preventDefault();
+				const node = document.getElementById( copyButton.dataset.target );
+				if ( node ) copyFrom( node, copyButton );
+				return;
+			}
+
+			const rollbackButton = target.closest( '.acfjp-rollback' );
+			if ( rollbackButton ) {
+				event.preventDefault();
+				if ( window.confirm( 'Restore this field group to its previous state?' ) ) {
+					rollback( rollbackButton.dataset.id, rollbackButton );
+				}
+			}
+		} );
+	} );
+}() );

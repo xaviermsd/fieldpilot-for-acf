@@ -1,0 +1,31 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Local environment
+/.wp-env/
+/.wp-env.override.json
+/phpunit.xml
+/phpcs.xml
+/phpstan.neon
+
+# Tooling output
+/.phpunit.result.cache
+/.phpunit.cache/
+/coverage/
+/phpunit.phar
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+/.idea/
+/.vscode/
+*.sublime-*
+
+# Build artefacts
+/build/
+/dist/
+*.zip

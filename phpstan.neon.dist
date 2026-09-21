@@ -1,0 +1,30 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 8
+    phpVersion: 80100
+
+    paths:
+        - includes
+
+    # Admin screens are presentation and the CLI command is WP-CLI's own shape;
+    # both are covered by the smoke script rather than by static analysis.
+    excludePaths:
+        analyse:
+            - includes/Admin/Screens/*
+            - includes/Cli/*
+
+    scanFiles:
+        - tests/stubs/acf.php
+        - wp-acf-json-pro.php
+
+    ignoreErrors:
+        # WordPress and ACF are dynamically typed at the boundary; we validate
+        # everything that crosses it rather than trusting a stub's return type.
+        - identifier: argument.type
+          path: includes/Acf/*
+        - '#Cannot call method reset\(\) on ACF_Data\|null#'
+
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false

@@ -1,0 +1,34 @@
+{
+    "name": "harshprajapati/wp-acf-json-pro",
+    "description": "A safe, deterministic configuration patch engine for Advanced Custom Fields, driven by JSON.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "yoast/phpunit-polyfills": "^2.0",
+        "phpstan/phpstan": "^1.11",
+        "szepeviktor/phpstan-wordpress": "^1.3",
+        "wp-coding-standards/wpcs": "^3.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "autoload": {
+        "psr-4": { "ACFJP\\": "includes/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "ACFJP\\Tests\\": "tests/" }
+    },
+    "config": {
+        "allow-plugins": { "dealerdirect/phpcodesniffer-composer-installer": true }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite unit",
+        "analyse": "phpstan analyse",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf"
+    },
+    "comment": "Runtime has ZERO composer dependencies by design (see CLAUDE.md). vendor/ is never shipped; includes/Core/Autoloader.php serves the plugin at runtime."
+}

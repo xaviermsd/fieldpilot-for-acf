@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/wp-env.json",
+    "core": "WordPress/WordPress#6.8",
+    "phpVersion": "8.2",
+    "plugins": [
+        ".",
+        "./.wp-env/advanced-custom-fields-pro"
+    ],
+    "config": {
+        "WP_DEBUG": true,
+        "WP_DEBUG_DISPLAY": true,
+        "SCRIPT_DEBUG": true
+    },
+    "mappings": {
+        "wp-content/uploads": "./.wp-env/uploads"
+    },
+    "env": {
+        "tests": {
+            "config": {
+                "WP_DEBUG": true
+            }
+        }
+    }
+}

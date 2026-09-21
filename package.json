@@ -1,0 +1,18 @@
+{
+    "name": "wp-acf-json-pro",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Local development environment for WP ACF JSON Pro.",
+    "scripts": {
+        "env:start": "wp-env start",
+        "env:stop": "wp-env stop",
+        "env:destroy": "wp-env destroy",
+        "env:clean": "wp-env clean all",
+        "smoke": "wp-env run cli --env-cwd=wp-content/plugins/wp-acf-json-pro wp eval-file tools/smoke.php",
+        "smoke:verbose": "wp-env run cli --env-cwd=wp-content/plugins/wp-acf-json-pro wp eval-file tools/smoke.php --verbose",
+        "logs": "wp-env logs"
+    },
+    "devDependencies": {
+        "@wordpress/env": "^10.0.0"
+    }
+}
