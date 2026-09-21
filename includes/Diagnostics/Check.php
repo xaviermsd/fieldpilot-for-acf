@@ -50,7 +50,7 @@ final class Check implements \JsonSerializable {
 			$name,
 			sprintf(
 				/* translators: 1: expected value, 2: actual value */
-				__( 'Expected %1$s, got %2$s.', 'wp-acf-json-pro' ),
+				__( 'Expected %1$s, got %2$s.', 'fieldpilot-for-acf' ),
 				self::show( $expected ),
 				self::show( $actual )
 			),

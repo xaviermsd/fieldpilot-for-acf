@@ -46,7 +46,7 @@ final class ErrorEnvelope {
 				'ok'    => false,
 				'error' => array(
 					'code'    => ErrorCodes::WRITE_FAILED,
-					'message' => __( 'Something went wrong. Nothing was changed.', 'wp-acf-json-pro' ),
+					'message' => __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ),
 				),
 			),
 			500

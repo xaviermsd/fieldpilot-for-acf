@@ -43,7 +43,7 @@ final class Assets {
 		return array(
 			// Common Operations
 			'add_field'            => array(
-				'label'   => __( 'Add New Field', 'wp-acf-json-pro' ),
+				'label'   => __( 'Add New Field', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -60,7 +60,7 @@ final class Assets {
 				),
 			),
 			'update_field'         => array(
-				'label'   => __( 'Update Existing Field Setting', 'wp-acf-json-pro' ),
+				'label'   => __( 'Update Existing Field Setting', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'update',
@@ -74,7 +74,7 @@ final class Assets {
 				),
 			),
 			'create_group'         => array(
-				'label'   => __( 'Create Brand New Field Group', 'wp-acf-json-pro' ),
+				'label'   => __( 'Create Brand New Field Group', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'       => '1.0',
 					'operation'     => 'create',
@@ -98,7 +98,7 @@ final class Assets {
 
 			// 1. Basic & Text
 			'tpl_text'             => array(
-				'label'   => __( 'Text', 'wp-acf-json-pro' ),
+				'label'   => __( 'Text', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -117,7 +117,7 @@ final class Assets {
 				),
 			),
 			'tpl_textarea'         => array(
-				'label'   => __( 'Textarea', 'wp-acf-json-pro' ),
+				'label'   => __( 'Textarea', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -136,7 +136,7 @@ final class Assets {
 				),
 			),
 			'tpl_number'           => array(
-				'label'   => __( 'Number', 'wp-acf-json-pro' ),
+				'label'   => __( 'Number', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -157,7 +157,7 @@ final class Assets {
 				),
 			),
 			'tpl_range'            => array(
-				'label'   => __( 'Range', 'wp-acf-json-pro' ),
+				'label'   => __( 'Range', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -177,7 +177,7 @@ final class Assets {
 				),
 			),
 			'tpl_email'            => array(
-				'label'   => __( 'Email', 'wp-acf-json-pro' ),
+				'label'   => __( 'Email', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -195,7 +195,7 @@ final class Assets {
 				),
 			),
 			'tpl_url'              => array(
-				'label'   => __( 'URL', 'wp-acf-json-pro' ),
+				'label'   => __( 'URL', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -212,7 +212,7 @@ final class Assets {
 				),
 			),
 			'tpl_password'         => array(
-				'label'   => __( 'Password', 'wp-acf-json-pro' ),
+				'label'   => __( 'Password', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -231,7 +231,7 @@ final class Assets {
 
 			// 2. Content & Media
 			'tpl_wysiwyg'          => array(
-				'label'   => __( 'WYSIWYG Editor', 'wp-acf-json-pro' ),
+				'label'   => __( 'WYSIWYG Editor', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -249,7 +249,7 @@ final class Assets {
 				),
 			),
 			'tpl_image'            => array(
-				'label'   => __( 'Image', 'wp-acf-json-pro' ),
+				'label'   => __( 'Image', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -270,7 +270,7 @@ final class Assets {
 				),
 			),
 			'tpl_file'             => array(
-				'label'   => __( 'File', 'wp-acf-json-pro' ),
+				'label'   => __( 'File', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -289,7 +289,7 @@ final class Assets {
 				),
 			),
 			'tpl_gallery'          => array(
-				'label'   => __( 'Gallery', 'wp-acf-json-pro' ),
+				'label'   => __( 'Gallery', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -308,7 +308,7 @@ final class Assets {
 				),
 			),
 			'tpl_oembed'           => array(
-				'label'   => __( 'oEmbed Video', 'wp-acf-json-pro' ),
+				'label'   => __( 'oEmbed Video', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -325,7 +325,7 @@ final class Assets {
 				),
 			),
 			'tpl_icon_picker'      => array(
-				'label'   => __( 'Icon Picker', 'wp-acf-json-pro' ),
+				'label'   => __( 'Icon Picker', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -344,7 +344,7 @@ final class Assets {
 
 			// 3. Choice Fields
 			'tpl_select'           => array(
-				'label'   => __( 'Select Dropdown', 'wp-acf-json-pro' ),
+				'label'   => __( 'Select Dropdown', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -368,7 +368,7 @@ final class Assets {
 				),
 			),
 			'tpl_checkbox'         => array(
-				'label'   => __( 'Checkbox', 'wp-acf-json-pro' ),
+				'label'   => __( 'Checkbox', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -393,7 +393,7 @@ final class Assets {
 				),
 			),
 			'tpl_radio'            => array(
-				'label'   => __( 'Radio', 'wp-acf-json-pro' ),
+				'label'   => __( 'Radio', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -416,7 +416,7 @@ final class Assets {
 				),
 			),
 			'tpl_button_group'     => array(
-				'label'   => __( 'Button Group', 'wp-acf-json-pro' ),
+				'label'   => __( 'Button Group', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -439,7 +439,7 @@ final class Assets {
 				),
 			),
 			'tpl_true_false'       => array(
-				'label'   => __( 'True / False', 'wp-acf-json-pro' ),
+				'label'   => __( 'True / False', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -462,7 +462,7 @@ final class Assets {
 
 			// 4. Relational & WP Objects
 			'tpl_link'             => array(
-				'label'   => __( 'Link (URL / Target)', 'wp-acf-json-pro' ),
+				'label'   => __( 'Link (URL / Target)', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -479,7 +479,7 @@ final class Assets {
 				),
 			),
 			'tpl_post_object'      => array(
-				'label'   => __( 'Post Object', 'wp-acf-json-pro' ),
+				'label'   => __( 'Post Object', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -499,7 +499,7 @@ final class Assets {
 				),
 			),
 			'tpl_page_link'        => array(
-				'label'   => __( 'Page Link', 'wp-acf-json-pro' ),
+				'label'   => __( 'Page Link', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -517,7 +517,7 @@ final class Assets {
 				),
 			),
 			'tpl_relationship'     => array(
-				'label'   => __( 'Relationship', 'wp-acf-json-pro' ),
+				'label'   => __( 'Relationship', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -537,7 +537,7 @@ final class Assets {
 				),
 			),
 			'tpl_taxonomy'         => array(
-				'label'   => __( 'Taxonomy Terms', 'wp-acf-json-pro' ),
+				'label'   => __( 'Taxonomy Terms', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -556,7 +556,7 @@ final class Assets {
 				),
 			),
 			'tpl_user'             => array(
-				'label'   => __( 'User Selector', 'wp-acf-json-pro' ),
+				'label'   => __( 'User Selector', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -577,7 +577,7 @@ final class Assets {
 
 			// 5. Layout & Structure
 			'tpl_repeater'         => array(
-				'label'   => __( 'Repeater', 'wp-acf-json-pro' ),
+				'label'   => __( 'Repeater', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -613,7 +613,7 @@ final class Assets {
 				),
 			),
 			'tpl_group'            => array(
-				'label'   => __( 'Group Container', 'wp-acf-json-pro' ),
+				'label'   => __( 'Group Container', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -649,7 +649,7 @@ final class Assets {
 				),
 			),
 			'tpl_flexible_content' => array(
-				'label'   => __( 'Flexible Content', 'wp-acf-json-pro' ),
+				'label'   => __( 'Flexible Content', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -697,7 +697,7 @@ final class Assets {
 				),
 			),
 			'tpl_accordion'        => array(
-				'label'   => __( 'Accordion', 'wp-acf-json-pro' ),
+				'label'   => __( 'Accordion', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -713,7 +713,7 @@ final class Assets {
 				),
 			),
 			'tpl_tab'              => array(
-				'label'   => __( 'Tab', 'wp-acf-json-pro' ),
+				'label'   => __( 'Tab', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -728,7 +728,7 @@ final class Assets {
 				),
 			),
 			'tpl_message'          => array(
-				'label'   => __( 'Message', 'wp-acf-json-pro' ),
+				'label'   => __( 'Message', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -744,7 +744,7 @@ final class Assets {
 				),
 			),
 			'tpl_clone'            => array(
-				'label'   => __( 'Clone Field', 'wp-acf-json-pro' ),
+				'label'   => __( 'Clone Field', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -762,7 +762,7 @@ final class Assets {
 
 			// 6. jQuery & Pickers
 			'tpl_google_map'       => array(
-				'label'   => __( 'Google Map', 'wp-acf-json-pro' ),
+				'label'   => __( 'Google Map', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -779,7 +779,7 @@ final class Assets {
 				),
 			),
 			'tpl_date_picker'      => array(
-				'label'   => __( 'Date Picker', 'wp-acf-json-pro' ),
+				'label'   => __( 'Date Picker', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -798,7 +798,7 @@ final class Assets {
 				),
 			),
 			'tpl_date_time_picker' => array(
-				'label'   => __( 'Date Time Picker', 'wp-acf-json-pro' ),
+				'label'   => __( 'Date Time Picker', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -817,7 +817,7 @@ final class Assets {
 				),
 			),
 			'tpl_time_picker'      => array(
-				'label'   => __( 'Time Picker', 'wp-acf-json-pro' ),
+				'label'   => __( 'Time Picker', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -835,7 +835,7 @@ final class Assets {
 				),
 			),
 			'tpl_color_picker'     => array(
-				'label'   => __( 'Color Picker', 'wp-acf-json-pro' ),
+				'label'   => __( 'Color Picker', 'fieldpilot-for-acf' ),
 				'payload' => array(
 					'version'   => '1.0',
 					'operation' => 'add',
@@ -901,35 +901,35 @@ final class Assets {
 				'example'  => $examples['add_field']['payload'] ?? null,
 				'examples' => $examples,
 				'strings'  => array(
-					'validating'       => __( 'Validating...', 'wp-acf-json-pro' ),
-					'planning'         => __( 'Calculating changes...', 'wp-acf-json-pro' ),
-					'applying'         => __( 'Applying...', 'wp-acf-json-pro' ),
-					'noChanges'        => __( 'No changes detected. The field group already matches this JSON.', 'wp-acf-json-pro' ),
-					'valid'            => __( 'JSON is valid.', 'wp-acf-json-pro' ),
-					'confirmTitle'     => __( 'This batch can remove or orphan content', 'wp-acf-json-pro' ),
-					'applied'          => __( 'Changes applied.', 'wp-acf-json-pro' ),
-					'rollbackHint'     => __( 'You can roll this back from the History screen.', 'wp-acf-json-pro' ),
-					'genericError'     => __( 'Something went wrong. Nothing was changed.', 'wp-acf-json-pro' ),
-					'unresolved'       => __( 'Resolve every conflict before applying.', 'wp-acf-json-pro' ),
-					'copy'             => __( 'Copy', 'wp-acf-json-pro' ),
-					'copied'           => __( 'Copied', 'wp-acf-json-pro' ),
-					'selfTestRunning'  => __( 'Running the self-test...', 'wp-acf-json-pro' ),
-					'selfTestPass'     => __( 'All checks passed.', 'wp-acf-json-pro' ),
-					'selfTestPassHint' => __( 'The engine works correctly against this ACF installation.', 'wp-acf-json-pro' ),
-					'selfTestCritical' => __( 'A check that protects your configuration failed. Do not use this on field groups you care about until it is fixed.', 'wp-acf-json-pro' ),
-					'selfTestBlocking' => __( 'blocking', 'wp-acf-json-pro' ),
-					'promptCopied'     => __( 'Prompt Copied! Now paste into your AI (ChatGPT / Claude / Gemini)', 'wp-acf-json-pro' ),
-					'pasteSuccess'     => __( 'Pasted and formatted successfully!', 'wp-acf-json-pro' ),
-					'pasteEmpty'       => __( 'Clipboard is empty or contains no JSON.', 'wp-acf-json-pro' ),
-					'pasteError'       => __( 'Could not access clipboard directly. Please use Ctrl+V / Cmd+V.', 'wp-acf-json-pro' ),
-					'noGroups'         => __( 'No field groups exist yet, so there is nothing to patch. Create one in ACF first, or use an "operation": "create" payload.', 'wp-acf-json-pro' ),
-					'exportConfig'     => __( 'Export Current Configuration (JSON)', 'wp-acf-json-pro' ),
-					'exporting'        => __( 'Exporting...', 'wp-acf-json-pro' ),
-					'ackReview'        => __( 'I have reviewed the target scope and diff above.', 'wp-acf-json-pro' ),
-					'ackModify'        => __( 'I understand this operation will write changes to the ACF database.', 'wp-acf-json-pro' ),
-					'ackDestructive'   => __( 'I acknowledge that this operation contains destructive modifications or deletions.', 'wp-acf-json-pro' ),
-					'scopeIsolated'    => __( 'Target Isolated - Unrelated branches are protected and untouched', 'wp-acf-json-pro' ),
-					'rootTarget'       => __( 'Group Root', 'wp-acf-json-pro' ),
+					'validating'       => __( 'Validating...', 'fieldpilot-for-acf' ),
+					'planning'         => __( 'Calculating changes...', 'fieldpilot-for-acf' ),
+					'applying'         => __( 'Applying...', 'fieldpilot-for-acf' ),
+					'noChanges'        => __( 'No changes detected. The field group already matches this JSON.', 'fieldpilot-for-acf' ),
+					'valid'            => __( 'JSON is valid.', 'fieldpilot-for-acf' ),
+					'confirmTitle'     => __( 'This batch can remove or orphan content', 'fieldpilot-for-acf' ),
+					'applied'          => __( 'Changes applied.', 'fieldpilot-for-acf' ),
+					'rollbackHint'     => __( 'You can roll this back from the History screen.', 'fieldpilot-for-acf' ),
+					'genericError'     => __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ),
+					'unresolved'       => __( 'Resolve every conflict before applying.', 'fieldpilot-for-acf' ),
+					'copy'             => __( 'Copy', 'fieldpilot-for-acf' ),
+					'copied'           => __( 'Copied', 'fieldpilot-for-acf' ),
+					'selfTestRunning'  => __( 'Running the self-test...', 'fieldpilot-for-acf' ),
+					'selfTestPass'     => __( 'All checks passed.', 'fieldpilot-for-acf' ),
+					'selfTestPassHint' => __( 'The engine works correctly against this ACF installation.', 'fieldpilot-for-acf' ),
+					'selfTestCritical' => __( 'A check that protects your configuration failed. Do not use this on field groups you care about until it is fixed.', 'fieldpilot-for-acf' ),
+					'selfTestBlocking' => __( 'blocking', 'fieldpilot-for-acf' ),
+					'promptCopied'     => __( 'Prompt Copied! Now paste into your AI (ChatGPT / Claude / Gemini)', 'fieldpilot-for-acf' ),
+					'pasteSuccess'     => __( 'Pasted and formatted successfully!', 'fieldpilot-for-acf' ),
+					'pasteEmpty'       => __( 'Clipboard is empty or contains no JSON.', 'fieldpilot-for-acf' ),
+					'pasteError'       => __( 'Could not access clipboard directly. Please use Ctrl+V / Cmd+V.', 'fieldpilot-for-acf' ),
+					'noGroups'         => __( 'No field groups exist yet, so there is nothing to patch. Create one in ACF first, or use an "operation": "create" payload.', 'fieldpilot-for-acf' ),
+					'exportConfig'     => __( 'Export Current Configuration (JSON)', 'fieldpilot-for-acf' ),
+					'exporting'        => __( 'Exporting...', 'fieldpilot-for-acf' ),
+					'ackReview'        => __( 'I have reviewed the target scope and diff above.', 'fieldpilot-for-acf' ),
+					'ackModify'        => __( 'I understand this operation will write changes to the ACF database.', 'fieldpilot-for-acf' ),
+					'ackDestructive'   => __( 'I acknowledge that this operation contains destructive modifications or deletions.', 'fieldpilot-for-acf' ),
+					'scopeIsolated'    => __( 'Target Isolated - Unrelated branches are protected and untouched', 'fieldpilot-for-acf' ),
+					'rootTarget'       => __( 'Group Root', 'fieldpilot-for-acf' ),
 				),
 			)
 		);

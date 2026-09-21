@@ -57,7 +57,7 @@ final class TargetResolver {
 					ErrorCodes::NOT_A_CONTAINER,
 					sprintf(
 						/* translators: 1: field label, 2: field type */
-						__( '"%1$s" is a %2$s field, so nothing can be nested inside it.', 'wp-acf-json-pro' ),
+						__( '"%1$s" is a %2$s field, so nothing can be nested inside it.', 'fieldpilot-for-acf' ),
 						$parent->label,
 						$parent->type
 					),
@@ -72,7 +72,7 @@ final class TargetResolver {
 					ErrorCodes::LAYOUT_NOT_FOUND,
 					sprintf(
 						/* translators: %s: layout reference */
-						__( 'Layout "%s" was named, but the target is not a flexible content field.', 'wp-acf-json-pro' ),
+						__( 'Layout "%s" was named, but the target is not a flexible content field.', 'fieldpilot-for-acf' ),
 						$target->layout
 					),
 					array( 'layout' => $target->layout )
@@ -102,7 +102,7 @@ final class TargetResolver {
 		if ( '' === $reference ) {
 			throw new ResolutionException(
 				ErrorCodes::FIELD_NOT_FOUND,
-				__( 'No field was named.', 'wp-acf-json-pro' )
+				__( 'No field was named.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -122,7 +122,7 @@ final class TargetResolver {
 				ErrorCodes::FIELD_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field key */
-					__( 'No field has the key "%s".', 'wp-acf-json-pro' ),
+					__( 'No field has the key "%s".', 'fieldpilot-for-acf' ),
 					$reference
 				),
 				array( 'reference' => $reference ),
@@ -184,7 +184,7 @@ final class TargetResolver {
 			ErrorCodes::FIELD_NOT_FOUND,
 			sprintf(
 				/* translators: 1: field reference, 2: field group title */
-				__( 'Field "%1$s" was not found in %2$s.', 'wp-acf-json-pro' ),
+				__( 'Field "%1$s" was not found in %2$s.', 'fieldpilot-for-acf' ),
 				$reference,
 				$tree->group->title
 			),
@@ -222,7 +222,7 @@ final class TargetResolver {
 							ErrorCodes::PATH_NOT_FOUND,
 							sprintf(
 								/* translators: %s: layout name */
-								__( 'Layout "%s" has no fields to descend into.', 'wp-acf-json-pro' ),
+								__( 'Layout "%s" has no fields to descend into.', 'fieldpilot-for-acf' ),
 								$segment
 							),
 							array( 'layout' => $segment )
@@ -243,7 +243,7 @@ final class TargetResolver {
 				ErrorCodes::PATH_NOT_FOUND,
 				sprintf(
 					/* translators: 1: path segment, 2: full target description */
-					__( 'Could not find "%1$s" while resolving %2$s.', 'wp-acf-json-pro' ),
+					__( 'Could not find "%1$s" while resolving %2$s.', 'fieldpilot-for-acf' ),
 					$segment,
 					$target->describe()
 				),
@@ -276,7 +276,7 @@ final class TargetResolver {
 				ErrorCodes::AMBIGUOUS_TARGET,
 				sprintf(
 					/* translators: %s: layout reference */
-					__( 'More than one layout matches "%s".', 'wp-acf-json-pro' ),
+					__( 'More than one layout matches "%s".', 'fieldpilot-for-acf' ),
 					$reference
 				),
 				array( 'layout' => $reference )
@@ -287,7 +287,7 @@ final class TargetResolver {
 			ErrorCodes::LAYOUT_NOT_FOUND,
 			sprintf(
 				/* translators: 1: layout reference, 2: field label */
-				__( 'Layout "%1$s" was not found in "%2$s".', 'wp-acf-json-pro' ),
+				__( 'Layout "%1$s" was not found in "%2$s".', 'fieldpilot-for-acf' ),
 				$reference,
 				$parent->label
 			),
@@ -352,11 +352,11 @@ final class TargetResolver {
 			ErrorCodes::TRAVERSES_CLONE,
 			sprintf(
 				/* translators: %s: field label */
-				__( '"%s" is displayed here through a Clone field but is defined elsewhere. Edit it in the field group that owns it.', 'wp-acf-json-pro' ),
+				__( '"%s" is displayed here through a Clone field but is defined elsewhere. Edit it in the field group that owns it.', 'fieldpilot-for-acf' ),
 				$field->label
 			),
 			array( 'field_key' => $field->key ),
-			array( __( 'Target the field group that defines this field directly.', 'wp-acf-json-pro' ) )
+			array( __( 'Target the field group that defines this field directly.', 'fieldpilot-for-acf' ) )
 		);
 	}
 
@@ -368,7 +368,7 @@ final class TargetResolver {
 			ErrorCodes::AMBIGUOUS_TARGET,
 			sprintf(
 				/* translators: 1: number of matches, 2: the reference */
-				__( '%1$d fields match "%2$s". Target one by key or by full path.', 'wp-acf-json-pro' ),
+				__( '%1$d fields match "%2$s". Target one by key or by full path.', 'fieldpilot-for-acf' ),
 				count( $matches ),
 				$reference
 			),

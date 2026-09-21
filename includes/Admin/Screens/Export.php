@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 final class Export extends Screen {
 
 	protected function title(): string {
-		return __( 'Export', 'wp-acf-json-pro' );
+		return __( 'Export', 'fieldpilot-for-acf' );
 	}
 
 	protected function body(): void {
@@ -33,7 +33,7 @@ final class Export extends Screen {
 		<form method="get" class="acfjp-export-form">
 			<input type="hidden" name="page" value="wp-acf-json-pro-export" />
 			<select name="group">
-				<option value=""><?php esc_html_e( 'Choose a field group…', 'wp-acf-json-pro' ); ?></option>
+				<option value=""><?php esc_html_e( 'Choose a field group…', 'fieldpilot-for-acf' ); ?></option>
 				<?php foreach ( $groups as $group ) : ?>
 					<option value="<?php echo esc_attr( $group['key'] ); ?>" <?php selected( $selected, $group['key'] ); ?>>
 						<?php echo esc_html( $group['title'] ); ?>
@@ -43,14 +43,14 @@ final class Export extends Screen {
 
 			<select name="dialect">
 				<option value="native" <?php selected( $dialect, 'native' ); ?>>
-					<?php esc_html_e( 'Native ACF export', 'wp-acf-json-pro' ); ?>
+					<?php esc_html_e( 'Native ACF export', 'fieldpilot-for-acf' ); ?>
 				</option>
 				<option value="acfjp" <?php selected( $dialect, 'acfjp' ); ?>>
-					<?php esc_html_e( 'WP ACF JSON Pro patch skeleton', 'wp-acf-json-pro' ); ?>
+					<?php esc_html_e( 'WP ACF JSON Pro patch skeleton', 'fieldpilot-for-acf' ); ?>
 				</option>
 			</select>
 
-			<button type="submit" class="button button-primary"><?php esc_html_e( 'Export', 'wp-acf-json-pro' ); ?></button>
+			<button type="submit" class="button button-primary"><?php esc_html_e( 'Export', 'fieldpilot-for-acf' ); ?></button>
 		</form>
 		<?php
 
@@ -72,7 +72,7 @@ final class Export extends Screen {
 
 		printf(
 			'<p><button type="button" class="button acfjp-copy" data-target="acfjp-export-output">%s</button></p>',
-			esc_html__( 'Copy to clipboard', 'wp-acf-json-pro' )
+			esc_html__( 'Copy to clipboard', 'fieldpilot-for-acf' )
 		);
 
 		printf(

@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 final class Dashboard extends Screen {
 
 	protected function title(): string {
-		return __( 'WP ACF JSON Pro', 'wp-acf-json-pro' );
+		return __( 'WP ACF JSON Pro', 'fieldpilot-for-acf' );
 	}
 
 	protected function body(): void {
@@ -37,27 +37,27 @@ final class Dashboard extends Screen {
 		echo '<div class="acfjp-cards">';
 
 		$this->card(
-			__( 'Field groups', 'wp-acf-json-pro' ),
+			__( 'Field groups', 'fieldpilot-for-acf' ),
 			(string) count( $reports ),
 			sprintf(
 				/* translators: %d: number of patchable field groups */
-				__( '%d can be changed from here', 'wp-acf-json-pro' ),
+				__( '%d can be changed from here', 'fieldpilot-for-acf' ),
 				count( $patchable )
 			)
 		);
 
 		$this->card(
-			__( 'Field types', 'wp-acf-json-pro' ),
+			__( 'Field types', 'fieldpilot-for-acf' ),
 			(string) count( $schemas->installedTypes() ),
 			$schemas->available()
-				? __( 'Validated against ACF schemas', 'wp-acf-json-pro' )
-				: __( 'ACF 6.8+ enables strict validation', 'wp-acf-json-pro' )
+				? __( 'Validated against ACF schemas', 'fieldpilot-for-acf' )
+				: __( 'ACF 6.8+ enables strict validation', 'fieldpilot-for-acf' )
 		);
 
 		$this->card(
-			__( 'Changes recorded', 'wp-acf-json-pro' ),
+			__( 'Changes recorded', 'fieldpilot-for-acf' ),
 			(string) $journal->countAll(),
-			__( 'Every change can be rolled back', 'wp-acf-json-pro' )
+			__( 'Every change can be rolled back', 'fieldpilot-for-acf' )
 		);
 
 		echo '</div>';
@@ -65,21 +65,21 @@ final class Dashboard extends Screen {
 		printf(
 			'<p><a href="%s" class="button button-primary button-hero">%s</a></p>',
 			esc_url( $this->url( '-import' ) ),
-			esc_html__( 'Import JSON', 'wp-acf-json-pro' )
+			esc_html__( 'Import JSON', 'fieldpilot-for-acf' )
 		);
 
-		echo '<h2>' . esc_html__( 'Field groups', 'wp-acf-json-pro' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Field groups', 'fieldpilot-for-acf' ) . '</h2>';
 
 		if ( array() === $reports ) {
-			$this->notice( esc_html__( 'No ACF field groups exist yet. Create one with an "operation": "create" payload on the Import screen.', 'wp-acf-json-pro' ) );
+			$this->notice( esc_html__( 'No ACF field groups exist yet. Create one with an "operation": "create" payload on the Import screen.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
 		echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
-		printf( '<th>%s</th>', esc_html__( 'Field group', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Key', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Source', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Status', 'wp-acf-json-pro' ) );
+		printf( '<th>%s</th>', esc_html__( 'Field group', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Key', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Source', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
 		echo '</tr></thead><tbody>';
 
 		foreach ( $reports as $report ) {
@@ -93,19 +93,19 @@ final class Dashboard extends Screen {
 			if ( $report->isPatchable() ) {
 				printf(
 					'<span class="acfjp-pill acfjp-pill--ok">%s</span>',
-					esc_html__( 'Editable', 'wp-acf-json-pro' )
+					esc_html__( 'Editable', 'fieldpilot-for-acf' )
 				);
 
 				if ( $report->syncPending ) {
 					printf(
 						' <span class="acfjp-pill acfjp-pill--warn">%s</span>',
-						esc_html__( 'JSON file is newer', 'wp-acf-json-pro' )
+						esc_html__( 'JSON file is newer', 'fieldpilot-for-acf' )
 					);
 				}
 			} else {
 				printf(
 					'<span class="acfjp-pill acfjp-pill--blocked">%s</span> %s',
-					esc_html__( 'Read only', 'wp-acf-json-pro' ),
+					esc_html__( 'Read only', 'fieldpilot-for-acf' ),
 					esc_html( $this->explain( $report->mutability ) )
 				);
 			}
@@ -118,8 +118,8 @@ final class Dashboard extends Screen {
 
 	private function explain( Mutability $mutability ): string {
 		return match ( $mutability ) {
-			Mutability::LocalPhp  => __( 'Registered in PHP - edit the code that registers it.', 'wp-acf-json-pro' ),
-			Mutability::LocalJson => __( 'Sync it into the database first.', 'wp-acf-json-pro' ),
+			Mutability::LocalPhp  => __( 'Registered in PHP - edit the code that registers it.', 'fieldpilot-for-acf' ),
+			Mutability::LocalJson => __( 'Sync it into the database first.', 'fieldpilot-for-acf' ),
 			default               => '',
 		};
 	}

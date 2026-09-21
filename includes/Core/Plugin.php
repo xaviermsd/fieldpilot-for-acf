@@ -107,7 +107,7 @@ final class Plugin {
 	}
 
 	public function loadTextDomain(): void {
-		load_plugin_textdomain( 'wp-acf-json-pro', false, dirname( plugin_basename( ACFJP_FILE ) ) . '/languages' );
+		load_plugin_textdomain( 'fieldpilot-for-acf', false, dirname( plugin_basename( ACFJP_FILE ) ) . '/languages' );
 	}
 
 	/**

@@ -40,9 +40,9 @@ enum Risk: string {
 
 	public function label(): string {
 		return match ( $this ) {
-			self::Safe        => __( 'Safe', 'wp-acf-json-pro' ),
-			self::Caution     => __( 'Caution', 'wp-acf-json-pro' ),
-			self::Destructive => __( 'Destructive', 'wp-acf-json-pro' ),
+			self::Safe        => __( 'Safe', 'fieldpilot-for-acf' ),
+			self::Caution     => __( 'Caution', 'fieldpilot-for-acf' ),
+			self::Destructive => __( 'Destructive', 'fieldpilot-for-acf' ),
 		};
 	}
 

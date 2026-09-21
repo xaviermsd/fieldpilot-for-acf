@@ -32,7 +32,7 @@ final class GroupLocator {
 		if ( '' === $reference ) {
 			throw new ResolutionException(
 				ErrorCodes::MISSING_TARGET,
-				__( 'No field group was named.', 'wp-acf-json-pro' ),
+				__( 'No field group was named.', 'fieldpilot-for-acf' ),
 				array(),
 				$this->allLabels()
 			);
@@ -50,7 +50,7 @@ final class GroupLocator {
 				ErrorCodes::GROUP_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field group key */
-					__( 'No field group has the key "%s".', 'wp-acf-json-pro' ),
+					__( 'No field group has the key "%s".', 'fieldpilot-for-acf' ),
 					$reference
 				),
 				array( 'reference' => $reference ),
@@ -76,7 +76,7 @@ final class GroupLocator {
 				ErrorCodes::AMBIGUOUS_TARGET,
 				sprintf(
 					/* translators: %1$d: number of matches, %2$s: the title */
-					__( '%1$d field groups are called "%2$s". Target one by key instead.', 'wp-acf-json-pro' ),
+					__( '%1$d field groups are called "%2$s". Target one by key instead.', 'fieldpilot-for-acf' ),
 					count( $exact ),
 					$reference
 				),
@@ -93,7 +93,7 @@ final class GroupLocator {
 			ErrorCodes::GROUP_NOT_FOUND,
 			sprintf(
 				/* translators: %s: the field group reference supplied */
-				__( 'Field group "%s" was not found.', 'wp-acf-json-pro' ),
+				__( 'Field group "%s" was not found.', 'fieldpilot-for-acf' ),
 				$reference
 			),
 			array( 'reference' => $reference ),

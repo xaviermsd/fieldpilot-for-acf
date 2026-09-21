@@ -78,7 +78,7 @@ final class Verifier {
 		if ( null === $field ) {
 			return sprintf(
 				/* translators: %s: field label */
-				__( '"%s" was updated but can no longer be found.', 'wp-acf-json-pro' ),
+				__( '"%s" was updated but can no longer be found.', 'fieldpilot-for-acf' ),
 				$change->label
 			);
 		}
@@ -104,7 +104,7 @@ final class Verifier {
 			if ( ! $this->settingsDiff->equivalent( $actual, $diff['to'] ) ) {
 				return sprintf(
 					/* translators: 1: field label, 2: setting name, 3: expected value, 4: actual value */
-					__( '"%1$s": %2$s should be %3$s but is %4$s.', 'wp-acf-json-pro' ),
+					__( '"%1$s": %2$s should be %3$s but is %4$s.', 'fieldpilot-for-acf' ),
 					$change->label,
 					$setting,
 					Change::scalar( $diff['to'] ),
@@ -123,7 +123,7 @@ final class Verifier {
 
 		return sprintf(
 			/* translators: %s: field label */
-			__( '"%s" should have been deleted but is still present.', 'wp-acf-json-pro' ),
+			__( '"%s" should have been deleted but is still present.', 'fieldpilot-for-acf' ),
 			$change->label
 		);
 	}
@@ -145,7 +145,7 @@ final class Verifier {
 					? null
 					: sprintf(
 						/* translators: 1: field label, 2: expected type, 3: actual type */
-						__( '"%1$s" was added as %3$s but should be %2$s.', 'wp-acf-json-pro' ),
+						__( '"%1$s" was added as %3$s but should be %2$s.', 'fieldpilot-for-acf' ),
 						$change->label,
 						$field->type,
 						$sibling->type
@@ -159,7 +159,7 @@ final class Verifier {
 
 		return sprintf(
 			/* translators: %s: field label */
-			__( '"%s" was added but is not present in the saved field group.', 'wp-acf-json-pro' ),
+			__( '"%s" was added but is not present in the saved field group.', 'fieldpilot-for-acf' ),
 			$change->label
 		);
 	}
@@ -170,7 +170,7 @@ final class Verifier {
 		if ( ! $after->has( $key ) ) {
 			return sprintf(
 				/* translators: %s: field label */
-				__( '"%s" was moved but can no longer be found.', 'wp-acf-json-pro' ),
+				__( '"%s" was moved but can no longer be found.', 'fieldpilot-for-acf' ),
 				$change->label
 			);
 		}
@@ -186,7 +186,7 @@ final class Verifier {
 		if ( $expectedParent !== $actualParent ) {
 			return sprintf(
 				/* translators: %s: field label */
-				__( '"%s" did not end up in the expected container.', 'wp-acf-json-pro' ),
+				__( '"%s" did not end up in the expected container.', 'fieldpilot-for-acf' ),
 				$change->label
 			);
 		}
@@ -201,7 +201,7 @@ final class Verifier {
 
 		return sprintf(
 			/* translators: %s: layout label */
-			__( 'Layout "%s" should have been removed but is still present.', 'wp-acf-json-pro' ),
+			__( 'Layout "%s" should have been removed but is still present.', 'fieldpilot-for-acf' ),
 			$change->label
 		);
 	}
@@ -224,7 +224,7 @@ final class Verifier {
 
 			$failures[] = sprintf(
 				/* translators: %s: field label */
-				__( '"%s" is inside a flexible content field but is not bound to a layout; ACF would attach it to the first one.', 'wp-acf-json-pro' ),
+				__( '"%s" is inside a flexible content field but is not bound to a layout; ACF would attach it to the first one.', 'fieldpilot-for-acf' ),
 				$field->label
 			);
 		}

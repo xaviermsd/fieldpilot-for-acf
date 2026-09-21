@@ -24,11 +24,11 @@ import sys
 import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SLUG = "wp-acf-json-pro"
+SLUG = "fieldpilot-for-acf"
 
 # Everything that ships, and nothing else.
 INCLUDE = [
-    "wp-acf-json-pro.php",
+    "fieldpilot-for-acf.php",
     "uninstall.php",
     "readme.txt",
     "includes/**/*.php",
@@ -55,7 +55,7 @@ NEVER = [
 
 
 def version() -> str:
-    header = (ROOT / f"{SLUG}.php").read_text(encoding="utf-8")
+    header = (ROOT / "fieldpilot-for-acf.php").read_text(encoding="utf-8")
     match = re.search(r"^\s*\*\s*Version:\s*(.+)$", header, re.MULTILINE)
     return match.group(1).strip() if match else "0.0.0"
 

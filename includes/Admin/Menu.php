@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class Menu {
 
-	public const SLUG = 'wp-acf-json-pro';
+	public const SLUG = 'fieldpilot-for-acf';
 
 	public function __construct( private readonly Container $container ) {}
 
@@ -34,22 +34,22 @@ final class Menu {
 		$capability = (string) apply_filters( 'acfjp/capability', Guard::CAPABILITY );
 
 		add_menu_page(
-			__( 'WP ACF JSON Pro', 'wp-acf-json-pro' ),
-			__( 'ACF JSON Pro', 'wp-acf-json-pro' ),
+			__( 'FieldPilot for ACF', 'fieldpilot-for-acf' ),
+			__( 'FieldPilot', 'fieldpilot-for-acf' ),
 			$capability,
 			self::SLUG,
 			array( $this, 'renderDashboard' ),
-			'dashicons-media-code',
+			'dashicons-superhero-alt',
 			81
 		);
 
 		$pages = array(
-			''          => __( 'Dashboard', 'wp-acf-json-pro' ),
-			'-import'   => __( 'Import JSON', 'wp-acf-json-pro' ),
-			'-history'  => __( 'History', 'wp-acf-json-pro' ),
-			'-export'   => __( 'Export', 'wp-acf-json-pro' ),
-			'-diagnostics' => __( 'Diagnostics', 'wp-acf-json-pro' ),
-			'-settings' => __( 'Settings', 'wp-acf-json-pro' ),
+			''          => __( 'Dashboard', 'fieldpilot-for-acf' ),
+			'-import'   => __( 'Import JSON', 'fieldpilot-for-acf' ),
+			'-history'  => __( 'History', 'fieldpilot-for-acf' ),
+			'-export'   => __( 'Export', 'fieldpilot-for-acf' ),
+			'-diagnostics' => __( 'Diagnostics', 'fieldpilot-for-acf' ),
+			'-settings' => __( 'Settings', 'fieldpilot-for-acf' ),
 		);
 
 		$callbacks = array(

@@ -17,7 +17,7 @@ parameters:
 
     scanFiles:
         - tests/stubs/acf.php
-        - wp-acf-json-pro.php
+        - fieldpilot-for-acf.php
 
     ignoreErrors:
         # WordPress and ACF are dynamically typed at the boundary; we validate

@@ -31,10 +31,10 @@ enum Mutability: string {
 
 	public function label(): string {
 		return match ( $this ) {
-			self::Database  => __( 'Database', 'wp-acf-json-pro' ),
-			self::LocalJson => __( 'Local JSON (not synced)', 'wp-acf-json-pro' ),
-			self::LocalPhp  => __( 'Registered in PHP', 'wp-acf-json-pro' ),
-			self::Missing   => __( 'Not found', 'wp-acf-json-pro' ),
+			self::Database  => __( 'Database', 'fieldpilot-for-acf' ),
+			self::LocalJson => __( 'Local JSON (not synced)', 'fieldpilot-for-acf' ),
+			self::LocalPhp  => __( 'Registered in PHP', 'fieldpilot-for-acf' ),
+			self::Missing   => __( 'Not found', 'fieldpilot-for-acf' ),
 		};
 	}
 }

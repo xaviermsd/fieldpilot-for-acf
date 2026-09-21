@@ -508,13 +508,13 @@ final class Comparator {
 		$summary = $changesParent
 			? sprintf(
 				/* translators: 1: source path, 2: destination path */
-				__( 'moved from %1$s to %2$s', 'wp-acf-json-pro' ),
+				__( 'moved from %1$s to %2$s', 'fieldpilot-for-acf' ),
 				$current->displayPath( $key ),
 				$toLocus->display
 			)
 			: sprintf(
 				/* translators: %s: position keyword */
-				__( 'repositioned (%s)', 'wp-acf-json-pro' ),
+				__( 'repositioned (%s)', 'fieldpilot-for-acf' ),
 				$move->position
 			);
 

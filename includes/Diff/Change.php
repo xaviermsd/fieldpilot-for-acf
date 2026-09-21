@@ -110,16 +110,16 @@ final class Change implements \JsonSerializable {
 		return match ( $this->type ) {
 			self::ADD => sprintf(
 				/* translators: %s: field type */
-				__( 'new %s field', 'wp-acf-json-pro' ),
+				__( 'new %s field', 'fieldpilot-for-acf' ),
 				(string) $this->fieldType
 			),
-			self::DELETE => __( 'removed', 'wp-acf-json-pro' ),
-			self::MOVE   => (string) ( $this->context['summary'] ?? __( 'moved', 'wp-acf-json-pro' ) ),
-			self::REORDER => __( 'reordered', 'wp-acf-json-pro' ),
+			self::DELETE => __( 'removed', 'fieldpilot-for-acf' ),
+			self::MOVE   => (string) ( $this->context['summary'] ?? __( 'moved', 'fieldpilot-for-acf' ) ),
+			self::REORDER => __( 'reordered', 'fieldpilot-for-acf' ),
 			self::UPDATE, self::GROUP_UPDATE => $this->describeSettingDiffs(),
-			self::CREATE_GROUP => __( 'new field group', 'wp-acf-json-pro' ),
-			self::ADD_LAYOUT    => __( 'new layout', 'wp-acf-json-pro' ),
-			self::DELETE_LAYOUT => __( 'layout removed', 'wp-acf-json-pro' ),
+			self::CREATE_GROUP => __( 'new field group', 'fieldpilot-for-acf' ),
+			self::ADD_LAYOUT    => __( 'new layout', 'fieldpilot-for-acf' ),
+			self::DELETE_LAYOUT => __( 'layout removed', 'fieldpilot-for-acf' ),
 			default             => $this->type,
 		};
 	}
@@ -150,7 +150,7 @@ final class Change implements \JsonSerializable {
 			is_scalar( $value ) => (string) $value,
 			is_array( $value )  => sprintf(
 				/* translators: %d: number of items */
-				_n( '%d item', '%d items', count( $value ), 'wp-acf-json-pro' ),
+				_n( '%d item', '%d items', count( $value ), 'fieldpilot-for-acf' ),
 				count( $value )
 			),
 			default             => gettype( $value ),

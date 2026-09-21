@@ -36,7 +36,7 @@ final class Requirements {
 		if ( version_compare( PHP_VERSION, ACFJP_MIN_PHP, '<' ) ) {
 			$this->failures[] = sprintf(
 				/* translators: 1: required PHP version, 2: current PHP version */
-				__( 'PHP %1$s or newer is required. This site runs PHP %2$s.', 'wp-acf-json-pro' ),
+				__( 'PHP %1$s or newer is required. This site runs PHP %2$s.', 'fieldpilot-for-acf' ),
 				ACFJP_MIN_PHP,
 				PHP_VERSION
 			);
@@ -45,7 +45,7 @@ final class Requirements {
 		if ( version_compare( get_bloginfo( 'version' ), ACFJP_MIN_WP, '<' ) ) {
 			$this->failures[] = sprintf(
 				/* translators: 1: required WP version, 2: current WP version */
-				__( 'WordPress %1$s or newer is required. This site runs WordPress %2$s.', 'wp-acf-json-pro' ),
+				__( 'WordPress %1$s or newer is required. This site runs WordPress %2$s.', 'fieldpilot-for-acf' ),
 				ACFJP_MIN_WP,
 				get_bloginfo( 'version' )
 			);
@@ -53,11 +53,11 @@ final class Requirements {
 
 		// Feature detection, not version sniffing: a function we actually call.
 		if ( ! function_exists( 'acf_get_field_groups' ) ) {
-			$this->failures[] = __( 'Advanced Custom Fields is not active. WP ACF JSON Pro extends ACF and cannot run without it.', 'wp-acf-json-pro' );
+			$this->failures[] = __( 'Advanced Custom Fields is not active. WP ACF JSON Pro extends ACF and cannot run without it.', 'fieldpilot-for-acf' );
 		} elseif ( defined( 'ACF_VERSION' ) && version_compare( ACF_VERSION, ACFJP_MIN_ACF, '<' ) ) {
 			$this->failures[] = sprintf(
 				/* translators: 1: required ACF version, 2: current ACF version */
-				__( 'Advanced Custom Fields %1$s or newer is required. This site runs ACF %2$s.', 'wp-acf-json-pro' ),
+				__( 'Advanced Custom Fields %1$s or newer is required. This site runs ACF %2$s.', 'fieldpilot-for-acf' ),
 				ACFJP_MIN_ACF,
 				ACF_VERSION
 			);
@@ -105,7 +105,7 @@ final class Requirements {
 
 				printf(
 					'<div class="notice notice-error"><p><strong>%s</strong></p><ul style="list-style:disc;margin-left:20px">%s</ul></div>',
-					esc_html__( 'WP ACF JSON Pro is inactive.', 'wp-acf-json-pro' ),
+					esc_html__( 'WP ACF JSON Pro is inactive.', 'fieldpilot-for-acf' ),
 					implode(
 						'',
 						array_map(

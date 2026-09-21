@@ -67,8 +67,8 @@ final class SelfTest {
 		} catch ( \Throwable $e ) {
 			$this->result->add(
 				Check::fail(
-					__( 'Unexpected', 'wp-acf-json-pro' ),
-					__( 'The self-test stopped early', 'wp-acf-json-pro' ),
+					__( 'Unexpected', 'fieldpilot-for-acf' ),
+					__( 'The self-test stopped early', 'fieldpilot-for-acf' ),
 					get_class( $e ) . ': ' . $e->getMessage(),
 					true
 				)
@@ -83,10 +83,10 @@ final class SelfTest {
 	// ---- Sections ------------------------------------------------------------
 
 	private function environment(): bool {
-		$section = __( 'Environment', 'wp-acf-json-pro' );
+		$section = __( 'Environment', 'fieldpilot-for-acf' );
 
 		if ( ! function_exists( 'acf_get_field_groups' ) ) {
-			$this->result->add( Check::fail( $section, __( 'ACF is active', 'wp-acf-json-pro' ), '', true ) );
+			$this->result->add( Check::fail( $section, __( 'ACF is active', 'fieldpilot-for-acf' ), '', true ) );
 
 			return false;
 		}
@@ -94,7 +94,7 @@ final class SelfTest {
 		$this->result->add(
 			Check::pass(
 				$section,
-				__( 'ACF detected', 'wp-acf-json-pro' ),
+				__( 'ACF detected', 'fieldpilot-for-acf' ),
 				defined( 'ACF_VERSION' ) ? 'v' . ACF_VERSION : ''
 			)
 		);
@@ -102,20 +102,20 @@ final class SelfTest {
 		$this->result->add(
 			Check::pass(
 				$section,
-				__( 'ACF PRO', 'wp-acf-json-pro' ),
+				__( 'ACF PRO', 'fieldpilot-for-acf' ),
 				$this->hasPro()
-					? __( 'available', 'wp-acf-json-pro' )
-					: __( 'not installed - repeater and flexible content checks will be skipped', 'wp-acf-json-pro' )
+					? __( 'available', 'fieldpilot-for-acf' )
+					: __( 'not installed - repeater and flexible content checks will be skipped', 'fieldpilot-for-acf' )
 			)
 		);
 
 		$this->result->add(
 			Check::pass(
 				$section,
-				__( 'Field type schemas', 'wp-acf-json-pro' ),
+				__( 'Field type schemas', 'fieldpilot-for-acf' ),
 				function_exists( 'acf_get_field_json_schema' )
-					? __( 'available (ACF 6.8+), strict validation', 'wp-acf-json-pro' )
-					: __( 'unavailable, validation is looser', 'wp-acf-json-pro' )
+					? __( 'available (ACF 6.8+), strict validation', 'fieldpilot-for-acf' )
+					: __( 'unavailable, validation is looser', 'fieldpilot-for-acf' )
 			)
 		);
 
@@ -123,15 +123,15 @@ final class SelfTest {
 			$this->result->add(
 				Check::skip(
 					$section,
-					__( 'Write mode', 'wp-acf-json-pro' ),
-					__( 'read-only mode is on, so nothing can be written and the write checks cannot run', 'wp-acf-json-pro' )
+					__( 'Write mode', 'fieldpilot-for-acf' ),
+					__( 'read-only mode is on, so nothing can be written and the write checks cannot run', 'fieldpilot-for-acf' )
 				)
 			);
 
 			return false;
 		}
 
-		$this->result->add( Check::pass( $section, __( 'Write mode', 'wp-acf-json-pro' ), __( 'enabled', 'wp-acf-json-pro' ) ) );
+		$this->result->add( Check::pass( $section, __( 'Write mode', 'fieldpilot-for-acf' ), __( 'enabled', 'fieldpilot-for-acf' ) ) );
 
 		global $wpdb;
 
@@ -142,9 +142,9 @@ final class SelfTest {
 		$this->result->add(
 			Check::true(
 				$section,
-				__( 'History tables exist', 'wp-acf-json-pro' ),
+				__( 'History tables exist', 'fieldpilot-for-acf' ),
 				$exists,
-				__( 'Deactivate and reactivate the plugin to create them.', 'wp-acf-json-pro' ),
+				__( 'Deactivate and reactivate the plugin to create them.', 'fieldpilot-for-acf' ),
 				true
 			)
 		);
@@ -157,7 +157,7 @@ final class SelfTest {
 	 * field, and prove nothing else in the group moved by a single byte.
 	 */
 	private function canonicalScenario(): void {
-		$section = __( '1. Partial update', 'wp-acf-json-pro' );
+		$section = __( '1. Partial update', 'fieldpilot-for-acf' );
 
 		$this->resetFixture();
 
@@ -167,19 +167,19 @@ final class SelfTest {
 		try {
 			$plan = $this->engine->plan( $this->canonicalPayload() );
 
-			$this->result->add( Check::true( $section, __( 'Payload validates', 'wp-acf-json-pro' ), $plan->report->isValid() ) );
-			$this->result->add( Check::is( $section, __( 'Preview shows exactly 2 changes', 'wp-acf-json-pro' ), $plan->changeSet->count(), 2 ) );
-			$this->result->add( Check::is( $section, __( 'Neither change is risky', 'wp-acf-json-pro' ), $plan->changeSet->highestRisk()->value, 'safe' ) );
+			$this->result->add( Check::true( $section, __( 'Payload validates', 'fieldpilot-for-acf' ), $plan->report->isValid() ) );
+			$this->result->add( Check::is( $section, __( 'Preview shows exactly 2 changes', 'fieldpilot-for-acf' ), $plan->changeSet->count(), 2 ) );
+			$this->result->add( Check::is( $section, __( 'Neither change is risky', 'fieldpilot-for-acf' ), $plan->changeSet->highestRisk()->value, 'safe' ) );
 
 			$result = $this->engine->apply( $plan->id, array(), false, self::SOURCE );
 
-			$this->result->add( Check::true( $section, __( 'Apply succeeded', 'wp-acf-json-pro' ), $result->applied, '', true ) );
+			$this->result->add( Check::true( $section, __( 'Apply succeeded', 'fieldpilot-for-acf' ), $result->applied, '', true ) );
 
 			$after      = $this->export();
 			$afterAgent = $after['fields'][0]['sub_fields'] ?? array();
 
-			$this->result->add( Check::is( $section, __( 'Exactly one field was added', 'wp-acf-json-pro' ), count( $afterAgent ), count( $beforeAgent ) + 1, true ) );
-			$this->result->add( Check::is( $section, __( 'The new field is WhatsApp', 'wp-acf-json-pro' ), $afterAgent[3]['name'] ?? null, 'whatsapp' ) );
+			$this->result->add( Check::is( $section, __( 'Exactly one field was added', 'fieldpilot-for-acf' ), count( $afterAgent ), count( $beforeAgent ) + 1, true ) );
+			$this->result->add( Check::is( $section, __( 'The new field is WhatsApp', 'fieldpilot-for-acf' ), $afterAgent[3]['name'] ?? null, 'whatsapp' ) );
 
 			$beforeEmail = $beforeAgent[2];
 			$afterEmail  = $afterAgent[2];
@@ -187,25 +187,25 @@ final class SelfTest {
 			$this->result->add(
 				Check::is(
 					$section,
-					__( 'Existing field key was NOT regenerated', 'wp-acf-json-pro' ),
+					__( 'Existing field key was NOT regenerated', 'fieldpilot-for-acf' ),
 					$afterEmail['key'] ?? null,
 					'field' . self::MARKER . '_email',
 					true
 				)
 			);
 
-			$this->result->add( Check::is( $section, __( 'required flipped to 1', 'wp-acf-json-pro' ), (int) ( $afterEmail['required'] ?? 0 ), 1 ) );
-			$this->result->add( Check::is( $section, __( 'instructions survived untouched', 'wp-acf-json-pro' ), $afterEmail['instructions'] ?? null, 'Work address only', true ) );
-			$this->result->add( Check::is( $section, __( 'placeholder survived untouched', 'wp-acf-json-pro' ), $afterEmail['placeholder'] ?? null, 'you@example.com', true ) );
+			$this->result->add( Check::is( $section, __( 'required flipped to 1', 'fieldpilot-for-acf' ), (int) ( $afterEmail['required'] ?? 0 ), 1 ) );
+			$this->result->add( Check::is( $section, __( 'instructions survived untouched', 'fieldpilot-for-acf' ), $afterEmail['instructions'] ?? null, 'Work address only', true ) );
+			$this->result->add( Check::is( $section, __( 'placeholder survived untouched', 'fieldpilot-for-acf' ), $afterEmail['placeholder'] ?? null, 'you@example.com', true ) );
 
 			unset( $beforeEmail['required'], $afterEmail['required'] );
 
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'ONLY "required" differs on the edited field', 'wp-acf-json-pro' ),
+					__( 'ONLY "required" differs on the edited field', 'fieldpilot-for-acf' ),
 					$this->normalise( $beforeEmail ) === $this->normalise( $afterEmail ),
-					__( 'Something other than the requested setting changed. This is the core promise of the plugin.', 'wp-acf-json-pro' ),
+					__( 'Something other than the requested setting changed. This is the core promise of the plugin.', 'fieldpilot-for-acf' ),
 					true
 				)
 			);
@@ -213,10 +213,10 @@ final class SelfTest {
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'Sibling fields are byte-identical', 'wp-acf-json-pro' ),
+					__( 'Sibling fields are byte-identical', 'fieldpilot-for-acf' ),
 					$this->normalise( $beforeAgent[0] ) === $this->normalise( $afterAgent[0] )
 						&& $this->normalise( $beforeAgent[1] ) === $this->normalise( $afterAgent[1] ),
-					__( 'A field the payload never mentioned was modified.', 'wp-acf-json-pro' ),
+					__( 'A field the payload never mentioned was modified.', 'fieldpilot-for-acf' ),
 					true
 				)
 			);
@@ -224,7 +224,7 @@ final class SelfTest {
 			$this->journalId = $result->journalId;
 			$this->beforeSnapshot = $before;
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'Partial update', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
+			$this->result->add( Check::fail( $section, __( 'Partial update', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
 		}
 	}
 
@@ -234,10 +234,10 @@ final class SelfTest {
 	private array $beforeSnapshot = array();
 
 	private function rollback(): void {
-		$section = __( '2. Rollback', 'wp-acf-json-pro' );
+		$section = __( '2. Rollback', 'fieldpilot-for-acf' );
 
 		if ( 0 === $this->journalId ) {
-			$this->result->add( Check::skip( $section, __( 'Rollback', 'wp-acf-json-pro' ), __( 'nothing was applied to roll back', 'wp-acf-json-pro' ) ) );
+			$this->result->add( Check::skip( $section, __( 'Rollback', 'fieldpilot-for-acf' ), __( 'nothing was applied to roll back', 'fieldpilot-for-acf' ) ) );
 
 			return;
 		}
@@ -250,21 +250,21 @@ final class SelfTest {
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'Restores a byte-identical configuration', 'wp-acf-json-pro' ),
+					__( 'Restores a byte-identical configuration', 'fieldpilot-for-acf' ),
 					$this->normalise( $this->beforeSnapshot ) === $this->normalise( $restored ),
-					__( 'The snapshot did not reproduce the original state. Rollback is the safety net; treat a failure here as blocking.', 'wp-acf-json-pro' ),
+					__( 'The snapshot did not reproduce the original state. Rollback is the safety net; treat a failure here as blocking.', 'fieldpilot-for-acf' ),
 					true
 				)
 			);
 
-			$this->result->add( Check::is( $section, __( 'The added field was removed', 'wp-acf-json-pro' ), count( $restored['fields'][0]['sub_fields'] ?? array() ), 3 ) );
+			$this->result->add( Check::is( $section, __( 'The added field was removed', 'fieldpilot-for-acf' ), count( $restored['fields'][0]['sub_fields'] ?? array() ), 3 ) );
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'Rollback', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
+			$this->result->add( Check::fail( $section, __( 'Rollback', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
 		}
 	}
 
 	private function conflicts(): void {
-		$section = __( '3. Conflicts', 'wp-acf-json-pro' );
+		$section = __( '3. Conflicts', 'fieldpilot-for-acf' );
 
 		$this->resetFixture();
 
@@ -277,14 +277,14 @@ final class SelfTest {
 				)
 			);
 
-			$this->result->add( Check::is( $section, __( 'A type change raises a conflict', 'wp-acf-json-pro' ), count( $plan->changeSet->unresolvedConflicts() ), 1 ) );
+			$this->result->add( Check::is( $section, __( 'A type change raises a conflict', 'fieldpilot-for-acf' ), count( $plan->changeSet->unresolvedConflicts() ), 1 ) );
 
 			try {
 				$this->engine->apply( $plan->id, array(), true, self::SOURCE );
 
-				$this->result->add( Check::fail( $section, __( 'Unresolved conflicts block the apply', 'wp-acf-json-pro' ), __( 'It was applied anyway.', 'wp-acf-json-pro' ), true ) );
+				$this->result->add( Check::fail( $section, __( 'Unresolved conflicts block the apply', 'fieldpilot-for-acf' ), __( 'It was applied anyway.', 'fieldpilot-for-acf' ), true ) );
 			} catch ( AcfjpException $e ) {
-				$this->result->add( Check::is( $section, __( 'Unresolved conflicts block the apply', 'wp-acf-json-pro' ), $e->errorCode(), ErrorCodes::UNRESOLVED_CONFLICTS ) );
+				$this->result->add( Check::is( $section, __( 'Unresolved conflicts block the apply', 'fieldpilot-for-acf' ), $e->errorCode(), ErrorCodes::UNRESOLVED_CONFLICTS ) );
 			}
 
 			$plan       = $this->engine->plan(
@@ -300,15 +300,15 @@ final class SelfTest {
 
 			$phone = ( $this->export()['fields'][0]['sub_fields'] ?? array() )[1] ?? array();
 
-			$this->result->add( Check::is( $section, __( '"Keep existing" preserved the type', 'wp-acf-json-pro' ), $phone['type'] ?? null, 'text', true ) );
-			$this->result->add( Check::is( $section, __( 'The non-conflicting change still applied', 'wp-acf-json-pro' ), $phone['label'] ?? null, 'Telephone' ) );
+			$this->result->add( Check::is( $section, __( '"Keep existing" preserved the type', 'fieldpilot-for-acf' ), $phone['type'] ?? null, 'text', true ) );
+			$this->result->add( Check::is( $section, __( 'The non-conflicting change still applied', 'fieldpilot-for-acf' ), $phone['label'] ?? null, 'Telephone' ) );
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'Conflict handling', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
+			$this->result->add( Check::fail( $section, __( 'Conflict handling', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
 		}
 	}
 
 	private function concurrency(): void {
-		$section = __( '4. Stale previews', 'wp-acf-json-pro' );
+		$section = __( '4. Stale previews', 'fieldpilot-for-acf' );
 
 		$this->resetFixture();
 
@@ -327,12 +327,12 @@ final class SelfTest {
 			try {
 				$this->engine->apply( $plan->id, array(), true, self::SOURCE );
 
-				$this->result->add( Check::fail( $section, __( 'A stale preview is refused', 'wp-acf-json-pro' ), __( 'It was applied anyway.', 'wp-acf-json-pro' ), true ) );
+				$this->result->add( Check::fail( $section, __( 'A stale preview is refused', 'fieldpilot-for-acf' ), __( 'It was applied anyway.', 'fieldpilot-for-acf' ), true ) );
 			} catch ( AcfjpException $e ) {
-				$this->result->add( Check::is( $section, __( 'A stale preview is refused', 'wp-acf-json-pro' ), $e->errorCode(), ErrorCodes::STATE_CHANGED ) );
+				$this->result->add( Check::is( $section, __( 'A stale preview is refused', 'fieldpilot-for-acf' ), $e->errorCode(), ErrorCodes::STATE_CHANGED ) );
 			}
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'Concurrency', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
+			$this->result->add( Check::fail( $section, __( 'Concurrency', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
 		}
 	}
 
@@ -342,7 +342,7 @@ final class SelfTest {
 	 * orphaned rows would look like a pass without it.
 	 */
 	private function localPhpRefusal(): void {
-		$section = __( '5. PHP-registered groups', 'wp-acf-json-pro' );
+		$section = __( '5. PHP-registered groups', 'fieldpilot-for-acf' );
 
 		global $wpdb;
 
@@ -375,11 +375,11 @@ final class SelfTest {
 				self::SOURCE
 			);
 
-			$this->result->add( Check::fail( $section, __( 'A PHP-registered group is refused', 'wp-acf-json-pro' ), __( 'It was accepted.', 'wp-acf-json-pro' ), true ) );
+			$this->result->add( Check::fail( $section, __( 'A PHP-registered group is refused', 'fieldpilot-for-acf' ), __( 'It was accepted.', 'fieldpilot-for-acf' ), true ) );
 		} catch ( AcfjpException $e ) {
-			$this->result->add( Check::is( $section, __( 'A PHP-registered group is refused', 'wp-acf-json-pro' ), $e->errorCode(), ErrorCodes::GROUP_REGISTERED_IN_PHP, true ) );
+			$this->result->add( Check::is( $section, __( 'A PHP-registered group is refused', 'fieldpilot-for-acf' ), $e->errorCode(), ErrorCodes::GROUP_REGISTERED_IN_PHP, true ) );
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'A PHP-registered group is refused', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
+			$this->result->add( Check::fail( $section, __( 'A PHP-registered group is refused', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -388,7 +388,7 @@ final class SelfTest {
 		$this->result->add(
 			Check::is(
 				$section,
-				__( 'No orphaned field rows were created', 'wp-acf-json-pro' ),
+				__( 'No orphaned field rows were created', 'fieldpilot-for-acf' ),
 				$after,
 				$before,
 				true
@@ -397,10 +397,10 @@ final class SelfTest {
 	}
 
 	private function nestedStructures(): void {
-		$section = __( '6. Nested structures', 'wp-acf-json-pro' );
+		$section = __( '6. Nested structures', 'fieldpilot-for-acf' );
 
 		if ( ! $this->hasPro() ) {
-			$this->result->add( Check::skip( $section, __( 'Repeater and flexible content', 'wp-acf-json-pro' ), __( 'ACF PRO is not installed', 'wp-acf-json-pro' ) ) );
+			$this->result->add( Check::skip( $section, __( 'Repeater and flexible content', 'fieldpilot-for-acf' ), __( 'ACF PRO is not installed', 'fieldpilot-for-acf' ) ) );
 
 			return;
 		}
@@ -469,15 +469,15 @@ final class SelfTest {
 				}
 			}
 
-			$this->result->add( Check::true( $section, __( 'Repeater created', 'wp-acf-json-pro' ), null !== $team ) );
-			$this->result->add( Check::is( $section, __( 'Repeater kept both sub-fields', 'wp-acf-json-pro' ), count( $team['sub_fields'] ?? array() ), 2 ) );
-			$this->result->add( Check::is( $section, __( 'Three-level nesting survived', 'wp-acf-json-pro' ), count( $team['sub_fields'][1]['sub_fields'] ?? array() ), 1, true ) );
+			$this->result->add( Check::true( $section, __( 'Repeater created', 'fieldpilot-for-acf' ), null !== $team ) );
+			$this->result->add( Check::is( $section, __( 'Repeater kept both sub-fields', 'fieldpilot-for-acf' ), count( $team['sub_fields'] ?? array() ), 2 ) );
+			$this->result->add( Check::is( $section, __( 'Three-level nesting survived', 'fieldpilot-for-acf' ), count( $team['sub_fields'][1]['sub_fields'] ?? array() ), 1, true ) );
 
-			$this->result->add( Check::true( $section, __( 'Flexible content created', 'wp-acf-json-pro' ), null !== $flex ) );
+			$this->result->add( Check::true( $section, __( 'Flexible content created', 'fieldpilot-for-acf' ), null !== $flex ) );
 
 			$layouts = array_values( $flex['layouts'] ?? array() );
 
-			$this->result->add( Check::is( $section, __( 'Both layouts created', 'wp-acf-json-pro' ), count( $layouts ), 2 ) );
+			$this->result->add( Check::is( $section, __( 'Both layouts created', 'fieldpilot-for-acf' ), count( $layouts ), 2 ) );
 
 			$heroCount = count( $layouts[0]['sub_fields'] ?? array() );
 			$ctaCount  = count( $layouts[1]['sub_fields'] ?? array() );
@@ -485,11 +485,11 @@ final class SelfTest {
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'Each layout kept its own fields', 'wp-acf-json-pro' ),
+					__( 'Each layout kept its own fields', 'fieldpilot-for-acf' ),
 					2 === $heroCount && 1 === $ctaCount,
 					sprintf(
 						/* translators: 1: fields in the first layout, 2: fields in the second */
-						__( 'Got %1$d and %2$d, expected 2 and 1. ACF silently moves sub-fields with no layout binding into the first layout, so this usually means parent_layout was not written.', 'wp-acf-json-pro' ),
+						__( 'Got %1$d and %2$d, expected 2 and 1. ACF silently moves sub-fields with no layout binding into the first layout, so this usually means parent_layout was not written.', 'fieldpilot-for-acf' ),
 						$heroCount,
 						$ctaCount
 					),
@@ -497,12 +497,12 @@ final class SelfTest {
 				)
 			);
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'Nested structures', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
+			$this->result->add( Check::fail( $section, __( 'Nested structures', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
 		}
 	}
 
 	private function errorQuality(): void {
-		$section = __( '7. Error messages', 'wp-acf-json-pro' );
+		$section = __( '7. Error messages', 'fieldpilot-for-acf' );
 
 		$this->resetFixture();
 
@@ -515,23 +515,23 @@ final class SelfTest {
 				)
 			);
 
-			$this->result->add( Check::fail( $section, __( 'A misspelled field name is caught', 'wp-acf-json-pro' ), __( 'It was accepted.', 'wp-acf-json-pro' ) ) );
+			$this->result->add( Check::fail( $section, __( 'A misspelled field name is caught', 'fieldpilot-for-acf' ), __( 'It was accepted.', 'fieldpilot-for-acf' ) ) );
 		} catch ( AcfjpException $e ) {
-			$this->result->add( Check::is( $section, __( 'A misspelled field name is caught', 'wp-acf-json-pro' ), $e->errorCode(), ErrorCodes::FIELD_NOT_FOUND ) );
+			$this->result->add( Check::is( $section, __( 'A misspelled field name is caught', 'fieldpilot-for-acf' ), $e->errorCode(), ErrorCodes::FIELD_NOT_FOUND ) );
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'The real field name is suggested', 'wp-acf-json-pro' ),
+					__( 'The real field name is suggested', 'fieldpilot-for-acf' ),
 					in_array( 'email', $e->suggestions(), true ),
 					sprintf(
 						/* translators: %s: comma-separated suggestions */
-						__( 'Suggestions were: %s', 'wp-acf-json-pro' ),
+						__( 'Suggestions were: %s', 'fieldpilot-for-acf' ),
 						implode( ', ', $e->suggestions() ) ?: '-'
 					)
 				)
 			);
 		} catch ( \Throwable $e ) {
-			$this->result->add( Check::fail( $section, __( 'Error quality', 'wp-acf-json-pro' ), $this->describe( $e ) ) );
+			$this->result->add( Check::fail( $section, __( 'Error quality', 'fieldpilot-for-acf' ), $this->describe( $e ) ) );
 		}
 	}
 

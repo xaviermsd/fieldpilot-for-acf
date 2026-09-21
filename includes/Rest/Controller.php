@@ -178,7 +178,7 @@ final class Controller {
 
 		return new \WP_Error(
 			'acfjp_forbidden',
-			__( 'You do not have permission to manage ACF field configuration.', 'wp-acf-json-pro' ),
+			__( 'You do not have permission to manage ACF field configuration.', 'fieldpilot-for-acf' ),
 			array( 'status' => rest_authorization_required_code() )
 		);
 	}
@@ -290,7 +290,7 @@ final class Controller {
 					'rolled_back' => $entry->jsonSerialize(),
 					'message'     => sprintf(
 						/* translators: %s: field group title */
-						__( '"%s" was restored to its previous state.', 'wp-acf-json-pro' ),
+						__( '"%s" was restored to its previous state.', 'fieldpilot-for-acf' ),
 						$entry->groupTitle
 					),
 				)

@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       WP ACF JSON Pro
+ * Plugin Name:       FieldPilot - AI & JSON Copilot for ACF
  * Plugin URI:        https://github.com/xaviermsd/wp-json-pro
- * Description:       Build, import, update and manage ACF field structures with JSON. A safe, deterministic configuration patch engine for Advanced Custom Fields.
+ * Description:       Build, import, update and manage ACF field structures with AI prompts and JSON. A safe, deterministic configuration patch copilot for Advanced Custom Fields.
  * Version:           1.0.12
  * Requires at least: 6.5
  * Requires PHP:      8.1
@@ -10,7 +10,7 @@
  * Author URI:        https://profiles.wordpress.org/xaviermsd/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       wp-acf-json-pro
+ * Text Domain:       fieldpilot-for-acf
  * Domain Path:       /languages
  *
  * @package ACFJP

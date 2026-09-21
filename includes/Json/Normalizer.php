@@ -62,7 +62,7 @@ final class Normalizer {
 		if ( array() === $groups ) {
 			throw new ValidationException(
 				ErrorCodes::MISSING_FIELDS,
-				__( 'This looks like an ACF export but contains no field groups.', 'wp-acf-json-pro' )
+				__( 'This looks like an ACF export but contains no field groups.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -71,11 +71,11 @@ final class Normalizer {
 				ErrorCodes::INVALID_FIELD,
 				sprintf(
 					/* translators: %d: number of field groups found */
-					__( 'This export contains %d field groups. Import them one at a time so each change can be previewed separately.', 'wp-acf-json-pro' ),
+					__( 'This export contains %d field groups. Import them one at a time so each change can be previewed separately.', 'fieldpilot-for-acf' ),
 					count( $groups )
 				),
 				array( 'group_count' => count( $groups ) ),
-				array( __( 'Split the export into one file per field group.', 'wp-acf-json-pro' ) )
+				array( __( 'Split the export into one file per field group.', 'fieldpilot-for-acf' ) )
 			);
 		}
 
@@ -163,7 +163,7 @@ final class Normalizer {
 
 			throw new ValidationException(
 				ErrorCodes::MISSING_OPERATION,
-				__( 'The payload does not say what to do. Add an "operation".', 'wp-acf-json-pro' ),
+				__( 'The payload does not say what to do. Add an "operation".', 'fieldpilot-for-acf' ),
 				array(),
 				Operation::names(),
 				'/operation'
@@ -177,7 +177,7 @@ final class Normalizer {
 				ErrorCodes::UNKNOWN_OPERATION,
 				sprintf(
 					/* translators: %s: the operation supplied */
-					__( 'Unknown operation "%s".', 'wp-acf-json-pro' ),
+					__( 'Unknown operation "%s".', 'fieldpilot-for-acf' ),
 					(string) $raw['operation']
 				),
 				array( 'operation' => (string) $raw['operation'] ),
@@ -381,7 +381,7 @@ final class Normalizer {
 				ErrorCodes::MAX_DEPTH_EXCEEDED,
 				sprintf(
 					/* translators: %d: maximum nesting depth */
-					__( 'Fields are nested more than %d levels deep.', 'wp-acf-json-pro' ),
+					__( 'Fields are nested more than %d levels deep.', 'fieldpilot-for-acf' ),
 					self::MAX_DEPTH
 				),
 				array( 'max_depth' => self::MAX_DEPTH ),
@@ -415,11 +415,11 @@ final class Normalizer {
 					ErrorCodes::INVALID_FIELD_NAME,
 					sprintf(
 						/* translators: %s: the supplied field name */
-						__( 'The field name "%s" contains no usable characters.', 'wp-acf-json-pro' ),
+						__( 'The field name "%s" contains no usable characters.', 'fieldpilot-for-acf' ),
 						$name
 					),
 					array( 'name' => $name ),
-					array( __( 'Field names must match ^[a-z_][a-z0-9_]*$ - lowercase letters, digits and underscores.', 'wp-acf-json-pro' ) ),
+					array( __( 'Field names must match ^[a-z_][a-z0-9_]*$ - lowercase letters, digits and underscores.', 'fieldpilot-for-acf' ) ),
 					$pointer . '/name'
 				);
 			}

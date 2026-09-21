@@ -124,7 +124,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field group title */
-					__( 'The field group "%s" could not be created.', 'wp-acf-json-pro' ),
+					__( 'The field group "%s" could not be created.', 'fieldpilot-for-acf' ),
 					$change->label
 				),
 				array( 'change_id' => $change->id )
@@ -146,7 +146,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field group key */
-					__( 'Field group "%s" disappeared while applying changes.', 'wp-acf-json-pro' ),
+					__( 'Field group "%s" disappeared while applying changes.', 'fieldpilot-for-acf' ),
 					$groupKey
 				)
 			);
@@ -161,7 +161,7 @@ final class Writer {
 		if ( ! is_array( $updated ) ) {
 			throw new ApplyException(
 				ErrorCodes::WRITE_FAILED,
-				__( 'The field group settings could not be saved.', 'wp-acf-json-pro' ),
+				__( 'The field group settings could not be saved.', 'fieldpilot-for-acf' ),
 				array( 'change_id' => $change->id )
 			);
 		}
@@ -234,7 +234,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field key */
-					__( 'Field "%s" could not be loaded for update.', 'wp-acf-json-pro' ),
+					__( 'Field "%s" could not be loaded for update.', 'fieldpilot-for-acf' ),
 					$key
 				),
 				array( 'field_key' => $key, 'change_id' => $change->id )
@@ -254,7 +254,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field label */
-					__( '"%s" could not be updated.', 'wp-acf-json-pro' ),
+					__( '"%s" could not be updated.', 'fieldpilot-for-acf' ),
 					$change->label
 				),
 				array( 'field_key' => $key, 'change_id' => $change->id )
@@ -291,7 +291,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field label */
-					__( '"%s" could not be deleted.', 'wp-acf-json-pro' ),
+					__( '"%s" could not be deleted.', 'fieldpilot-for-acf' ),
 					$change->label
 				),
 				array( 'field_key' => $key, 'change_id' => $change->id )
@@ -318,7 +318,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field key */
-					__( 'Field "%s" could not be loaded for the move.', 'wp-acf-json-pro' ),
+					__( 'Field "%s" could not be loaded for the move.', 'fieldpilot-for-acf' ),
 					$key
 				),
 				array( 'field_key' => $key )
@@ -347,7 +347,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field label */
-					__( '"%s" could not be moved.', 'wp-acf-json-pro' ),
+					__( '"%s" could not be moved.', 'fieldpilot-for-acf' ),
 					$change->label
 				),
 				array( 'field_key' => $key )
@@ -386,7 +386,7 @@ final class Writer {
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field key */
-					__( 'Flexible content field "%s" could not be loaded.', 'wp-acf-json-pro' ),
+					__( 'Flexible content field "%s" could not be loaded.', 'fieldpilot-for-acf' ),
 					$parentKey
 				),
 				array( 'field_key' => $parentKey )
@@ -415,7 +415,7 @@ final class Writer {
 			if ( ! is_array( acf_update_field( $raw ) ) ) {
 				throw new ApplyException(
 					ErrorCodes::WRITE_FAILED,
-					__( 'The layout could not be added.', 'wp-acf-json-pro' ),
+					__( 'The layout could not be added.', 'fieldpilot-for-acf' ),
 					array( 'field_key' => $parentKey )
 				);
 			}
@@ -494,7 +494,7 @@ final class Writer {
 					ErrorCodes::WRITE_FAILED,
 					sprintf(
 						/* translators: %s: field label */
-						__( '"%s" could not be written.', 'wp-acf-json-pro' ),
+						__( '"%s" could not be written.', 'fieldpilot-for-acf' ),
 						(string) ( $field['label'] ?? $field['key'] )
 					),
 					array( 'field_key' => (string) $field['key'], 'change_id' => $change->id )

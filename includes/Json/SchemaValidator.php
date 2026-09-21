@@ -52,7 +52,7 @@ final class SchemaValidator {
 				'type',
 				sprintf(
 					/* translators: 1: expected JSON type(s), 2: actual type */
-					__( 'Expected %1$s, got %2$s.', 'wp-acf-json-pro' ),
+					__( 'Expected %1$s, got %2$s.', 'fieldpilot-for-acf' ),
 					implode( ' or ', (array) $schema['type'] ),
 					$this->describeType( $value )
 				)
@@ -68,7 +68,7 @@ final class SchemaValidator {
 				'enum',
 				sprintf(
 					/* translators: %s: comma-separated list of allowed values */
-					__( 'Must be one of: %s.', 'wp-acf-json-pro' ),
+					__( 'Must be one of: %s.', 'fieldpilot-for-acf' ),
 					implode( ', ', array_map( static fn( $v ): string => is_scalar( $v ) ? (string) $v : gettype( $v ), $schema['enum'] ) )
 				)
 			);
@@ -102,7 +102,7 @@ final class SchemaValidator {
 				'minLength',
 				sprintf(
 					/* translators: %d: minimum number of characters */
-					__( 'Must be at least %d characters.', 'wp-acf-json-pro' ),
+					__( 'Must be at least %d characters.', 'fieldpilot-for-acf' ),
 					(int) $schema['minLength']
 				)
 			);
@@ -114,7 +114,7 @@ final class SchemaValidator {
 				'maxLength',
 				sprintf(
 					/* translators: %d: maximum number of characters */
-					__( 'Must be at most %d characters.', 'wp-acf-json-pro' ),
+					__( 'Must be at most %d characters.', 'fieldpilot-for-acf' ),
 					(int) $schema['maxLength']
 				)
 			);
@@ -133,7 +133,7 @@ final class SchemaValidator {
 					'pattern',
 					sprintf(
 						/* translators: %s: regular expression */
-						__( 'Does not match the required format (%s).', 'wp-acf-json-pro' ),
+						__( 'Does not match the required format (%s).', 'fieldpilot-for-acf' ),
 						$schema['pattern']
 					)
 				);
@@ -151,7 +151,7 @@ final class SchemaValidator {
 				'minimum',
 				sprintf(
 					/* translators: %s: minimum value */
-					__( 'Must be at least %s.', 'wp-acf-json-pro' ),
+					__( 'Must be at least %s.', 'fieldpilot-for-acf' ),
 					(string) $schema['minimum']
 				)
 			);
@@ -163,7 +163,7 @@ final class SchemaValidator {
 				'maximum',
 				sprintf(
 					/* translators: %s: maximum value */
-					__( 'Must be at most %s.', 'wp-acf-json-pro' ),
+					__( 'Must be at most %s.', 'fieldpilot-for-acf' ),
 					(string) $schema['maximum']
 				)
 			);
@@ -181,7 +181,7 @@ final class SchemaValidator {
 				'minItems',
 				sprintf(
 					/* translators: %d: minimum number of items */
-					__( 'Must contain at least %d items.', 'wp-acf-json-pro' ),
+					__( 'Must contain at least %d items.', 'fieldpilot-for-acf' ),
 					(int) $schema['minItems']
 				)
 			);
@@ -208,7 +208,7 @@ final class SchemaValidator {
 					'required',
 					sprintf(
 						/* translators: %s: property name */
-						__( 'Required property "%s" is missing.', 'wp-acf-json-pro' ),
+						__( 'Required property "%s" is missing.', 'fieldpilot-for-acf' ),
 						(string) $required
 					)
 				);
@@ -229,7 +229,7 @@ final class SchemaValidator {
 					'additionalProperties',
 					sprintf(
 						/* translators: %s: property name */
-						__( 'Unknown property "%s".', 'wp-acf-json-pro' ),
+						__( 'Unknown property "%s".', 'fieldpilot-for-acf' ),
 						(string) $property
 					)
 				);

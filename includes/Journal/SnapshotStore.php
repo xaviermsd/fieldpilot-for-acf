@@ -76,7 +76,7 @@ final class SnapshotStore {
 		if ( false === $inserted ) {
 			throw new ApplyException(
 				ErrorCodes::SNAPSHOT_FAILED,
-				__( 'The snapshot could not be saved, so no changes were applied.', 'wp-acf-json-pro' ),
+				__( 'The snapshot could not be saved, so no changes were applied.', 'fieldpilot-for-acf' ),
 				array( 'hash' => $hash, 'db_error' => $wpdb->last_error )
 			);
 		}

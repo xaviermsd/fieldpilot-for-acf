@@ -37,7 +37,7 @@ final class Restore {
 		if ( null === $snapshot ) {
 			throw new ApplyException(
 				ErrorCodes::SNAPSHOT_NOT_FOUND,
-				__( 'The saved snapshot could not be found, so this cannot be rolled back automatically.', 'wp-acf-json-pro' ),
+				__( 'The saved snapshot could not be found, so this cannot be rolled back automatically.', 'fieldpilot-for-acf' ),
 				array( 'hash' => $hash )
 			);
 		}
@@ -53,7 +53,7 @@ final class Restore {
 		if ( empty( $snapshot['key'] ) ) {
 			throw new ApplyException(
 				ErrorCodes::RESTORE_FAILED,
-				__( 'The snapshot is missing its field group key and cannot be restored.', 'wp-acf-json-pro' )
+				__( 'The snapshot is missing its field group key and cannot be restored.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -74,7 +74,7 @@ final class Restore {
 				ErrorCodes::RESTORE_FAILED,
 				sprintf(
 					/* translators: %s: field group key */
-					__( 'Field group "%s" could not be restored.', 'wp-acf-json-pro' ),
+					__( 'Field group "%s" could not be restored.', 'fieldpilot-for-acf' ),
 					$groupKey
 				),
 				array( 'group_key' => $groupKey )

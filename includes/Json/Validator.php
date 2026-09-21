@@ -75,7 +75,7 @@ final class Validator {
 						ErrorCodes::UNSUPPORTED_VERSION,
 						sprintf(
 							/* translators: 1: payload version, 2: supported version */
-							__( 'Payload declares version %1$s; this plugin implements %2$s. Unknown keys will be ignored.', 'wp-acf-json-pro' ),
+							__( 'Payload declares version %1$s; this plugin implements %2$s. Unknown keys will be ignored.', 'fieldpilot-for-acf' ),
 							$payload->version,
 							self::SUPPORTED_VERSIONS[0]
 						),
@@ -91,7 +91,7 @@ final class Validator {
 					ErrorCodes::UNSUPPORTED_VERSION,
 					sprintf(
 						/* translators: 1: payload version, 2: supported versions */
-						__( 'Unsupported schema version %1$s. This plugin supports: %2$s.', 'wp-acf-json-pro' ),
+						__( 'Unsupported schema version %1$s. This plugin supports: %2$s.', 'fieldpilot-for-acf' ),
 						$payload->version,
 						implode( ', ', self::SUPPORTED_VERSIONS )
 					),
@@ -110,11 +110,11 @@ final class Validator {
 					ErrorCodes::MISSING_TARGET,
 					sprintf(
 						/* translators: %s: operation name */
-						__( 'Operation "%s" needs a target field group.', 'wp-acf-json-pro' ),
+						__( 'Operation "%s" needs a target field group.', 'fieldpilot-for-acf' ),
 						$operation->value
 					),
 					'/target',
-					array( __( 'Add {"target": {"field_group": "Your Group"}}.', 'wp-acf-json-pro' ) )
+					array( __( 'Add {"target": {"field_group": "Your Group"}}.', 'fieldpilot-for-acf' ) )
 				)
 			);
 		}
@@ -123,7 +123,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::MISSING_FIELDS,
-					__( 'A "create" operation needs a field group definition with fields.', 'wp-acf-json-pro' ),
+					__( 'A "create" operation needs a field group definition with fields.', 'fieldpilot-for-acf' ),
 					'/field_group'
 				)
 			);
@@ -133,7 +133,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::MISSING_FIELDS,
-					__( 'An "update" operation needs "changes", "add" or "group_changes".', 'wp-acf-json-pro' ),
+					__( 'An "update" operation needs "changes", "add" or "group_changes".', 'fieldpilot-for-acf' ),
 					'/changes'
 				)
 			);
@@ -143,7 +143,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::MISSING_FIELDS,
-					__( 'A "delete" operation needs a list of fields to remove.', 'wp-acf-json-pro' ),
+					__( 'A "delete" operation needs a list of fields to remove.', 'fieldpilot-for-acf' ),
 					'/delete'
 				)
 			);
@@ -153,7 +153,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::MISSING_FIELDS,
-					__( 'A "move" operation needs at least one move.', 'wp-acf-json-pro' ),
+					__( 'A "move" operation needs at least one move.', 'fieldpilot-for-acf' ),
 					'/moves'
 				)
 			);
@@ -163,7 +163,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::MISSING_FIELDS,
-					__( 'An "add" operation needs fields or layouts to add.', 'wp-acf-json-pro' ),
+					__( 'An "add" operation needs fields or layouts to add.', 'fieldpilot-for-acf' ),
 					'/add'
 				)
 			);
@@ -173,7 +173,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::EMPTY_PAYLOAD,
-					__( 'This payload requests no changes.', 'wp-acf-json-pro' ),
+					__( 'This payload requests no changes.', 'fieldpilot-for-acf' ),
 					'/'
 				)
 			);
@@ -194,12 +194,12 @@ final class Validator {
 						ErrorCodes::FIELD_TYPE_REQUIRES_PRO,
 						sprintf(
 							/* translators: 1: field label, 2: field type */
-							__( '"%1$s" uses the %2$s field type, which requires ACF PRO.', 'wp-acf-json-pro' ),
+							__( '"%1$s" uses the %2$s field type, which requires ACF PRO.', 'fieldpilot-for-acf' ),
 							$field->label,
 							$type
 						),
 						$pointer . '/type',
-						array( __( 'Upgrade to ACF PRO, or replace this field with a type available in ACF free.', 'wp-acf-json-pro' ) )
+						array( __( 'Upgrade to ACF PRO, or replace this field with a type available in ACF free.', 'fieldpilot-for-acf' ) )
 					)
 				);
 			} else {
@@ -210,7 +210,7 @@ final class Validator {
 						ErrorCodes::UNKNOWN_FIELD_TYPE,
 						sprintf(
 							/* translators: 1: field label, 2: field type */
-							__( '"%1$s" uses field type "%2$s", which is not registered on this site. It will be stored but will not render until the plugin providing it is active.', 'wp-acf-json-pro' ),
+							__( '"%1$s" uses field type "%2$s", which is not registered on this site. It will be stored but will not render until the plugin providing it is active.', 'fieldpilot-for-acf' ),
 							$field->label,
 							$type
 						),
@@ -240,7 +240,7 @@ final class Validator {
 						ErrorCodes::INVALID_FIELD_KEY,
 						sprintf(
 							/* translators: %s: the supplied key */
-							__( 'Field key "%s" is malformed. ACF keys look like field_5f9a1b2c3d4e5.', 'wp-acf-json-pro' ),
+							__( 'Field key "%s" is malformed. ACF keys look like field_5f9a1b2c3d4e5.', 'fieldpilot-for-acf' ),
 							$field->key
 						),
 						$pointer . '/key'
@@ -254,7 +254,7 @@ final class Validator {
 						ErrorCodes::DUPLICATE_KEY,
 						sprintf(
 							/* translators: %s: the duplicated key */
-							__( 'Field key "%s" appears more than once in this payload.', 'wp-acf-json-pro' ),
+							__( 'Field key "%s" appears more than once in this payload.', 'fieldpilot-for-acf' ),
 							$field->key
 						),
 						$pointer . '/key'
@@ -271,7 +271,7 @@ final class Validator {
 					ErrorCodes::INVALID_FIELD_NAME,
 					sprintf(
 						/* translators: %s: field label */
-						__( '"%s" has no name, and its type stores a value so it needs one.', 'wp-acf-json-pro' ),
+						__( '"%s" has no name, and its type stores a value so it needs one.', 'fieldpilot-for-acf' ),
 						$field->label !== '' ? $field->label : $type
 					),
 					$pointer . '/name'
@@ -286,12 +286,12 @@ final class Validator {
 					ErrorCodes::NOT_A_CONTAINER,
 					sprintf(
 						/* translators: 1: field label, 2: field type */
-						__( '"%1$s" is a %2$s field and cannot contain sub-fields.', 'wp-acf-json-pro' ),
+						__( '"%1$s" is a %2$s field and cannot contain sub-fields.', 'fieldpilot-for-acf' ),
 						$field->label,
 						$type
 					),
 					$pointer . '/sub_fields',
-					array( __( 'Use a group or repeater field to nest fields.', 'wp-acf-json-pro' ) )
+					array( __( 'Use a group or repeater field to nest fields.', 'fieldpilot-for-acf' ) )
 				)
 			);
 		}
@@ -302,7 +302,7 @@ final class Validator {
 					ErrorCodes::NOT_A_CONTAINER,
 					sprintf(
 						/* translators: 1: field label, 2: field type */
-						__( '"%1$s" is a %2$s field and cannot contain layouts.', 'wp-acf-json-pro' ),
+						__( '"%1$s" is a %2$s field and cannot contain layouts.', 'fieldpilot-for-acf' ),
 						$field->label,
 						$type
 					),
@@ -331,7 +331,7 @@ final class Validator {
 			$report->add(
 				Issue::error(
 					ErrorCodes::INVALID_FIELD_NAME,
-					__( 'Every flexible-content layout needs a name.', 'wp-acf-json-pro' ),
+					__( 'Every flexible-content layout needs a name.', 'fieldpilot-for-acf' ),
 					$pointer . '/name'
 				)
 			);
@@ -364,7 +364,7 @@ final class Validator {
 						ErrorCodes::DUPLICATE_NAME,
 						sprintf(
 							/* translators: %s: the duplicated field name */
-							__( 'Two sibling fields are both named "%s". They would write to the same meta key.', 'wp-acf-json-pro' ),
+							__( 'Two sibling fields are both named "%s". They would write to the same meta key.', 'fieldpilot-for-acf' ),
 							$field->name
 						),
 						$pointer . '/' . $index . '/name'
@@ -384,7 +384,7 @@ final class Validator {
 						ErrorCodes::EMPTY_PAYLOAD,
 						sprintf(
 							/* translators: %s: field reference */
-							__( 'No settings were supplied for "%s", so nothing will change.', 'wp-acf-json-pro' ),
+							__( 'No settings were supplied for "%s", so nothing will change.', 'fieldpilot-for-acf' ),
 							$reference
 						),
 						'/changes/' . $reference
@@ -400,7 +400,7 @@ final class Validator {
 						ErrorCodes::INVALID_SETTING,
 						sprintf(
 							/* translators: %s: field reference */
-							__( 'Changing the type of "%s" may make existing content unreadable. You will be asked to confirm.', 'wp-acf-json-pro' ),
+							__( 'Changing the type of "%s" may make existing content unreadable. You will be asked to confirm.', 'fieldpilot-for-acf' ),
 							$reference
 						),
 						'/changes/' . $reference . '/type'
@@ -414,7 +414,7 @@ final class Validator {
 						ErrorCodes::INVALID_SETTING,
 						sprintf(
 							/* translators: %s: field reference */
-							__( 'Renaming "%s" changes the meta key its content is stored under. You will be asked to confirm.', 'wp-acf-json-pro' ),
+							__( 'Renaming "%s" changes the meta key its content is stored under. You will be asked to confirm.', 'fieldpilot-for-acf' ),
 							$reference
 						),
 						'/changes/' . $reference . '/name'
@@ -430,7 +430,7 @@ final class Validator {
 				$report->add(
 					Issue::error(
 						ErrorCodes::MISSING_TARGET,
-						__( 'A move needs a field to move.', 'wp-acf-json-pro' ),
+						__( 'A move needs a field to move.', 'fieldpilot-for-acf' ),
 						'/moves/' . $index . '/field'
 					)
 				);
@@ -442,7 +442,7 @@ final class Validator {
 						ErrorCodes::MISSING_TARGET,
 						sprintf(
 							/* translators: %s: position keyword */
-							__( 'Position "%s" needs an "anchor" field to position against.', 'wp-acf-json-pro' ),
+							__( 'Position "%s" needs an "anchor" field to position against.', 'fieldpilot-for-acf' ),
 							$move->position
 						),
 						'/moves/' . $index . '/anchor'

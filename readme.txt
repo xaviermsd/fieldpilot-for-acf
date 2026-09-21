@@ -1,7 +1,7 @@
-=== WP ACF JSON Pro ===
+=== FieldPilot - AI & JSON Copilot for ACF ===
 Contributors: xaviermsd
 Donate link: https://profiles.wordpress.org/xaviermsd/
-Tags: acf, advanced custom fields, json, developer, fields
+Tags: acf, advanced custom fields, ai, json, developer
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
@@ -9,7 +9,7 @@ Stable tag: 1.0.12
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Build, import, update and manage ACF field structures with JSON. Diff before you apply. Roll back when you are wrong.
+Build, import, update and manage ACF field structures with AI prompts and JSON. Diff before you apply. Roll back when you are wrong.
 
 == Description ==
 

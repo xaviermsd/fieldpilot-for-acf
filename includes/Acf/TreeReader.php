@@ -57,7 +57,7 @@ final class TreeReader {
 					ErrorCodes::GROUP_NOT_FOUND,
 					sprintf(
 						/* translators: %s: field group key */
-						__( 'Field group "%s" was not found in the database.', 'wp-acf-json-pro' ),
+						__( 'Field group "%s" was not found in the database.', 'fieldpilot-for-acf' ),
 						$groupKey
 					),
 					array( 'group_key' => $groupKey ),
@@ -90,7 +90,7 @@ final class TreeReader {
 				ErrorCodes::GROUP_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field group key */
-					__( 'Field group "%s" was not found.', 'wp-acf-json-pro' ),
+					__( 'Field group "%s" was not found.', 'fieldpilot-for-acf' ),
 					$groupKey
 				),
 				array( 'group_key' => $groupKey ),
@@ -119,7 +119,7 @@ final class TreeReader {
 				ErrorCodes::GROUP_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field group key */
-					__( 'Field group "%s" was not found.', 'wp-acf-json-pro' ),
+					__( 'Field group "%s" was not found.', 'fieldpilot-for-acf' ),
 					$groupKey
 				),
 				array( 'group_key' => $groupKey )

@@ -140,7 +140,7 @@ final class Engine {
 		if ( $changeSet->isEmpty() ) {
 			throw new ApplyException(
 				ErrorCodes::EMPTY_PAYLOAD,
-				__( 'There is nothing to apply.', 'wp-acf-json-pro' )
+				__( 'There is nothing to apply.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -189,7 +189,7 @@ final class Engine {
 
 			throw new ApplyException(
 				ErrorCodes::VERIFY_FAILED,
-				__( 'The changes did not save correctly, so everything was rolled back. Nothing on your site was altered.', 'wp-acf-json-pro' ),
+				__( 'The changes did not save correctly, so everything was rolled back. Nothing on your site was altered.', 'fieldpilot-for-acf' ),
 				array( 'batch_id' => $batchId, 'failures' => $failures ),
 				$failures
 			);
@@ -250,7 +250,7 @@ final class Engine {
 
 			throw new ApplyException(
 				null === $first ? ErrorCodes::INVALID_FIELD : $first->code,
-				null === $first ? __( 'The payload is not valid.', 'wp-acf-json-pro' ) : $first->message,
+				null === $first ? __( 'The payload is not valid.', 'fieldpilot-for-acf' ) : $first->message,
 				array( 'errors' => array_map( static fn( $i ): array => $i->jsonSerialize(), $plan->report->errors() ) )
 			);
 		}
@@ -272,7 +272,7 @@ final class Engine {
 		if ( null === $entry ) {
 			throw new ApplyException(
 				ErrorCodes::SNAPSHOT_NOT_FOUND,
-				__( 'That history entry no longer exists.', 'wp-acf-json-pro' ),
+				__( 'That history entry no longer exists.', 'fieldpilot-for-acf' ),
 				array( 'journal_id' => $journalId )
 			);
 		}
@@ -280,7 +280,7 @@ final class Engine {
 		if ( Entry::STATUS_ROLLED_BACK === $entry->status ) {
 			throw new ApplyException(
 				ErrorCodes::ALREADY_ROLLED_BACK,
-				__( 'This change has already been rolled back.', 'wp-acf-json-pro' ),
+				__( 'This change has already been rolled back.', 'fieldpilot-for-acf' ),
 				array( 'journal_id' => $journalId )
 			);
 		}
@@ -288,7 +288,7 @@ final class Engine {
 		if ( ! $entry->isRollbackable() ) {
 			throw new ApplyException(
 				ErrorCodes::SNAPSHOT_NOT_FOUND,
-				__( 'No snapshot was stored for this change, so it cannot be rolled back automatically.', 'wp-acf-json-pro' ),
+				__( 'No snapshot was stored for this change, so it cannot be rolled back automatically.', 'fieldpilot-for-acf' ),
 				array( 'journal_id' => $journalId )
 			);
 		}
@@ -320,7 +320,7 @@ final class Engine {
 			Entry::STATUS_REVERTED,
 			sprintf(
 				/* translators: %d: journal entry id */
-				__( 'Rolled back change #%d.', 'wp-acf-json-pro' ),
+				__( 'Rolled back change #%d.', 'fieldpilot-for-acf' ),
 				$journalId
 			)
 		);
@@ -356,7 +356,7 @@ final class Engine {
 					ErrorCodes::DUPLICATE_NAME,
 					sprintf(
 						/* translators: %s: field group title */
-						__( 'A field group called "%s" already exists. Use "add", "update" or "merge" to change it.', 'wp-acf-json-pro' ),
+						__( 'A field group called "%s" already exists. Use "add", "update" or "merge" to change it.', 'fieldpilot-for-acf' ),
 						$reference
 					),
 					array( 'reference' => $reference ),

@@ -1,4 +1,4 @@
-# WP ACF JSON Pro
+# FieldPilot – AI & JSON Copilot for ACF
 
 > **A declarative, target-scoped configuration patch engine for Advanced Custom Fields (ACF Free & PRO).**  
 > Diff before you apply. Snapshot before you write. Roll back whenever you need. Zero runtime dependencies.

@@ -96,12 +96,12 @@ final class Guard {
 
 		throw new GuardException(
 			ErrorCodes::READ_ONLY_MODE,
-			__( 'WP ACF JSON Pro is in read-only mode. Previews and validation work; nothing can be written.', 'wp-acf-json-pro' ),
+			__( 'WP ACF JSON Pro is in read-only mode. Previews and validation work; nothing can be written.', 'fieldpilot-for-acf' ),
 			array( 'read_only' => true ),
 			array(
 				defined( 'ACFJP_READ_ONLY' ) && ACFJP_READ_ONLY
-					? __( 'Remove the ACFJP_READ_ONLY constant from wp-config.php to allow changes.', 'wp-acf-json-pro' )
-					: __( 'Turn off read-only mode under ACF JSON Pro → Settings to allow changes.', 'wp-acf-json-pro' ),
+					? __( 'Remove the ACFJP_READ_ONLY constant from wp-config.php to allow changes.', 'fieldpilot-for-acf' )
+					: __( 'Turn off read-only mode under ACF JSON Pro → Settings to allow changes.', 'fieldpilot-for-acf' ),
 			)
 		);
 	}
@@ -125,7 +125,7 @@ final class Guard {
 
 		throw new GuardException(
 			ErrorCodes::INSUFFICIENT_CAPABILITY,
-			__( 'You do not have permission to change ACF field configuration.', 'wp-acf-json-pro' ),
+			__( 'You do not have permission to change ACF field configuration.', 'fieldpilot-for-acf' ),
 			array( 'capability' => $capability )
 		);
 	}
@@ -145,27 +145,27 @@ final class Guard {
 				ErrorCodes::GROUP_REGISTERED_IN_PHP,
 				sprintf(
 					/* translators: %s: field group title */
-					__( '"%s" is registered in PHP with acf_add_local_field_group(), so it cannot be changed from the database. Edit the code that registers it.', 'wp-acf-json-pro' ),
+					__( '"%s" is registered in PHP with acf_add_local_field_group(), so it cannot be changed from the database. Edit the code that registers it.', 'fieldpilot-for-acf' ),
 					$report->groupTitle
 				),
 				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value, 'remedy' => $report->remedy ),
-				array( __( 'Use Export to generate the PHP for the change, then paste it into the file that registers this group.', 'wp-acf-json-pro' ) )
+				array( __( 'Use Export to generate the PHP for the change, then paste it into the file that registers this group.', 'fieldpilot-for-acf' ) )
 			),
 			Mutability::LocalJson => new GuardException(
 				ErrorCodes::GROUP_NOT_SYNCED,
 				sprintf(
 					/* translators: %s: field group title */
-					__( '"%s" is loaded from an acf-json file and has not been synced into the database yet, so there is nothing here to patch.', 'wp-acf-json-pro' ),
+					__( '"%s" is loaded from an acf-json file and has not been synced into the database yet, so there is nothing here to patch.', 'fieldpilot-for-acf' ),
 					$report->groupTitle
 				),
 				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value, 'remedy' => 'sync', 'json_path' => $report->jsonPath ),
-				array( __( 'Sync this field group into the database first, then apply the change. The JSON file is rewritten afterwards, so your repository stays authoritative.', 'wp-acf-json-pro' ) )
+				array( __( 'Sync this field group into the database first, then apply the change. The JSON file is rewritten afterwards, so your repository stays authoritative.', 'fieldpilot-for-acf' ) )
 			),
 			default => new GuardException(
 				ErrorCodes::GROUP_NOT_PATCHABLE,
 				sprintf(
 					/* translators: %s: field group key */
-					__( 'Field group "%s" cannot be modified.', 'wp-acf-json-pro' ),
+					__( 'Field group "%s" cannot be modified.', 'fieldpilot-for-acf' ),
 					$groupKey
 				),
 				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value )
@@ -193,9 +193,9 @@ final class Guard {
 
 		throw new GuardException(
 			ErrorCodes::STATE_CHANGED,
-			__( 'This field group changed after the preview was generated. Review the changes again before applying.', 'wp-acf-json-pro' ),
+			__( 'This field group changed after the preview was generated. Review the changes again before applying.', 'fieldpilot-for-acf' ),
 			array( 'expected' => $expectedHash, 'actual' => $actual ),
-			array( __( 'Re-run the preview to see a diff against the current state.', 'wp-acf-json-pro' ) )
+			array( __( 'Re-run the preview to see a diff against the current state.', 'fieldpilot-for-acf' ) )
 		);
 	}
 
@@ -225,7 +225,7 @@ final class Guard {
 			ErrorCodes::FIELD_TYPE_REQUIRES_PRO,
 			sprintf(
 				/* translators: %s: comma-separated list of field types */
-				__( 'This change needs ACF PRO field types that are not available here: %s.', 'wp-acf-json-pro' ),
+				__( 'This change needs ACF PRO field types that are not available here: %s.', 'fieldpilot-for-acf' ),
 				implode( ', ', array_keys( $missing ) )
 			),
 			array( 'types' => array_keys( $missing ) )
@@ -250,7 +250,7 @@ final class Guard {
 					'%d conflict needs a decision before this can be applied.',
 					'%d conflicts need a decision before this can be applied.',
 					count( $unresolved ),
-					'wp-acf-json-pro'
+					'fieldpilot-for-acf'
 				),
 				count( $unresolved )
 			),
@@ -281,7 +281,7 @@ final class Guard {
 					'%d change can remove or orphan content. Confirm explicitly to continue.',
 					'%d changes can remove or orphan content. Confirm explicitly to continue.',
 					count( $destructive ),
-					'wp-acf-json-pro'
+					'fieldpilot-for-acf'
 				),
 				count( $destructive )
 			),
@@ -309,7 +309,7 @@ final class Guard {
 					ErrorCodes::GROUP_NOT_PATCHABLE,
 					sprintf(
 						/* translators: 1: field label, 2: field group title */
-						__( 'Refusing to delete "%1$s": it is not owned by %2$s.', 'wp-acf-json-pro' ),
+						__( 'Refusing to delete "%1$s": it is not owned by %2$s.', 'fieldpilot-for-acf' ),
 						$change->label,
 						$current->group->title
 					),

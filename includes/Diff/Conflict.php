@@ -97,45 +97,45 @@ final class Conflict implements \JsonSerializable {
 			kind: self::TYPE_CHANGE,
 			title: sprintf(
 				/* translators: %s: field label */
-				__( 'Field type conflict: %s', 'wp-acf-json-pro' ),
+				__( 'Field type conflict: %s', 'fieldpilot-for-acf' ),
 				$label
 			),
 			message: $hasContent
 				? sprintf(
 					/* translators: 1: current type, 2: incoming type */
-					__( 'This field is currently %1$s and holds content. Changing it to %2$s may make that content unreadable.', 'wp-acf-json-pro' ),
+					__( 'This field is currently %1$s and holds content. Changing it to %2$s may make that content unreadable.', 'fieldpilot-for-acf' ),
 					$from,
 					$to
 				)
 				: sprintf(
 					/* translators: 1: current type, 2: incoming type */
-					__( 'This field is currently %1$s and the payload asks for %2$s.', 'wp-acf-json-pro' ),
+					__( 'This field is currently %1$s and the payload asks for %2$s.', 'fieldpilot-for-acf' ),
 					$from,
 					$to
 				),
 			options: array(
 				array(
 					'id'          => self::KEEP_EXISTING,
-					'label'       => __( 'Keep existing type', 'wp-acf-json-pro' ),
+					'label'       => __( 'Keep existing type', 'fieldpilot-for-acf' ),
 					'description' => sprintf(
 						/* translators: %s: current field type */
-						__( 'Leave the field as %s and apply the other settings.', 'wp-acf-json-pro' ),
+						__( 'Leave the field as %s and apply the other settings.', 'fieldpilot-for-acf' ),
 						$from
 					),
 					'destructive' => false,
 				),
 				array(
 					'id'          => self::APPLY_INCOMING,
-					'label'       => __( 'Change the type', 'wp-acf-json-pro' ),
+					'label'       => __( 'Change the type', 'fieldpilot-for-acf' ),
 					'description' => $hasContent
-						? __( 'Existing content stays in the database but may no longer display.', 'wp-acf-json-pro' )
-						: __( 'No content is stored for this field, so nothing is at risk.', 'wp-acf-json-pro' ),
+						? __( 'Existing content stays in the database but may no longer display.', 'fieldpilot-for-acf' )
+						: __( 'No content is stored for this field, so nothing is at risk.', 'fieldpilot-for-acf' ),
 					'destructive' => $hasContent,
 				),
 				array(
 					'id'          => self::CREATE_NEW,
-					'label'       => __( 'Add as a new field', 'wp-acf-json-pro' ),
-					'description' => __( 'Keep the original untouched and add a second field with a new name.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Add as a new field', 'fieldpilot-for-acf' ),
+					'description' => __( 'Keep the original untouched and add a second field with a new name.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 			),
@@ -158,32 +158,32 @@ final class Conflict implements \JsonSerializable {
 			kind: self::RENAME_WITH_DATA,
 			title: sprintf(
 				/* translators: %s: field label */
-				__( 'Rename affects stored content: %s', 'wp-acf-json-pro' ),
+				__( 'Rename affects stored content: %s', 'fieldpilot-for-acf' ),
 				$label
 			),
 			message: sprintf(
 				/* translators: 1: current name, 2: new name */
-				__( 'Content is stored under the name "%1$s". Renaming to "%2$s" leaves that content in the database but disconnected from the field.', 'wp-acf-json-pro' ),
+				__( 'Content is stored under the name "%1$s". Renaming to "%2$s" leaves that content in the database but disconnected from the field.', 'fieldpilot-for-acf' ),
 				$from,
 				$to
 			),
 			options: array(
 				array(
 					'id'          => self::LABEL_ONLY,
-					'label'       => __( 'Change the label only', 'wp-acf-json-pro' ),
-					'description' => __( 'Editors see the new wording; the stored name and all content stay intact.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Change the label only', 'fieldpilot-for-acf' ),
+					'description' => __( 'Editors see the new wording; the stored name and all content stay intact.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 				array(
 					'id'          => self::RENAME_ORPHAN,
-					'label'       => __( 'Rename anyway', 'wp-acf-json-pro' ),
-					'description' => __( 'The field starts empty. Existing content remains in the database under the old name.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Rename anyway', 'fieldpilot-for-acf' ),
+					'description' => __( 'The field starts empty. Existing content remains in the database under the old name.', 'fieldpilot-for-acf' ),
 					'destructive' => true,
 				),
 				array(
 					'id'          => self::SKIP,
-					'label'       => __( 'Skip this change', 'wp-acf-json-pro' ),
-					'description' => __( 'Leave the field exactly as it is.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Skip this change', 'fieldpilot-for-acf' ),
+					'description' => __( 'Leave the field exactly as it is.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 			),
@@ -199,13 +199,13 @@ final class Conflict implements \JsonSerializable {
 		$message = $descendantCount > 0
 			? sprintf(
 				/* translators: 1: field label, 2: number of nested fields */
-				__( '"%1$s" holds content and contains %2$d nested fields, which will be removed with it.', 'wp-acf-json-pro' ),
+				__( '"%1$s" holds content and contains %2$d nested fields, which will be removed with it.', 'fieldpilot-for-acf' ),
 				$label,
 				$descendantCount
 			)
 			: sprintf(
 				/* translators: %s: field label */
-				__( '"%s" holds content on at least one post, term or user.', 'wp-acf-json-pro' ),
+				__( '"%s" holds content on at least one post, term or user.', 'fieldpilot-for-acf' ),
 				$label
 			);
 
@@ -214,21 +214,21 @@ final class Conflict implements \JsonSerializable {
 			kind: self::DELETE_WITH_DATA,
 			title: sprintf(
 				/* translators: %s: field label */
-				__( 'Delete a field that holds content: %s', 'wp-acf-json-pro' ),
+				__( 'Delete a field that holds content: %s', 'fieldpilot-for-acf' ),
 				$label
 			),
 			message: $message,
 			options: array(
 				array(
 					'id'          => self::SKIP,
-					'label'       => __( 'Keep the field', 'wp-acf-json-pro' ),
-					'description' => __( 'Leave it in place and continue with the rest of the batch.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Keep the field', 'fieldpilot-for-acf' ),
+					'description' => __( 'Leave it in place and continue with the rest of the batch.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 				array(
 					'id'          => self::APPLY_INCOMING,
-					'label'       => __( 'Delete it', 'wp-acf-json-pro' ),
-					'description' => __( 'The field configuration is removed. Stored values stay in the database but become unreachable.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Delete it', 'fieldpilot-for-acf' ),
+					'description' => __( 'The field configuration is removed. Stored values stay in the database but become unreachable.', 'fieldpilot-for-acf' ),
 					'destructive' => true,
 				),
 			),
@@ -246,32 +246,32 @@ final class Conflict implements \JsonSerializable {
 			kind: self::NAME_COLLISION,
 			title: sprintf(
 				/* translators: %s: field name */
-				__( 'Name already in use: %s', 'wp-acf-json-pro' ),
+				__( 'Name already in use: %s', 'fieldpilot-for-acf' ),
 				$name
 			),
 			message: sprintf(
 				/* translators: 1: field name, 2: parent label */
-				__( 'A field named "%1$s" already exists in %2$s. Two siblings with the same name write to the same meta key.', 'wp-acf-json-pro' ),
+				__( 'A field named "%1$s" already exists in %2$s. Two siblings with the same name write to the same meta key.', 'fieldpilot-for-acf' ),
 				$name,
 				$parentLabel
 			),
 			options: array(
 				array(
 					'id'          => self::SKIP,
-					'label'       => __( 'Skip the new field', 'wp-acf-json-pro' ),
-					'description' => __( 'Keep the existing field and do not add this one.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Skip the new field', 'fieldpilot-for-acf' ),
+					'description' => __( 'Keep the existing field and do not add this one.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 				array(
 					'id'          => self::APPLY_INCOMING,
-					'label'       => __( 'Update the existing field instead', 'wp-acf-json-pro' ),
-					'description' => __( 'Treat this as a change to the field that is already there.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Update the existing field instead', 'fieldpilot-for-acf' ),
+					'description' => __( 'Treat this as a change to the field that is already there.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 				array(
 					'id'          => self::CREATE_NEW,
-					'label'       => __( 'Add with a suffixed name', 'wp-acf-json-pro' ),
-					'description' => __( 'Add the new field with a unique name derived from this one.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Add with a suffixed name', 'fieldpilot-for-acf' ),
+					'description' => __( 'Add the new field with a unique name derived from this one.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 			),
@@ -292,26 +292,26 @@ final class Conflict implements \JsonSerializable {
 			kind: self::CONTAINER_CHANGE,
 			title: sprintf(
 				/* translators: %s: field label */
-				__( 'Container type change: %s', 'wp-acf-json-pro' ),
+				__( 'Container type change: %s', 'fieldpilot-for-acf' ),
 				$label
 			),
 			message: sprintf(
 				/* translators: 1: current type, 2: incoming type */
-				__( 'Changing from %1$s to %2$s changes how every nested value is stored. Existing content cannot be carried across.', 'wp-acf-json-pro' ),
+				__( 'Changing from %1$s to %2$s changes how every nested value is stored. Existing content cannot be carried across.', 'fieldpilot-for-acf' ),
 				$from,
 				$to
 			),
 			options: array(
 				array(
 					'id'          => self::KEEP_EXISTING,
-					'label'       => __( 'Keep the current structure', 'wp-acf-json-pro' ),
-					'description' => __( 'Apply other settings but leave the container type alone.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Keep the current structure', 'fieldpilot-for-acf' ),
+					'description' => __( 'Apply other settings but leave the container type alone.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
 				array(
 					'id'          => self::APPLY_INCOMING,
-					'label'       => __( 'Restructure anyway', 'wp-acf-json-pro' ),
-					'description' => __( 'All nested content becomes unreachable.', 'wp-acf-json-pro' ),
+					'label'       => __( 'Restructure anyway', 'fieldpilot-for-acf' ),
+					'description' => __( 'All nested content becomes unreachable.', 'fieldpilot-for-acf' ),
 					'destructive' => true,
 				),
 			),

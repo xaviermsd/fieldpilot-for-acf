@@ -22,43 +22,43 @@ defined( 'ABSPATH' ) || exit;
 final class Diagnostics extends Screen {
 
 	protected function title(): string {
-		return __( 'Diagnostics', 'wp-acf-json-pro' );
+		return __( 'Diagnostics', 'fieldpilot-for-acf' );
 	}
 
 	protected function body(): void {
 		?>
 		<p class="acfjp-lede">
-			<?php esc_html_e( 'Runs the engine end to end against your real ACF installation: a partial update, a rollback, conflict handling, nested structures and the safety refusals.', 'wp-acf-json-pro' ); ?>
+			<?php esc_html_e( 'Runs the engine end to end against your real ACF installation: a partial update, a rollback, conflict handling, nested structures and the safety refusals.', 'fieldpilot-for-acf' ); ?>
 		</p>
 
 		<div class="acfjp-panel acfjp-panel--info">
-			<h2><?php esc_html_e( 'What this does to your site', 'wp-acf-json-pro' ); ?></h2>
+			<h2><?php esc_html_e( 'What this does to your site', 'fieldpilot-for-acf' ); ?></h2>
 			<ul class="acfjp-bullets">
-				<li><?php esc_html_e( 'Creates one temporary, inactive field group of its own, then deletes it.', 'wp-acf-json-pro' ); ?></li>
-				<li><?php esc_html_e( 'Never reads, changes or deletes a field group it did not create - every one it makes is tagged, and only tagged groups are removed.', 'wp-acf-json-pro' ); ?></li>
-				<li><?php esc_html_e( 'Touches no posts, no options and no content.', 'wp-acf-json-pro' ); ?></li>
-				<li><?php esc_html_e( 'Removes its own history entries afterwards.', 'wp-acf-json-pro' ); ?></li>
+				<li><?php esc_html_e( 'Creates one temporary, inactive field group of its own, then deletes it.', 'fieldpilot-for-acf' ); ?></li>
+				<li><?php esc_html_e( 'Never reads, changes or deletes a field group it did not create - every one it makes is tagged, and only tagged groups are removed.', 'fieldpilot-for-acf' ); ?></li>
+				<li><?php esc_html_e( 'Touches no posts, no options and no content.', 'fieldpilot-for-acf' ); ?></li>
+				<li><?php esc_html_e( 'Removes its own history entries afterwards.', 'fieldpilot-for-acf' ); ?></li>
 			</ul>
 		</div>
 
 		<?php if ( Guard::isReadOnly() ) : ?>
 			<div class="notice notice-warning">
 				<p>
-					<?php esc_html_e( 'Read-only mode is on, so the write checks cannot run. Turn it off to run the full self-test.', 'wp-acf-json-pro' ); ?>
+					<?php esc_html_e( 'Read-only mode is on, so the write checks cannot run. Turn it off to run the full self-test.', 'fieldpilot-for-acf' ); ?>
 				</p>
 			</div>
 		<?php endif; ?>
 
 		<p>
 			<button type="button" class="button button-primary button-hero" id="acfjp-selftest-run">
-				<?php esc_html_e( 'Run self-test', 'wp-acf-json-pro' ); ?>
+				<?php esc_html_e( 'Run self-test', 'fieldpilot-for-acf' ); ?>
 			</button>
 		</p>
 
 		<div id="acfjp-selftest-output" class="acfjp-selftest" aria-live="polite"></div>
 
-		<h2><?php esc_html_e( 'From the command line', 'wp-acf-json-pro' ); ?></h2>
-		<p><?php esc_html_e( 'If you have WP-CLI, the same checks run there and exit non-zero on failure, which makes them usable in a deployment script:', 'wp-acf-json-pro' ); ?></p>
+		<h2><?php esc_html_e( 'From the command line', 'fieldpilot-for-acf' ); ?></h2>
+		<p><?php esc_html_e( 'If you have WP-CLI, the same checks run there and exit non-zero on failure, which makes them usable in a deployment script:', 'fieldpilot-for-acf' ); ?></p>
 		<pre class="acfjp-code">wp acfjp self-test</pre>
 		<?php
 	}
@@ -69,9 +69,9 @@ final class Diagnostics extends Screen {
 	 */
 	public static function statusLabel( string $status ): string {
 		return match ( $status ) {
-			Check::PASS => __( 'Passed', 'wp-acf-json-pro' ),
-			Check::FAIL => __( 'Failed', 'wp-acf-json-pro' ),
-			default     => __( 'Skipped', 'wp-acf-json-pro' ),
+			Check::PASS => __( 'Passed', 'fieldpilot-for-acf' ),
+			Check::FAIL => __( 'Failed', 'fieldpilot-for-acf' ),
+			default     => __( 'Skipped', 'fieldpilot-for-acf' ),
 		};
 	}
 }

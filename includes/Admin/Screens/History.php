@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 final class History extends Screen {
 
 	protected function title(): string {
-		return __( 'History', 'wp-acf-json-pro' );
+		return __( 'History', 'fieldpilot-for-acf' );
 	}
 
 	protected function body(): void {
@@ -30,17 +30,17 @@ final class History extends Screen {
 		$total   = $journal->countAll();
 
 		if ( array() === $entries ) {
-			$this->notice( esc_html__( 'Nothing has been changed through this plugin yet.', 'wp-acf-json-pro' ) );
+			$this->notice( esc_html__( 'Nothing has been changed through this plugin yet.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
 		echo '<table class="wp-list-table widefat fixed striped acfjp-history"><thead><tr>';
-		printf( '<th>%s</th>', esc_html__( 'When', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Field group', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Operation', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Changes', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'By', 'wp-acf-json-pro' ) );
-		printf( '<th>%s</th>', esc_html__( 'Status', 'wp-acf-json-pro' ) );
+		printf( '<th>%s</th>', esc_html__( 'When', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Field group', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Operation', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Changes', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'By', 'fieldpilot-for-acf' ) );
+		printf( '<th>%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
 		echo '</tr></thead><tbody>';
 
 		foreach ( $entries as $entry ) {
@@ -90,7 +90,7 @@ final class History extends Screen {
 		$changes = $entry->changeset['changes'] ?? array();
 
 		if ( is_array( $changes ) && array() !== $changes ) {
-			echo '<details><summary>' . esc_html__( 'details', 'wp-acf-json-pro' ) . '</summary><ul class="acfjp-history__changes">';
+			echo '<details><summary>' . esc_html__( 'details', 'fieldpilot-for-acf' ) . '</summary><ul class="acfjp-history__changes">';
 
 			foreach ( $changes as $change ) {
 				if ( ! is_array( $change ) ) {
@@ -118,7 +118,7 @@ final class History extends Screen {
 			printf(
 				'<button type="button" class="button acfjp-rollback" data-id="%d">%s</button>',
 				(int) $entry->id,
-				esc_html__( 'Roll back', 'wp-acf-json-pro' )
+				esc_html__( 'Roll back', 'fieldpilot-for-acf' )
 			);
 		} else {
 			printf( '<span class="acfjp-pill">%s</span>', esc_html( $this->statusLabel( $entry->status ) ) );
@@ -133,10 +133,10 @@ final class History extends Screen {
 
 	private function statusLabel( string $status ): string {
 		return match ( $status ) {
-			Entry::STATUS_APPLIED     => __( 'Applied', 'wp-acf-json-pro' ),
-			Entry::STATUS_FAILED      => __( 'Failed - rolled back', 'wp-acf-json-pro' ),
-			Entry::STATUS_ROLLED_BACK => __( 'Rolled back', 'wp-acf-json-pro' ),
-			Entry::STATUS_REVERTED    => __( 'Rollback', 'wp-acf-json-pro' ),
+			Entry::STATUS_APPLIED     => __( 'Applied', 'fieldpilot-for-acf' ),
+			Entry::STATUS_FAILED      => __( 'Failed - rolled back', 'fieldpilot-for-acf' ),
+			Entry::STATUS_ROLLED_BACK => __( 'Rolled back', 'fieldpilot-for-acf' ),
+			Entry::STATUS_REVERTED    => __( 'Rollback', 'fieldpilot-for-acf' ),
 			default                   => $status,
 		};
 	}

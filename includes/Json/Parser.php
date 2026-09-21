@@ -35,7 +35,7 @@ final class Parser {
 		if ( '' === $raw ) {
 			throw new ParseException(
 				ErrorCodes::EMPTY_PAYLOAD,
-				__( 'No JSON was supplied.', 'wp-acf-json-pro' )
+				__( 'No JSON was supplied.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -44,7 +44,7 @@ final class Parser {
 				ErrorCodes::PAYLOAD_TOO_LARGE,
 				sprintf(
 					/* translators: 1: payload size, 2: maximum size */
-					__( 'The payload is %1$s, which exceeds the %2$s limit.', 'wp-acf-json-pro' ),
+					__( 'The payload is %1$s, which exceeds the %2$s limit.', 'fieldpilot-for-acf' ),
 					size_format( strlen( $raw ) ),
 					size_format( $this->maxBytes() )
 				),
@@ -57,7 +57,7 @@ final class Parser {
 		if ( ! mb_check_encoding( $raw, 'UTF-8' ) ) {
 			throw new ParseException(
 				ErrorCodes::BAD_ENCODING,
-				__( 'The payload is not valid UTF-8. Re-save the file as UTF-8 and try again.', 'wp-acf-json-pro' )
+				__( 'The payload is not valid UTF-8. Re-save the file as UTF-8 and try again.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -68,7 +68,7 @@ final class Parser {
 				ErrorCodes::INVALID_JSON,
 				sprintf(
 					/* translators: %s: JSON parser error message */
-					__( 'The JSON could not be parsed: %s', 'wp-acf-json-pro' ),
+					__( 'The JSON could not be parsed: %s', 'fieldpilot-for-acf' ),
 					json_last_error_msg()
 				),
 				array( 'json_error' => json_last_error_msg() ),
@@ -79,7 +79,7 @@ final class Parser {
 		if ( ! is_array( $decoded ) ) {
 			throw new ParseException(
 				ErrorCodes::NOT_AN_OBJECT,
-				__( 'The payload must be a JSON object or array of field groups.', 'wp-acf-json-pro' )
+				__( 'The payload must be a JSON object or array of field groups.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -99,14 +99,14 @@ final class Parser {
 		if ( '' === $tmp || ! is_uploaded_file( $tmp ) ) {
 			throw new ParseException(
 				ErrorCodes::EMPTY_PAYLOAD,
-				__( 'No file was uploaded.', 'wp-acf-json-pro' )
+				__( 'No file was uploaded.', 'fieldpilot-for-acf' )
 			);
 		}
 
 		if ( ( $file['size'] ?? 0 ) > $this->maxBytes() ) {
 			throw new ParseException(
 				ErrorCodes::PAYLOAD_TOO_LARGE,
-				__( 'That file is too large.', 'wp-acf-json-pro' )
+				__( 'That file is too large.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -116,7 +116,7 @@ final class Parser {
 		if ( false === $contents ) {
 			throw new ParseException(
 				ErrorCodes::EMPTY_PAYLOAD,
-				__( 'The uploaded file could not be read.', 'wp-acf-json-pro' )
+				__( 'The uploaded file could not be read.', 'fieldpilot-for-acf' )
 			);
 		}
 
@@ -133,19 +133,19 @@ final class Parser {
 		$hints = array();
 
 		if ( 1 === preg_match( '/,\s*[}\]]/', $raw ) ) {
-			$hints[] = __( 'There appears to be a trailing comma before a closing brace or bracket.', 'wp-acf-json-pro' );
+			$hints[] = __( 'There appears to be a trailing comma before a closing brace or bracket.', 'fieldpilot-for-acf' );
 		}
 
 		if ( str_contains( $raw, '//' ) || str_contains( $raw, '/*' ) ) {
-			$hints[] = __( 'Comments are not valid JSON. Remove // and /* */ sections.', 'wp-acf-json-pro' );
+			$hints[] = __( 'Comments are not valid JSON. Remove // and /* */ sections.', 'fieldpilot-for-acf' );
 		}
 
 		if ( 1 === preg_match( '/[\x{2018}\x{2019}\x{201C}\x{201D}]/u', $raw ) ) {
-			$hints[] = __( 'Smart quotes were found. JSON requires straight double quotes.', 'wp-acf-json-pro' );
+			$hints[] = __( 'Smart quotes were found. JSON requires straight double quotes.', 'fieldpilot-for-acf' );
 		}
 
 		if ( str_starts_with( $raw, '```' ) ) {
-			$hints[] = __( 'The payload starts with a Markdown code fence. Paste only the JSON itself.', 'wp-acf-json-pro' );
+			$hints[] = __( 'The payload starts with a Markdown code fence. Paste only the JSON itself.', 'fieldpilot-for-acf' );
 		}
 
 		return $hints;

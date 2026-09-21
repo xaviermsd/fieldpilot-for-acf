@@ -73,7 +73,7 @@ final class Entry implements \JsonSerializable {
 	public function userName(): string {
 		$user = get_userdata( $this->userId );
 
-		return $user ? $user->display_name : __( 'Unknown', 'wp-acf-json-pro' );
+		return $user ? $user->display_name : __( 'Unknown', 'fieldpilot-for-acf' );
 	}
 
 	/**
