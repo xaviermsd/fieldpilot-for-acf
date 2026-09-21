@@ -1155,6 +1155,41 @@
 				return;
 			}
 
+			// Guide template loaders & copy actions
+			const guideLoadBtn = target.closest( '.acfjp-guide-load' );
+			if ( guideLoadBtn ) {
+				event.preventDefault();
+				const targetId = guideLoadBtn.dataset.exampleTarget;
+				const codeEl = targetId ? document.getElementById( targetId ) : null;
+				if ( codeEl ) {
+					const jsonText = codeEl.textContent || '';
+					setEditorValue( cleanJson( jsonText ) );
+					switchTab( 'editor' );
+					if ( window.history && window.history.replaceState ) {
+						window.history.replaceState( null, null, '#editor' );
+					}
+					const editorEl = document.getElementById( 'acfjp-import' );
+					if ( editorEl ) {
+						editorEl.scrollIntoView( { behavior: 'smooth', block: 'start' } );
+					}
+				}
+				return;
+			}
+
+			const guideCopyBtn = target.closest( '.acfjp-guide-copy' );
+			if ( guideCopyBtn ) {
+				event.preventDefault();
+				const targetId = guideCopyBtn.dataset.exampleTarget;
+				const codeEl = targetId ? document.getElementById( targetId ) : null;
+				if ( codeEl && navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard.writeText( codeEl.textContent || '' );
+					const origHtml = guideCopyBtn.innerHTML;
+					guideCopyBtn.innerHTML = '<span class="dashicons dashicons-yes"></span> ' + ( s.copied || 'Copied!' );
+					window.setTimeout( function () { guideCopyBtn.innerHTML = origHtml; }, 1500 );
+				}
+				return;
+			}
+
 			const copyButton = target.closest( '.acfjp-copy' );
 			if ( copyButton ) {
 				event.preventDefault();

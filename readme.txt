@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,12 @@ AI you already use.
 
 == Changelog ==
 
+= 1.0.10 =
+* Added: Comprehensive in-app Schema & Operations Developer Guide in Tab 3 covering all 8 operations, target scope resolution, 4 ACF tabs parameter mapping, 36 field types reference matrix, and 1-click template loaders.
+* Fixed: Resolved DOM hierarchy and removed duplicate intent textarea in AI Prompt tab.
+* Fixed: Prevented WordPress admin footer (#wpfooter) from overlapping content.
+* Fixed: Standardized AI steps into full-width sequential workflow and aligned editor action buttons.
+
 = 1.0.9 =
 * Added: Complete 36 ACF field type template patches in the JSON Editor template selector across 6 clean optgroups.
 * Enhanced: Reordered workflow tabs so Tab 1 is "1. Generate with AI" (default) and Tab 2 is "2. JSON Editor & Import".
@@ -177,6 +183,9 @@ AI you already use.
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.10 =
+Upgrade recommended for all users to get comprehensive in-app developer guide, single-column workflow, and layout fixes.
 
 = 1.0.9 =
 Upgrade recommended for streamlined AI-first tab workflow, 36 field type template payloads, and enhanced step guidance animations.
