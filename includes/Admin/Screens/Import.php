@@ -227,12 +227,12 @@ final class Import extends Screen {
 								</div>
 
 								<!-- Custom Field Builder Row -->
-								<div class="acfjp-builder-box" style="background: #f0f6fc; border: 1px solid #cce5ff; border-radius: 4px; padding: 10px 12px; margin-top: 10px;">
-									<div style="font-size: 12px; font-weight: 600; color: #004b87; margin-bottom: 6px;">
-										<?php esc_html_e( '🎯 Custom Field Builder (Specify your own exact field name & type):', 'wp-acf-json-pro' ); ?>
+								<div class="acfjp-builder-box" style="background: #f0f6fc; border: 1px solid #cce5ff; border-radius: 4px; padding: 12px 14px; margin-top: 10px;">
+									<div style="font-size: 12px; font-weight: 600; color: #004b87; margin-bottom: 8px;">
+										<?php esc_html_e( '🎯 Custom Field Builder (Configure exact field properties across General, Validation & Presentation):', 'wp-acf-json-pro' ); ?>
 									</div>
 									<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-										<input type="text" id="acfjp-custom-name" placeholder="<?php esc_attr_e( 'Enter field name / label (e.g. Director Bio, Client Logo)...', 'wp-acf-json-pro' ); ?>" style="flex: 1 1 200px; height: 32px; font-size: 13px;" />
+										<input type="text" id="acfjp-custom-name" placeholder="<?php esc_attr_e( 'Field Label / Name (e.g. Director Bio, Hero Banner)...', 'wp-acf-json-pro' ); ?>" style="flex: 1 1 200px; height: 32px; font-size: 13px;" />
 										<select id="acfjp-custom-type" style="height: 32px; font-size: 13px;">
 											<optgroup label="<?php esc_attr_e( 'Basic & Text', 'wp-acf-json-pro' ); ?>">
 												<option value="text"><?php esc_html_e( 'Text', 'wp-acf-json-pro' ); ?></option>
@@ -283,6 +283,12 @@ final class Import extends Screen {
 												<option value="color_picker"><?php esc_html_e( 'Color Picker', 'wp-acf-json-pro' ); ?></option>
 											</optgroup>
 										</select>
+										<select id="acfjp-custom-width" style="height: 32px; font-size: 12px;">
+											<option value=""><?php esc_html_e( 'Width: 100%', 'wp-acf-json-pro' ); ?></option>
+											<option value="50%"><?php esc_html_e( 'Width: 50%', 'wp-acf-json-pro' ); ?></option>
+											<option value="33%"><?php esc_html_e( 'Width: 33%', 'wp-acf-json-pro' ); ?></option>
+											<option value="25%"><?php esc_html_e( 'Width: 25%', 'wp-acf-json-pro' ); ?></option>
+										</select>
 										<label style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">
 											<input type="checkbox" id="acfjp-custom-required" /> <?php esc_html_e( 'Required', 'wp-acf-json-pro' ); ?>
 										</label>
@@ -290,6 +296,9 @@ final class Import extends Screen {
 											<span class="dashicons dashicons-plus-alt2"></span>
 											<?php esc_html_e( 'Append Field', 'wp-acf-json-pro' ); ?>
 										</button>
+									</div>
+									<div style="margin-top: 8px;">
+										<input type="text" id="acfjp-custom-instructions" placeholder="<?php esc_attr_e( 'Optional presentation instructions (e.g. Upload JPG/PNG minimum 1200x800px)...', 'wp-acf-json-pro' ); ?>" style="width: 100%; height: 28px; font-size: 12px;" />
 									</div>
 								</div>
 

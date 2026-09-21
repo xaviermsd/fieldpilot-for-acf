@@ -143,55 +143,62 @@ TXT;
 		$types = $this->schemas->installedTypes();
 
 		return <<<TXT
-All 36 ACF Field Types & Standard Settings Reference:
+All 36 ACF Field Types & Full Settings Reference (General, Validation, Presentation & Logic):
 
 • Basic & Text:
-  - text: {"type": "text", "default_value": "", "placeholder": "", "maxlength": ""}
-  - textarea: {"type": "textarea", "rows": 4, "new_lines": "wpautop|br|"}
-  - number: {"type": "number", "min": 0, "max": 100, "step": 1}
-  - range: {"type": "range", "min": 0, "max": 100, "step": 1}
-  - email: {"type": "email", "placeholder": ""}
-  - url: {"type": "url", "placeholder": ""}
-  - password: {"type": "password"}
+  - text: {"type": "text", "default_value": "", "placeholder": "", "prepend": "", "append": "", "maxlength": 100}
+  - textarea: {"type": "textarea", "rows": 4, "placeholder": "", "new_lines": "wpautop|br|", "maxlength": 500}
+  - number: {"type": "number", "min": 0, "max": 1000, "step": 1, "default_value": "", "prepend": "$", "append": "USD"}
+  - range: {"type": "range", "min": 0, "max": 100, "step": 1, "default_value": 50, "prepend": "", "append": "%"}
+  - email: {"type": "email", "placeholder": "user@example.com", "default_value": ""}
+  - url: {"type": "url", "placeholder": "https://example.com", "default_value": ""}
+  - password: {"type": "password", "placeholder": ""}
 
 • Content & Media:
-  - wysiwyg: {"type": "wysiwyg", "toolbar": "full|basic", "media_upload": 1, "tabs": "all|visual|text"}
-  - image: {"type": "image", "return_format": "array|url|id", "preview_size": "medium", "library": "all"}
-  - file: {"type": "file", "return_format": "array|url|id", "mime_types": "pdf,docx"}
-  - gallery: {"type": "gallery", "return_format": "array|url|id", "min": 0, "max": 10}
+  - wysiwyg: {"type": "wysiwyg", "toolbar": "full|basic", "media_upload": 1, "tabs": "all|visual|text", "delay": 0}
+  - image: {"type": "image", "return_format": "array|url|id", "preview_size": "medium", "library": "all|uploadedTo", "min_width": 0, "max_width": 0, "min_height": 0, "max_height": 0, "min_size": 0, "max_size": 0, "mime_types": "jpg,jpeg,png,webp"}
+  - file: {"type": "file", "return_format": "array|url|id", "library": "all|uploadedTo", "min_size": 0, "max_size": 0, "mime_types": "pdf,docx,zip"}
+  - gallery: {"type": "gallery", "return_format": "array|url|id", "library": "all|uploadedTo", "min": 0, "max": 10, "insert": "append"}
   - oembed: {"type": "oembed", "width": "", "height": ""}
-  - icon_picker: {"type": "icon_picker"}
+  - icon_picker: {"type": "icon_picker", "return_format": "string|array"}
 
 • Choice Fields:
-  - select: {"type": "select", "choices": {"key": "Value"}, "allow_null": 0, "multiple": 0, "ui": 1}
-  - checkbox: {"type": "checkbox", "choices": {"key": "Value"}, "layout": "vertical|horizontal"}
-  - radio: {"type": "radio", "choices": {"key": "Value"}, "other_choice": 0, "layout": "vertical|horizontal"}
-  - button_group: {"type": "button_group", "choices": {"key": "Value"}, "allow_null": 0}
-  - true_false: {"type": "true_false", "ui": 1, "ui_on_text": "Yes", "ui_off_text": "No", "default_value": 0}
+  - select: {"type": "select", "choices": {"key": "Value"}, "default_value": "", "allow_null": 0, "multiple": 0, "ui": 1, "ajax": 0, "placeholder": "Choose an option..."}
+  - checkbox: {"type": "checkbox", "choices": {"key": "Value"}, "default_value": ["key"], "layout": "vertical|horizontal", "toggle": 0, "allow_custom": 0, "save_custom": 0}
+  - radio: {"type": "radio", "choices": {"key": "Value"}, "default_value": "key", "other_choice": 0, "save_other_choice": 0, "layout": "vertical|horizontal"}
+  - button_group: {"type": "button_group", "choices": {"key": "Value"}, "default_value": "key", "allow_null": 0, "layout": "horizontal"}
+  - true_false: {"type": "true_false", "ui": 1, "ui_on_text": "Yes", "ui_off_text": "No", "message": "", "default_value": 0}
 
 • Relational & WP Objects:
   - link: {"type": "link", "return_format": "array|url"}
-  - post_object: {"type": "post_object", "post_type": ["post", "page"], "return_format": "object|id", "multiple": 0}
-  - page_link: {"type": "page_link", "post_type": ["page"], "allow_null": 0, "multiple": 0}
-  - relationship: {"type": "relationship", "post_type": ["post"], "filters": ["search", "post_type"], "return_format": "object|id", "min": 0, "max": 5}
-  - taxonomy: {"type": "taxonomy", "taxonomy": "category", "field_type": "checkbox|select|radio", "return_format": "object|id"}
-  - user: {"type": "user", "role": ["administrator", "editor"], "return_format": "array|object|id", "multiple": 0}
+  - post_object: {"type": "post_object", "post_type": ["post", "page"], "taxonomy": [], "return_format": "object|id", "multiple": 0, "allow_null": 0}
+  - page_link: {"type": "page_link", "post_type": ["page"], "allow_null": 0, "multiple": 0, "allow_archives": 1}
+  - relationship: {"type": "relationship", "post_type": ["post"], "taxonomy": [], "filters": ["search", "post_type", "taxonomy"], "return_format": "object|id", "min": 0, "max": 5}
+  - taxonomy: {"type": "taxonomy", "taxonomy": "category", "field_type": "checkbox|select|radio|multi_select", "add_term": 0, "save_terms": 0, "load_terms": 0, "return_format": "object|id"}
+  - user: {"type": "user", "role": ["administrator", "editor"], "return_format": "array|object|id", "multiple": 0, "allow_null": 0}
 
-• Layout & Structure:
-  - repeater: {"type": "repeater", "layout": "table|block|row", "button_label": "Add Row", "min": 0, "max": 0, "sub_fields": [...]}
+• Layout & Structure (Nested Trees):
+  - repeater: {"type": "repeater", "layout": "table|block|row", "button_label": "Add Row", "min": 0, "max": 10, "collapsed": "", "sub_fields": [...]}
   - group: {"type": "group", "layout": "block|table|row", "sub_fields": [...]}
-  - flexible_content: {"type": "flexible_content", "button_label": "Add Section", "layouts": [{"name": "layout_slug", "label": "Layout Title", "sub_fields": [...]}]}
+  - flexible_content: {"type": "flexible_content", "button_label": "Add Section", "min": 0, "max": 20, "layouts": [{"name": "layout_slug", "label": "Layout Title", "display": "block|table|row", "sub_fields": [...]}]}
   - accordion: {"type": "accordion", "open": 0, "multi_expand": 0, "endpoint": 0}
   - tab: {"type": "tab", "placement": "top|left", "endpoint": 0}
-  - message: {"type": "message", "message": "Instructions text or HTML", "new_lines": "wpautop"}
-  - clone: {"type": "clone", "clone": ["field_xxxxx"], "display": "seamless|group"}
+  - message: {"type": "message", "message": "Instructional text or HTML guidance", "new_lines": "wpautop", "esc_html": 0}
+  - clone: {"type": "clone", "clone": ["field_xxxxx"], "display": "seamless|group", "prefix_label": 0, "prefix_name": 0}
 
 • jQuery & Pickers:
-  - google_map: {"type": "google_map", "center_lat": "", "center_lng": "", "zoom": 14}
+  - google_map: {"type": "google_map", "center_lat": "", "center_lng": "", "zoom": 14, "height": 400}
   - date_picker: {"type": "date_picker", "display_format": "d/m/Y", "return_format": "Y-m-d", "first_day": 1}
   - date_time_picker: {"type": "date_time_picker", "display_format": "d/m/Y g:i a", "return_format": "Y-m-d H:i:s", "first_day": 1}
   - time_picker: {"type": "time_picker", "display_format": "g:i a", "return_format": "H:i:s"}
   - color_picker: {"type": "color_picker", "default_value": "#2271b1", "enable_opacity": 0}
+
+• Presentation & Wrapper Settings (Supported on ALL field types):
+  - instructions: "Helpful guidance text shown below the field."
+  - wrapper: {"width": "50", "class": "custom-col", "id": "custom-id"}
+
+• Conditional Logic (Supported on ALL field types):
+  - conditional_logic: [ [ {"field": "status", "operator": "==", "value": "active"} ] ]
 
 Installed Types on Site:
 TXT . "\n" . implode( ', ', $types );

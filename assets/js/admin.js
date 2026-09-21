@@ -795,13 +795,17 @@
 		function addCustomField() {
 			const nameInput = document.getElementById( 'acfjp-custom-name' );
 			const typeSelect = document.getElementById( 'acfjp-custom-type' );
+			const widthSelect = document.getElementById( 'acfjp-custom-width' );
 			const reqCheckbox = document.getElementById( 'acfjp-custom-required' );
+			const instInput = document.getElementById( 'acfjp-custom-instructions' );
 
 			if ( ! nameInput || ! typeSelect ) return;
 
 			const name = nameInput.value.trim();
 			const type = typeSelect.value || 'text';
+			const width = widthSelect ? widthSelect.value : '';
 			const isReq = reqCheckbox && reqCheckbox.checked;
+			const instructions = instInput ? instInput.value.trim() : '';
 
 			if ( ! name ) {
 				nameInput.focus();
@@ -809,12 +813,19 @@
 			}
 
 			let spec = '- Add a ' + type + ' field named "' + name + '"';
-			if ( isReq ) {
-				spec += ' and make it required';
+			const extras = [];
+			if ( isReq ) extras.push( 'required' );
+			if ( width ) extras.push( 'width ' + width );
+			if ( instructions ) extras.push( 'instructions: "' + instructions + '"' );
+
+			if ( extras.length > 0 ) {
+				spec += ' (' + extras.join( ', ' ) + ')';
 			}
 
 			appendIntent( spec );
 			nameInput.value = '';
+			if ( instInput ) instInput.value = '';
+			if ( widthSelect ) widthSelect.value = '';
 			if ( reqCheckbox ) reqCheckbox.checked = false;
 			nameInput.focus();
 		}
@@ -822,6 +833,16 @@
 		const customNameInput = document.getElementById( 'acfjp-custom-name' );
 		if ( customNameInput ) {
 			customNameInput.addEventListener( 'keydown', function ( e ) {
+				if ( 'Enter' === e.key ) {
+					e.preventDefault();
+					addCustomField();
+				}
+			} );
+		}
+
+		const customInstInput = document.getElementById( 'acfjp-custom-instructions' );
+		if ( customInstInput ) {
+			customInstInput.addEventListener( 'keydown', function ( e ) {
 				if ( 'Enter' === e.key ) {
 					e.preventDefault();
 					addCustomField();
