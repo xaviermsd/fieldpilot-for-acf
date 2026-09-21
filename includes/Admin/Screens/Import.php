@@ -36,139 +36,29 @@ final class Import extends Screen {
 		<div class="acfjp-wrap">
 
 			<!-- Top Nav Mode Switcher -->
-			<div class="acfjp-tabs" role="tablist">
-				<button type="button" class="acfjp-tab is-active" data-tab="ai" role="tab" aria-selected="true">
-					<span class="dashicons dashicons-superhero-alt"></span>
-					<strong><?php esc_html_e( '1. Generate with AI', 'wp-acf-json-pro' ); ?></strong>
-				</button>
-				<button type="button" class="acfjp-tab" data-tab="editor" role="tab" aria-selected="false">
+			<nav class="nav-tab-wrapper acfjp-nav-tab-wrapper" style="margin-bottom: 20px;" aria-label="<?php esc_attr_e( 'Import modes', 'wp-acf-json-pro' ); ?>">
+				<a href="#editor" class="nav-tab nav-tab-active acfjp-tab" data-tab="editor">
 					<span class="dashicons dashicons-editor-code"></span>
-					<strong><?php esc_html_e( '2. JSON Editor & Import', 'wp-acf-json-pro' ); ?></strong>
-				</button>
-				<button type="button" class="acfjp-tab" data-tab="guide" role="tab" aria-selected="false">
+					<?php esc_html_e( '1. JSON Editor & Import', 'wp-acf-json-pro' ); ?>
+				</a>
+				<a href="#ai" class="nav-tab acfjp-tab" data-tab="ai">
+					<span class="dashicons dashicons-superhero-alt"></span>
+					<?php esc_html_e( '2. Generate with AI', 'wp-acf-json-pro' ); ?>
+				</a>
+				<a href="#guide" class="nav-tab acfjp-tab" data-tab="guide">
 					<span class="dashicons dashicons-book"></span>
-					<strong><?php esc_html_e( '3. Schema & Operations Guide', 'wp-acf-json-pro' ); ?></strong>
-				</button>
-			</div>
+					<?php esc_html_e( '3. Schema & Operations Guide', 'wp-acf-json-pro' ); ?>
+				</a>
+			</nav>
 
-			<!-- Tab 1: AI Prompt Builder -->
-			<div class="acfjp-tab-content is-active" id="acfjp-tab-ai" role="tabpanel">
-				<div class="acfjp-ai-card">
-					<div class="acfjp-ai-card__header">
-						<div class="acfjp-step-badge">AI</div>
-						<div>
-							<h2 class="acfjp-card-title"><?php esc_html_e( 'Let an AI write the JSON patch for you', 'wp-acf-json-pro' ); ?></h2>
-							<p class="description acfjp-card-subtitle">
-								<?php esc_html_e( 'This plugin does not require any paid API keys. We generate a ready-to-use prompt with your exact ACF structure. Paste it into your favorite AI, then paste the AI reply back here.', 'wp-acf-json-pro' ); ?>
-							</p>
-						</div>
-					</div>
-
-					<div class="acfjp-ai-steps">
-						<!-- Step A: Build -->
-						<div class="acfjp-ai-step">
-							<div class="acfjp-ai-step__head">
-								<span class="acfjp-badge">A</span>
-								<h3><?php esc_html_e( 'Describe what you want to change', 'wp-acf-json-pro' ); ?></h3>
-							</div>
-
-							<div class="acfjp-field-row">
-								<label for="acfjp-prompt-group"><strong><?php esc_html_e( 'Target Field Group', 'wp-acf-json-pro' ); ?></strong></label>
-								<select id="acfjp-prompt-group" class="widefat">
-									<option value=""><?php esc_html_e( '- None (new field group or generic schema) -', 'wp-acf-json-pro' ); ?></option>
-									<?php foreach ( $groups as $group ) : ?>
-										<option value="<?php echo esc_attr( $group->groupKey ); ?>">
-											<?php echo esc_html( $group->groupTitle ); ?> (<?php echo esc_html( $group->groupKey ); ?>)
-										</option>
-									<?php endforeach; ?>
-								</select>
-								<span class="description"><?php esc_html_e( 'Its current field keys and types will be embedded in the prompt so the AI never hallucinates field names.', 'wp-acf-json-pro' ); ?></span>
-							</div>
-
-							<div class="acfjp-field-row">
-								<label for="acfjp-prompt-intent"><strong><?php esc_html_e( 'What change would you like to make?', 'wp-acf-json-pro' ); ?></strong></label>
-								<textarea id="acfjp-prompt-intent" class="widefat" rows="3"
-									placeholder="<?php esc_attr_e( 'e.g. Add a repeater named "Team Members" with fields for Full Name (text), Role (text), and Photo (image).', 'wp-acf-json-pro' ); ?>"></textarea>
-								
-								<div class="acfjp-quick-chips">
-									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Quick ideas:', 'wp-acf-json-pro' ); ?></span>
-									<button type="button" class="acfjp-chip" data-intent="Add a repeater called Team Members with name, role, and photo fields"><?php esc_html_e( '+ Repeater Field', 'wp-acf-json-pro' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="Add a text field called Custom Heading and make it required"><?php esc_html_e( '+ Required Text Field', 'wp-acf-json-pro' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="Add an image field called Hero Banner with return format array"><?php esc_html_e( '+ Image Field', 'wp-acf-json-pro' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="Add a select field called Status with choices: Draft, Review, Published"><?php esc_html_e( '+ Select Dropdown', 'wp-acf-json-pro' ); ?></button>
-								</div>
-							</div>
-
-							<p>
-								<button type="button" class="button button-primary button-large" id="acfjp-prompt-build">
-									<span class="dashicons dashicons-update"></span>
-									<?php esc_html_e( 'Generate AI Prompt', 'wp-acf-json-pro' ); ?>
-								</button>
-							</p>
-						</div>
-
-						<!-- Step B: Copy & Send -->
-						<div class="acfjp-ai-step is-highlighted" id="acfjp-prompt-result" hidden>
-							<div class="acfjp-ai-step__head">
-								<span class="acfjp-badge">B</span>
-								<h3><?php esc_html_e( 'Send prompt to your AI & get the JSON reply', 'wp-acf-json-pro' ); ?></h3>
-							</div>
-
-							<p class="description">
-								<?php esc_html_e( '1. Copy this prompt. 2. Open your preferred AI tool. 3. Paste the prompt and submit.', 'wp-acf-json-pro' ); ?>
-							</p>
-
-							<div class="acfjp-prompt-toolbar">
-								<button type="button" class="button button-primary" id="acfjp-prompt-copy">
-									<span class="dashicons dashicons-admin-page"></span>
-									<?php esc_html_e( 'Copy Prompt', 'wp-acf-json-pro' ); ?>
-								</button>
-
-								<div class="acfjp-ai-links">
-									<span class="acfjp-ai-links__label"><?php esc_html_e( 'Open AI in new tab:', 'wp-acf-json-pro' ); ?></span>
-									<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
-										ChatGPT ↗
-									</a>
-									<a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="button button-secondary">
-										Claude ↗
-									</a>
-									<a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
-										Gemini ↗
-									</a>
-									<a href="https://cursor.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
-										Cursor ↗
-									</a>
-								</div>
-							</div>
-
-							<textarea id="acfjp-prompt-output" class="acfjp-prompt-output" rows="9" readonly
-								aria-label="<?php esc_attr_e( 'Generated prompt', 'wp-acf-json-pro' ); ?>"></textarea>
-
-							<div class="acfjp-ai-step__action">
-								<h4><?php esc_html_e( 'Ready with the AI response?', 'wp-acf-json-pro' ); ?></h4>
-								<p class="description">
-									<?php esc_html_e( 'Copy the AI reply (even with markdown code fences), then click below to transfer directly to the JSON Editor:', 'wp-acf-json-pro' ); ?>
-								</p>
-								<p>
-									<button type="button" class="button button-primary button-hero" id="acfjp-paste-and-preview">
-										<span class="dashicons dashicons-clipboard"></span>
-										<?php esc_html_e( 'Paste AI Response & Preview Changes', 'wp-acf-json-pro' ); ?>
-									</button>
-								</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Tab 2: Direct JSON & File Import -->
+			<!-- Tab 1: Direct JSON & File Import (Primary Default) -->
 			<div class="acfjp-tab-content is-active" id="acfjp-tab-editor" role="tabpanel">
 				<div class="acfjp-import" id="acfjp-import">
 
 					<div class="acfjp-import__editor">
 						<div class="acfjp-box-header">
 							<h2 class="acfjp-step-heading">
-								<span class="acfjp-step-num">1</span>
+								<span class="dashicons dashicons-edit"></span>
 								<?php esc_html_e( 'Paste JSON or Upload File', 'wp-acf-json-pro' ); ?>
 							</h2>
 							<p class="description acfjp-step-hint">
@@ -219,7 +109,7 @@ final class Import extends Screen {
 					<div class="acfjp-import__controls">
 						<div class="acfjp-box-header">
 							<h2 class="acfjp-step-heading">
-								<span class="acfjp-step-num">2</span>
+								<span class="dashicons dashicons-visibility"></span>
 								<?php esc_html_e( 'Review & Apply', 'wp-acf-json-pro' ); ?>
 							</h2>
 							<p class="description">
@@ -232,7 +122,7 @@ final class Import extends Screen {
 								<span class="dashicons dashicons-visibility"></span>
 								<?php esc_html_e( 'Preview Changes', 'wp-acf-json-pro' ); ?>
 							</button>
-							<button type="button" class="button" id="acfjp-validate">
+							<button type="button" class="button button-large" id="acfjp-validate">
 								<span class="dashicons dashicons-yes-alt"></span>
 								<?php esc_html_e( 'Validate Only', 'wp-acf-json-pro' ); ?>
 							</button>
@@ -273,6 +163,116 @@ final class Import extends Screen {
 								</ul>
 							</details>
 						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+
+			<!-- Tab 2: AI Prompt Builder -->
+			<div class="acfjp-tab-content" id="acfjp-tab-ai" role="tabpanel" hidden>
+				<div class="acfjp-ai-card">
+					<div class="acfjp-ai-card__header">
+						<span class="dashicons dashicons-superhero-alt acfjp-ai-header-icon"></span>
+						<div>
+							<h2 class="acfjp-card-title"><?php esc_html_e( 'Let an AI write the JSON patch for you', 'wp-acf-json-pro' ); ?></h2>
+							<p class="description acfjp-card-subtitle">
+								<?php esc_html_e( 'This plugin does not require any paid API keys. We generate a ready-to-use prompt with your exact ACF structure. Paste it into your favorite AI, then paste the AI reply back here.', 'wp-acf-json-pro' ); ?>
+							</p>
+						</div>
+					</div>
+
+					<div class="acfjp-ai-steps">
+						<!-- Step A: Build -->
+						<div class="acfjp-ai-step">
+							<div class="acfjp-ai-step__head">
+								<span class="acfjp-badge">1</span>
+								<h3><?php esc_html_e( 'Describe what you want to change', 'wp-acf-json-pro' ); ?></h3>
+							</div>
+
+							<div class="acfjp-field-row">
+								<label for="acfjp-prompt-group"><strong><?php esc_html_e( 'Target Field Group', 'wp-acf-json-pro' ); ?></strong></label>
+								<select id="acfjp-prompt-group" class="widefat">
+									<option value=""><?php esc_html_e( '- None (new field group or generic schema) -', 'wp-acf-json-pro' ); ?></option>
+									<?php foreach ( $groups as $group ) : ?>
+										<option value="<?php echo esc_attr( $group->groupKey ); ?>">
+											<?php echo esc_html( $group->groupTitle ); ?> (<?php echo esc_html( $group->groupKey ); ?>)
+										</option>
+									<?php endforeach; ?>
+								</select>
+								<span class="description"><?php esc_html_e( 'Its current field keys and types will be embedded in the prompt so the AI never hallucinates field names.', 'wp-acf-json-pro' ); ?></span>
+							</div>
+
+							<div class="acfjp-field-row">
+								<label for="acfjp-prompt-intent"><strong><?php esc_html_e( 'What change would you like to make?', 'wp-acf-json-pro' ); ?></strong></label>
+								<textarea id="acfjp-prompt-intent" class="widefat" rows="3"
+									placeholder="<?php esc_attr_e( 'e.g. Add a repeater named "Team Members" with fields for Full Name (text), Role (text), and Photo (image).', 'wp-acf-json-pro' ); ?>"></textarea>
+								
+								<div class="acfjp-quick-chips">
+									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Quick ideas:', 'wp-acf-json-pro' ); ?></span>
+									<button type="button" class="acfjp-chip" data-intent="Add a repeater called Team Members with name, role, and photo fields"><?php esc_html_e( '+ Repeater Field', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="Add a text field called Custom Heading and make it required"><?php esc_html_e( '+ Required Text Field', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="Add an image field called Hero Banner with return format array"><?php esc_html_e( '+ Image Field', 'wp-acf-json-pro' ); ?></button>
+									<button type="button" class="acfjp-chip" data-intent="Add a select field called Status with choices: Draft, Review, Published"><?php esc_html_e( '+ Select Dropdown', 'wp-acf-json-pro' ); ?></button>
+								</div>
+							</div>
+
+							<p>
+								<button type="button" class="button button-primary button-large" id="acfjp-prompt-build">
+									<span class="dashicons dashicons-update"></span>
+									<?php esc_html_e( 'Generate AI Prompt', 'wp-acf-json-pro' ); ?>
+								</button>
+							</p>
+						</div>
+
+						<!-- Step B: Copy & Send -->
+						<div class="acfjp-ai-step is-highlighted" id="acfjp-prompt-result" hidden>
+							<div class="acfjp-ai-step__head">
+								<span class="acfjp-badge">2</span>
+								<h3><?php esc_html_e( 'Send prompt to your AI & get the JSON reply', 'wp-acf-json-pro' ); ?></h3>
+							</div>
+
+							<p class="description">
+								<?php esc_html_e( '1. Copy this prompt. 2. Open your preferred AI tool. 3. Paste the prompt and submit.', 'wp-acf-json-pro' ); ?>
+							</p>
+
+							<div class="acfjp-prompt-toolbar">
+								<button type="button" class="button button-primary" id="acfjp-prompt-copy">
+									<span class="dashicons dashicons-admin-page"></span>
+									<?php esc_html_e( 'Copy Prompt', 'wp-acf-json-pro' ); ?>
+								</button>
+
+								<div class="acfjp-ai-links">
+									<span class="acfjp-ai-links__label"><?php esc_html_e( 'Open AI in new tab:', 'wp-acf-json-pro' ); ?></span>
+									<a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+										ChatGPT ↗
+									</a>
+									<a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+										Claude ↗
+									</a>
+									<a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+										Gemini ↗
+									</a>
+									<a href="https://cursor.com" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+										Cursor ↗
+									</a>
+								</div>
+							</div>
+
+							<textarea id="acfjp-prompt-output" class="acfjp-prompt-output" rows="9" readonly
+								aria-label="<?php esc_attr_e( 'Generated prompt', 'wp-acf-json-pro' ); ?>"></textarea>
+
+							<div class="acfjp-ai-step__action">
+								<h4><?php esc_html_e( 'Ready with the AI response?', 'wp-acf-json-pro' ); ?></h4>
+								<p class="description">
+									<?php esc_html_e( 'Copy the AI reply (even with markdown code fences), then click below to transfer directly to the JSON Editor:', 'wp-acf-json-pro' ); ?>
+								</p>
+								<p>
+									<button type="button" class="button button-primary button-hero" id="acfjp-paste-and-preview">
+										<span class="dashicons dashicons-clipboard"></span>
+										<?php esc_html_e( 'Paste AI Response & Switch to Editor', 'wp-acf-json-pro' ); ?>
+									</button>
+								</p>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

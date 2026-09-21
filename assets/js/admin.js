@@ -659,6 +659,7 @@
 		document.querySelectorAll( '.acfjp-tab' ).forEach( function ( btn ) {
 			const isActive = btn.dataset.tab === tabName;
 			btn.classList.toggle( 'is-active', isActive );
+			btn.classList.toggle( 'nav-tab-active', isActive );
 			btn.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
 		} );
 
@@ -666,6 +667,7 @@
 			const isActive = content.id === 'acfjp-tab-' + tabName;
 			content.classList.toggle( 'is-active', isActive );
 			content.hidden = ! isActive;
+			content.style.display = isActive ? 'block' : 'none';
 		} );
 
 		if ( 'editor' === tabName && editor && editor.codemirror ) {

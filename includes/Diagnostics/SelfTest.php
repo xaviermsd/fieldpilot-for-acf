@@ -162,7 +162,7 @@ final class SelfTest {
 		$this->resetFixture();
 
 		$before      = $this->export();
-		$beforeAgent = $before['fields'][0]['sub_fields'];
+		$beforeAgent = $before['fields'][0]['sub_fields'] ?? array();
 
 		try {
 			$plan = $this->engine->plan( $this->canonicalPayload() );
@@ -176,7 +176,7 @@ final class SelfTest {
 			$this->result->add( Check::true( $section, __( 'Apply succeeded', 'wp-acf-json-pro' ), $result->applied, '', true ) );
 
 			$after      = $this->export();
-			$afterAgent = $after['fields'][0]['sub_fields'];
+			$afterAgent = $after['fields'][0]['sub_fields'] ?? array();
 
 			$this->result->add( Check::is( $section, __( 'Exactly one field was added', 'wp-acf-json-pro' ), count( $afterAgent ), count( $beforeAgent ) + 1, true ) );
 			$this->result->add( Check::is( $section, __( 'The new field is WhatsApp', 'wp-acf-json-pro' ), $afterAgent[3]['name'] ?? null, 'whatsapp' ) );
@@ -257,7 +257,7 @@ final class SelfTest {
 				)
 			);
 
-			$this->result->add( Check::is( $section, __( 'The added field was removed', 'wp-acf-json-pro' ), count( $restored['fields'][0]['sub_fields'] ), 3 ) );
+			$this->result->add( Check::is( $section, __( 'The added field was removed', 'wp-acf-json-pro' ), count( $restored['fields'][0]['sub_fields'] ?? array() ), 3 ) );
 		} catch ( \Throwable $e ) {
 			$this->result->add( Check::fail( $section, __( 'Rollback', 'wp-acf-json-pro' ), $this->describe( $e ), true ) );
 		}
@@ -298,7 +298,7 @@ final class SelfTest {
 
 			$this->engine->apply( $plan->id, array( $conflictId => 'keep_existing' ), true, self::SOURCE );
 
-			$phone = $this->export()['fields'][0]['sub_fields'][1];
+			$phone = ( $this->export()['fields'][0]['sub_fields'] ?? array() )[1] ?? array();
 
 			$this->result->add( Check::is( $section, __( '"Keep existing" preserved the type', 'wp-acf-json-pro' ), $phone['type'] ?? null, 'text', true ) );
 			$this->result->add( Check::is( $section, __( 'The non-conflicting change still applied', 'wp-acf-json-pro' ), $phone['label'] ?? null, 'Telephone' ) );
@@ -460,7 +460,7 @@ final class SelfTest {
 			$team = null;
 			$flex = null;
 
-			foreach ( $after['fields'] as $field ) {
+			foreach ( $after['fields'] ?? array() as $field ) {
 				if ( 'team' === ( $field['name'] ?? '' ) ) {
 					$team = $field;
 				}
@@ -596,12 +596,28 @@ final class SelfTest {
 	/**
 	 * @return array<string,mixed>
 	 */
-	private function export(): array {
+	private function export( ?string $groupKey = null ): array {
 		$this->flushAcf();
 
-		$group = acf_get_field_group( self::GROUP_KEY );
+		$key = $groupKey ?? self::GROUP_KEY;
 
-		return is_array( $group ) ? acf_prepare_field_group_for_export( $group ) : array();
+		if ( null !== $this->reader ) {
+			try {
+				return $this->reader->exportArray( $key );
+			} catch ( \Throwable ) {
+				// Fallback to manual export below
+			}
+		}
+
+		$group = acf_get_field_group( $key );
+
+		if ( ! is_array( $group ) ) {
+			return array();
+		}
+
+		$group['fields'] = acf_get_fields( $group );
+
+		return acf_prepare_field_group_for_export( $group );
 	}
 
 	private function deleteGroup( string $key ): void {
