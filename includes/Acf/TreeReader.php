@@ -255,7 +255,7 @@ final class TreeReader {
 		 *
 		 * @param int $depth Default 32.
 		 */
-		return (int) apply_filters( 'acfjp/max_depth', self::MAX_DEPTH );
+		return (int) apply_filters( 'acfjp_max_depth', self::MAX_DEPTH );
 	}
 
 	/**

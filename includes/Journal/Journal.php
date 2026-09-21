@@ -73,7 +73,7 @@ final class Journal {
 		 * @param ChangeSet $changeSet What was applied.
 		 * @param string    $status    applied|failed|rolled_back
 		 */
-		do_action( 'acfjp/journal/recorded', $id, $changeSet, $status );
+		do_action( 'acfjp_journal_recorded', $id, $changeSet, $status );
 
 		return $id;
 	}
@@ -94,31 +94,58 @@ final class Journal {
 	public function find( array $args = array() ): array {
 		global $wpdb;
 
-		$where  = array( '1=1' );
-		$params = array();
-
-		if ( ! empty( $args['group_key'] ) ) {
-			$where[]  = 'group_key = %s';
-			$params[] = $args['group_key'];
-		}
-
-		if ( ! empty( $args['status'] ) ) {
-			$where[]  = 'status = %s';
-			$params[] = $args['status'];
-		}
-
 		$limit  = max( 1, min( 200, (int) ( $args['limit'] ?? 25 ) ) );
 		$offset = max( 0, (int) ( $args['offset'] ?? 0 ) );
 
-		$sql = 'SELECT * FROM ' . $this->table
-			. ' WHERE ' . implode( ' AND ', $where )
-			. ' ORDER BY id DESC LIMIT %d OFFSET %d';
-
-		$params[] = $limit;
-		$params[] = $offset;
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
-		$rows = $wpdb->get_results( $wpdb->prepare( $sql, ...$params ), ARRAY_A );
+		if ( ! empty( $args['group_key'] ) && ! empty( $args['status'] ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT * FROM {$this->table} WHERE group_key = %s AND status = %s ORDER BY id DESC LIMIT %d OFFSET %d",
+					$args['group_key'],
+					$args['status'],
+					$limit,
+					$offset
+				),
+				ARRAY_A
+			);
+		} elseif ( ! empty( $args['group_key'] ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT * FROM {$this->table} WHERE group_key = %s ORDER BY id DESC LIMIT %d OFFSET %d",
+					$args['group_key'],
+					$limit,
+					$offset
+				),
+				ARRAY_A
+			);
+		} elseif ( ! empty( $args['status'] ) ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT * FROM {$this->table} WHERE status = %s ORDER BY id DESC LIMIT %d OFFSET %d",
+					$args['status'],
+					$limit,
+					$offset
+				),
+				ARRAY_A
+			);
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT * FROM {$this->table} ORDER BY id DESC LIMIT %d OFFSET %d",
+					$limit,
+					$offset
+				),
+				ARRAY_A
+			);
+		}
 
 		return array_values(
 			array_map(
@@ -226,6 +253,6 @@ final class Journal {
 		 * @param array<string,mixed> $context Detail.
 		 * @param int                 $userId  Acting user.
 		 */
-		do_action( 'acfjp/audit', $event, $context, get_current_user_id() );
+		do_action( 'acfjp_audit', $event, $context, get_current_user_id() );
 	}
 }

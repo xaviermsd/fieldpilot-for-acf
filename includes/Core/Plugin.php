@@ -80,8 +80,6 @@ final class Plugin {
 
 		Activation::maybeMigrate();
 
-		add_action( 'init', array( $this, 'loadTextDomain' ) );
-
 		if ( is_admin() ) {
 			$this->container->get( Menu::class )->register();
 			$this->container->get( Assets::class )->register();
@@ -103,11 +101,7 @@ final class Plugin {
 		 *
 		 * @param Container $container
 		 */
-		do_action( 'acfjp/booted', $this->container );
-	}
-
-	public function loadTextDomain(): void {
-		load_plugin_textdomain( 'fieldpilot-for-acf', false, dirname( plugin_basename( ACFJP_FILE ) ) . '/languages' );
+		do_action( 'acfjp_booted', $this->container );
 	}
 
 	/**

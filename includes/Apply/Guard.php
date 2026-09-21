@@ -81,7 +81,7 @@ final class Guard {
 		 *
 		 * @param bool $readOnly
 		 */
-		return (bool) apply_filters( 'acfjp/read_only', false );
+		return (bool) apply_filters( 'acfjp_read_only', false );
 	}
 
 	/**
@@ -116,7 +116,7 @@ final class Guard {
 		 *
 		 * @param string $capability Default 'manage_options'.
 		 */
-		$capability = (string) apply_filters( 'acfjp/capability', self::CAPABILITY );
+		$capability = (string) apply_filters( 'acfjp_capability', self::CAPABILITY );
 
 		if ( current_user_can( $capability ) ) {
 			return;

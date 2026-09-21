@@ -41,7 +41,7 @@ final class Retention {
 		 * @param int $count Default 50.
 		 */
 		return (int) apply_filters(
-			'acfjp/retention/keep_per_group',
+			'acfjp_retention_keep_per_group',
 			max( 1, (int) ( $settings['keep_per_group'] ?? self::DEFAULT_KEEP_PER_GROUP ) )
 		);
 	}
@@ -55,7 +55,7 @@ final class Retention {
 		 * @param int $days Default 90.
 		 */
 		return (int) apply_filters(
-			'acfjp/retention/keep_days',
+			'acfjp_retention_keep_days',
 			max( 1, (int) ( $settings['keep_days'] ?? self::DEFAULT_KEEP_DAYS ) )
 		);
 	}

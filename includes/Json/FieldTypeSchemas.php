@@ -60,7 +60,7 @@ final class FieldTypeSchemas {
 		 * @param array<string,mixed> $schema
 		 * @param string              $type
 		 */
-		$schema = (array) apply_filters( 'acfjp/field_type/schema', $schema, $type );
+		$schema = (array) apply_filters( 'acfjp_field_type_schema', $schema, $type );
 
 		$this->cache[ $type ] = $schema;
 

@@ -32,7 +32,7 @@ final class DataProbe {
 	private bool $enabled;
 
 	public function __construct( ?bool $enabled = null ) {
-		$this->enabled = $enabled ?? (bool) apply_filters( 'acfjp/data_probe/enabled', true );
+		$this->enabled = $enabled ?? (bool) apply_filters( 'acfjp_data_probe_enabled', true );
 	}
 
 	public function isEnabled(): bool {

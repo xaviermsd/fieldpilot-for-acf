@@ -97,6 +97,6 @@ final class Restore {
 		 * @param string              $groupKey
 		 * @param array<string,mixed> $snapshot
 		 */
-		do_action( 'acfjp/restored', $groupKey, $snapshot );
+		do_action( 'acfjp_restored', $groupKey, $snapshot );
 	}
 }

@@ -24,7 +24,7 @@ abstract class Screen {
 	abstract protected function body(): void;
 
 	public function render(): void {
-		if ( ! current_user_can( (string) apply_filters( 'acfjp/capability', Guard::CAPABILITY ) ) ) {
+		if ( ! current_user_can( (string) apply_filters( 'acfjp_capability', Guard::CAPABILITY ) ) ) {
 			wp_die( esc_html__( 'You do not have permission to view this page.', 'fieldpilot-for-acf' ) );
 		}
 

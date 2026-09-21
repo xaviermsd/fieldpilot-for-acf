@@ -31,7 +31,7 @@ final class Menu {
 	}
 
 	public function addPages(): void {
-		$capability = (string) apply_filters( 'acfjp/capability', Guard::CAPABILITY );
+		$capability = (string) apply_filters( 'acfjp_capability', Guard::CAPABILITY );
 
 		add_menu_page(
 			__( 'FieldPilot for ACF', 'fieldpilot-for-acf' ),

@@ -234,7 +234,7 @@ final class Engine {
 			),
 		);
 
-		do_action( 'acfjp/applied', $result );
+		do_action( 'acfjp_applied', $result );
 
 		return $result;
 	}

@@ -170,7 +170,7 @@ final class Controller {
 	 * requests; application passwords and other auth schemes are handled upstream.
 	 */
 	public function authorize(): bool|\WP_Error {
-		$capability = (string) apply_filters( 'acfjp/capability', Guard::CAPABILITY );
+		$capability = (string) apply_filters( 'acfjp_capability', Guard::CAPABILITY );
 
 		if ( current_user_can( $capability ) ) {
 			return true;

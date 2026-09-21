@@ -169,6 +169,6 @@ final class Parser {
 		 *
 		 * @param int $bytes Default 8 MB.
 		 */
-		return (int) apply_filters( 'acfjp/max_payload_bytes', self::MAX_BYTES );
+		return (int) apply_filters( 'acfjp_max_payload_bytes', self::MAX_BYTES );
 	}
 }

@@ -115,6 +115,7 @@ final class KeyFactory {
 		$this->existing = array();
 
 		// Field and field-group keys are stored as post_name.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$names = $wpdb->get_col(
 			"SELECT post_name FROM {$wpdb->posts} WHERE post_type IN ('acf-field','acf-field-group')"
 		);

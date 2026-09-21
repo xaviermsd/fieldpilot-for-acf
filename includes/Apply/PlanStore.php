@@ -89,6 +89,6 @@ final class PlanStore {
 		 *
 		 * @param int $seconds Default 900.
 		 */
-		return (int) apply_filters( 'acfjp/plan_ttl', self::TTL );
+		return (int) apply_filters( 'acfjp_plan_ttl', self::TTL );
 	}
 }
