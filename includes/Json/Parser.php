@@ -33,14 +33,15 @@ final class Parser {
 		$raw = trim( $raw );
 
 		if ( '' === $raw ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::EMPTY_PAYLOAD,
 				__( 'No JSON was supplied.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		if ( strlen( $raw ) > $this->maxBytes() ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::PAYLOAD_TOO_LARGE,
 				sprintf(
 					/* translators: 1: payload size, 2: maximum size */
@@ -50,21 +51,23 @@ final class Parser {
 				),
 				array( 'bytes' => strlen( $raw ), 'max_bytes' => $this->maxBytes() )
 			);
+			throw $e;
 		}
 
 		$raw = $this->stripBom( $raw );
 
 		if ( ! mb_check_encoding( $raw, 'UTF-8' ) ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::BAD_ENCODING,
 				__( 'The payload is not valid UTF-8. Re-save the file as UTF-8 and try again.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		$decoded = json_decode( $raw, true, self::MAX_JSON_DEPTH );
 
 		if ( JSON_ERROR_NONE !== json_last_error() ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::INVALID_JSON,
 				sprintf(
 					/* translators: %s: JSON parser error message */
@@ -74,13 +77,15 @@ final class Parser {
 				array( 'json_error' => json_last_error_msg() ),
 				$this->hintsFor( $raw )
 			);
+			throw $e;
 		}
 
 		if ( ! is_array( $decoded ) ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::NOT_AN_OBJECT,
 				__( 'The payload must be a JSON object or array of field groups.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		return $decoded;
@@ -97,27 +102,30 @@ final class Parser {
 		$tmp = $file['tmp_name'] ?? '';
 
 		if ( '' === $tmp || ! is_uploaded_file( $tmp ) ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::EMPTY_PAYLOAD,
 				__( 'No file was uploaded.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		if ( ( $file['size'] ?? 0 ) > $this->maxBytes() ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::PAYLOAD_TOO_LARGE,
 				__( 'That file is too large.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		// Trust the contents, not the extension or the browser-supplied MIME type.
 		$contents = file_get_contents( $tmp ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 		if ( false === $contents ) {
-			throw new ParseException(
+			$e = new ParseException(
 				ErrorCodes::EMPTY_PAYLOAD,
 				__( 'The uploaded file could not be read.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		return $this->parse( $contents );

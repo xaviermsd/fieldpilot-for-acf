@@ -47,7 +47,7 @@ final class ApplyResult implements \JsonSerializable {
 			'after_hash'  => $this->afterHash,
 			'warnings'    => $this->warnings,
 			'rollback'    => array(
-				'available'  => null !== $this->beforeHash && '' !== $this->beforeHash,
+				'available'  => '' !== $this->beforeHash,
 				'journal_id' => $this->journalId,
 			),
 		);

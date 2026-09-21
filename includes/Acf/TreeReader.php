@@ -53,7 +53,7 @@ final class TreeReader {
 			$rawGroup = acf_get_raw_field_group( $groupKey );
 
 			if ( ! is_array( $rawGroup ) || empty( $rawGroup['ID'] ) ) {
-				throw new ResolutionException(
+				$e = new ResolutionException(
 					ErrorCodes::GROUP_NOT_FOUND,
 					sprintf(
 						/* translators: %s: field group key */
@@ -63,6 +63,7 @@ final class TreeReader {
 					array( 'group_key' => $groupKey ),
 					$this->suggestGroupKeys( $groupKey )
 				);
+				throw $e;
 			}
 
 			$rawGroup['fields'] = $this->readChildren( (int) $rawGroup['ID'], 1 );
@@ -86,7 +87,7 @@ final class TreeReader {
 		$group = acf_get_field_group( $groupKey );
 
 		if ( ! is_array( $group ) ) {
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::GROUP_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field group key */
@@ -96,6 +97,7 @@ final class TreeReader {
 				array( 'group_key' => $groupKey ),
 				$this->suggestGroupKeys( $groupKey )
 			);
+			throw $e;
 		}
 
 		$group['fields'] = acf_get_fields( $group );
@@ -115,7 +117,7 @@ final class TreeReader {
 		$group = acf_get_field_group( $groupKey );
 
 		if ( ! is_array( $group ) ) {
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::GROUP_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field group key */
@@ -124,10 +126,11 @@ final class TreeReader {
 				),
 				array( 'group_key' => $groupKey )
 			);
+			throw $e;
 		}
 
 		$fields = acf_get_fields( $group );
-		$group['fields'] = is_array( $fields ) ? $fields : array();
+		$group['fields'] = $fields;
 
 		return acf_prepare_field_group_for_export( $group );
 	}

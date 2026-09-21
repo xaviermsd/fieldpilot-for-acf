@@ -5,6 +5,7 @@
  * Never let one of these reach the browser: the REST controller and the admin
  * controller each catch and convert. See docs/08-REST-API.md.
  *
+ * @phpstan-consistent-constructor
  * @package ACFJP
  */
 
@@ -23,7 +24,7 @@ class AcfjpException extends \RuntimeException implements \JsonSerializable {
 	 * @param list<string>         $suggestions Things the caller could try instead.
 	 * @param string|null          $pointer     JSON pointer into the payload, e.g. '/add/0/type'.
 	 */
-	public function __construct(
+	final public function __construct(
 		private readonly string $errorCode,
 		string $message,
 		private readonly array $context = array(),
@@ -32,6 +33,25 @@ class AcfjpException extends \RuntimeException implements \JsonSerializable {
 		?\Throwable $previous = null,
 	) {
 		parent::__construct( $message, 0, $previous );
+	}
+
+	/**
+	 * @param string              $errorCode
+	 * @param string              $message
+	 * @param array<string,mixed> $context
+	 * @param list<string>        $suggestions
+	 * @param string|null         $pointer
+	 * @return static
+	 */
+	public static function create(
+		string $errorCode,
+		string $message,
+		array $context = array(),
+		array $suggestions = array(),
+		?string $pointer = null,
+		?\Throwable $previous = null,
+	): static {
+		return new static( $errorCode, $message, $context, $suggestions, $pointer, $previous );
 	}
 
 	public function errorCode(): string {

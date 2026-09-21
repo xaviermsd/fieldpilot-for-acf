@@ -138,10 +138,11 @@ final class Engine {
 		}
 
 		if ( $changeSet->isEmpty() ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::EMPTY_PAYLOAD,
 				__( 'There is nothing to apply.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		$isNewGroup = (bool) ( $plan->meta['is_new_group'] ?? false );
@@ -170,16 +171,19 @@ final class Engine {
 		} catch ( \Throwable $e ) {
 			$this->rollbackAfterFailure( $beforeHash, $changeSet, $batchId, $source, $e->getMessage() );
 
-			throw $e instanceof ApplyException
-				? $e
-				: new ApplyException(
-					ErrorCodes::WRITE_FAILED,
-					$e->getMessage(),
-					array( 'batch_id' => $batchId ),
-					array(),
-					null,
-					$e
-				);
+			if ( $e instanceof ApplyException ) {
+				throw $e;
+			}
+
+			$wrapped = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				$e->getMessage(),
+				array( 'batch_id' => $batchId ),
+				array(),
+				null,
+				$e
+			);
+			throw $wrapped;
 		}
 
 		$failures = $this->verifier->verify( $changeSet, $write );
@@ -187,12 +191,13 @@ final class Engine {
 		if ( array() !== $failures ) {
 			$this->rollbackAfterFailure( $beforeHash, $changeSet, $batchId, $source, implode( ' ', $failures ) );
 
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::VERIFY_FAILED,
 				__( 'The changes did not save correctly, so everything was rolled back. Nothing on your site was altered.', 'fieldpilot-for-acf' ),
 				array( 'batch_id' => $batchId, 'failures' => $failures ),
 				$failures
 			);
+			throw $e;
 		}
 
 		$this->reader->forget( $changeSet->groupKey );
@@ -248,11 +253,12 @@ final class Engine {
 		if ( ! $plan->report->isValid() ) {
 			$first = $plan->report->errors()[0] ?? null;
 
-			throw new ApplyException(
+			$e = new ApplyException(
 				null === $first ? ErrorCodes::INVALID_FIELD : $first->code,
 				null === $first ? __( 'The payload is not valid.', 'fieldpilot-for-acf' ) : $first->message,
 				array( 'errors' => array_map( static fn( $i ): array => $i->jsonSerialize(), $plan->report->errors() ) )
 			);
+			throw $e;
 		}
 
 		return $this->apply( $plan->id, $resolutions, $confirmed, $source );
@@ -270,27 +276,30 @@ final class Engine {
 		$entry = $this->journal->get( $journalId );
 
 		if ( null === $entry ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::SNAPSHOT_NOT_FOUND,
 				__( 'That history entry no longer exists.', 'fieldpilot-for-acf' ),
 				array( 'journal_id' => $journalId )
 			);
+			throw $e;
 		}
 
 		if ( Entry::STATUS_ROLLED_BACK === $entry->status ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::ALREADY_ROLLED_BACK,
 				__( 'This change has already been rolled back.', 'fieldpilot-for-acf' ),
 				array( 'journal_id' => $journalId )
 			);
+			throw $e;
 		}
 
 		if ( ! $entry->isRollbackable() ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::SNAPSHOT_NOT_FOUND,
 				__( 'No snapshot was stored for this change, so it cannot be rolled back automatically.', 'fieldpilot-for-acf' ),
 				array( 'journal_id' => $journalId )
 			);
+			throw $e;
 		}
 
 		$this->guard->assertMutable( $entry->groupKey );
@@ -346,13 +355,18 @@ final class Engine {
 	 * @throws ResolutionException
 	 */
 	private function treeFor( Payload $payload ): array {
-		$reference = $payload->target?->group ?? $payload->group?->title ?? '';
+		$reference = '';
+		if ( null !== $payload->target ) {
+			$reference = $payload->target->group;
+		} elseif ( null !== $payload->group ) {
+			$reference = $payload->group->title;
+		}
 
 		if ( Operation::Create === $payload->operation ) {
 			// Creating onto an existing group is almost always a mistake; say so
 			// rather than producing a confusing duplicate.
 			if ( '' !== $reference && $this->groups->exists( $reference ) ) {
-				throw new ResolutionException(
+				$e = new ResolutionException(
 					ErrorCodes::DUPLICATE_NAME,
 					sprintf(
 						/* translators: %s: field group title */
@@ -362,14 +376,15 @@ final class Engine {
 					array( 'reference' => $reference ),
 					array( 'add', 'update', 'merge', 'sync', 'replace' )
 				);
+				throw $e;
 			}
 
 			$group = $payload->group;
 
 			return array(
 				$this->emptyTree(
-					$group?->key ?? '',
-					$group?->title ?? $reference
+					null !== $group && null !== $group->key ? $group->key : '',
+					null !== $group ? $group->title : $reference
 				),
 				true,
 			);

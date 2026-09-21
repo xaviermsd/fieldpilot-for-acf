@@ -49,19 +49,21 @@ final class PlanStore {
 		$stored = get_transient( self::PREFIX . $planId );
 
 		if ( ! is_array( $stored ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::PLAN_EXPIRED,
 				__( 'This preview has expired. Generate it again to see the current changes.', 'fieldpilot-for-acf' ),
 				array( 'plan_id' => $planId )
 			);
+			throw $e;
 		}
 
 		if ( (int) ( $stored['user_id'] ?? 0 ) !== get_current_user_id() ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::PLAN_NOT_FOUND,
 				__( 'That preview belongs to a different user.', 'fieldpilot-for-acf' ),
 				array( 'plan_id' => $planId )
 			);
+			throw $e;
 		}
 
 		return new Plan(

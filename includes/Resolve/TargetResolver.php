@@ -53,7 +53,7 @@ final class TargetResolver {
 			$layoutKey = null;
 
 			if ( ! $parent->isContainer() ) {
-				throw new ResolutionException(
+				$e = new ResolutionException(
 					ErrorCodes::NOT_A_CONTAINER,
 					sprintf(
 						/* translators: 1: field label, 2: field type */
@@ -63,12 +63,13 @@ final class TargetResolver {
 					),
 					array( 'field_key' => $parent->key, 'type' => $parent->type )
 				);
+				throw $e;
 			}
 		}
 
 		if ( null !== $target->layout ) {
 			if ( null === $parent || array() === $parent->layouts ) {
-				throw new ResolutionException(
+				$e = new ResolutionException(
 					ErrorCodes::LAYOUT_NOT_FOUND,
 					sprintf(
 						/* translators: %s: layout reference */
@@ -77,6 +78,7 @@ final class TargetResolver {
 					),
 					array( 'layout' => $target->layout )
 				);
+				throw $e;
 			}
 
 			$layoutKey = $this->resolveLayoutKey( $parent, $target->layout );
@@ -100,10 +102,11 @@ final class TargetResolver {
 		$reference = trim( $reference );
 
 		if ( '' === $reference ) {
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::FIELD_NOT_FOUND,
 				__( 'No field was named.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		$candidates = $this->candidatesIn( $tree, $withinParentKey, $withinLayoutKey );
@@ -118,7 +121,7 @@ final class TargetResolver {
 				return $field;
 			}
 
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::FIELD_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field key */
@@ -128,6 +131,7 @@ final class TargetResolver {
 				array( 'reference' => $reference ),
 				$this->describe( $tree, $candidates )
 			);
+			throw $e;
 		}
 
 		// 2. Name.
@@ -141,7 +145,8 @@ final class TargetResolver {
 		}
 
 		if ( count( $byName ) > 1 ) {
-			throw $this->ambiguous( $tree, $reference, array_values( $byName ) );
+			$e = $this->ambiguous( $tree, $reference, array_values( $byName ) );
+			throw $e;
 		}
 
 		// 3. Dotted or arrowed path, e.g. "contact.email".
@@ -177,10 +182,11 @@ final class TargetResolver {
 		}
 
 		if ( count( $byLabel ) > 1 ) {
-			throw $this->ambiguous( $tree, $reference, array_values( $byLabel ) );
+			$e = $this->ambiguous( $tree, $reference, array_values( $byLabel ) );
+			throw $e;
 		}
 
-		throw new ResolutionException(
+		$e = new ResolutionException(
 			ErrorCodes::FIELD_NOT_FOUND,
 			sprintf(
 				/* translators: 1: field reference, 2: field group title */
@@ -191,6 +197,7 @@ final class TargetResolver {
 			array( 'reference' => $reference, 'group_key' => $tree->group->key ),
 			$this->describe( $tree, $candidates )
 		);
+		throw $e;
 	}
 
 	/**
@@ -218,7 +225,7 @@ final class TargetResolver {
 					$children = $layout->subFields;
 
 					if ( array() === $children ) {
-						throw new ResolutionException(
+						$e = new ResolutionException(
 							ErrorCodes::PATH_NOT_FOUND,
 							sprintf(
 								/* translators: %s: layout name */
@@ -227,6 +234,7 @@ final class TargetResolver {
 							),
 							array( 'layout' => $segment )
 						);
+						throw $e;
 					}
 
 					// Represent the layout as its owning field with the layout scope
@@ -239,7 +247,7 @@ final class TargetResolver {
 		try {
 			return $this->resolveField( $tree, $segment, $parent?->key, $layoutKey );
 		} catch ( ResolutionException $e ) {
-			throw new ResolutionException(
+			$wrapper = new ResolutionException(
 				ErrorCodes::PATH_NOT_FOUND,
 				sprintf(
 					/* translators: 1: path segment, 2: full target description */
@@ -252,6 +260,7 @@ final class TargetResolver {
 				null,
 				$e
 			);
+			throw $wrapper;
 		}
 	}
 
@@ -272,7 +281,7 @@ final class TargetResolver {
 		}
 
 		if ( count( $matches ) > 1 ) {
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::AMBIGUOUS_TARGET,
 				sprintf(
 					/* translators: %s: layout reference */
@@ -281,9 +290,10 @@ final class TargetResolver {
 				),
 				array( 'layout' => $reference )
 			);
+			throw $e;
 		}
 
-		throw new ResolutionException(
+		$e = new ResolutionException(
 			ErrorCodes::LAYOUT_NOT_FOUND,
 			sprintf(
 				/* translators: 1: layout reference, 2: field label */
@@ -297,6 +307,7 @@ final class TargetResolver {
 				$parent->layouts
 			)
 		);
+		throw $e;
 	}
 
 	/**
@@ -348,7 +359,7 @@ final class TargetResolver {
 			return;
 		}
 
-		throw new ResolutionException(
+		$e = new ResolutionException(
 			ErrorCodes::TRAVERSES_CLONE,
 			sprintf(
 				/* translators: %s: field label */
@@ -358,6 +369,7 @@ final class TargetResolver {
 			array( 'field_key' => $field->key ),
 			array( __( 'Target the field group that defines this field directly.', 'fieldpilot-for-acf' ) )
 		);
+		throw $e;
 	}
 
 	/**

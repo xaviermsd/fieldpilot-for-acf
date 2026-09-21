@@ -133,8 +133,8 @@ final class Settings extends Screen {
 		}
 
 		$settings = array(
-			'keep_per_group'     => max( 1, min( 1000, (int) ( $_POST['keep_per_group'] ?? 50 ) ) ),
-			'keep_days'          => max( 1, min( 3650, (int) ( $_POST['keep_days'] ?? 90 ) ) ),
+			'keep_per_group'     => isset( $_POST['keep_per_group'] ) ? max( 1, min( 1000, absint( wp_unslash( $_POST['keep_per_group'] ) ) ) ) : 50,
+			'keep_days'          => isset( $_POST['keep_days'] ) ? max( 1, min( 3650, absint( wp_unslash( $_POST['keep_days'] ) ) ) ) : 90,
 			'data_probe'         => isset( $_POST['data_probe'] ) ? 1 : 0,
 			'preserve_uninstall' => isset( $_POST['preserve_uninstall'] ) ? 1 : 0,
 			'read_only'          => isset( $_POST['read_only'] ) ? 1 : 0,

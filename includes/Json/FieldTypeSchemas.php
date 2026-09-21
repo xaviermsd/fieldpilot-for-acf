@@ -52,10 +52,6 @@ final class FieldTypeSchemas {
 
 		$schema = $this->available() ? acf_get_field_json_schema( $type ) : array();
 
-		if ( ! is_array( $schema ) ) {
-			$schema = array();
-		}
-
 		/**
 		 * Supply or override the schema for a field type. Add-ons providing a
 		 * third-party field type should hook this so their fields validate as

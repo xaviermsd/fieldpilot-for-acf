@@ -238,7 +238,7 @@ final class SchemaValidator {
 	}
 
 	/**
-	 * @param list<string> $types
+	 * @param array<mixed> $types
 	 */
 	private function matchesType( mixed $value, array $types ): bool {
 		foreach ( $types as $type ) {
@@ -263,14 +263,14 @@ final class SchemaValidator {
 
 	private function describeType( mixed $value ): string {
 		return match ( true ) {
-			is_string( $value )                      => 'string',
-			is_bool( $value )                        => 'boolean',
-			is_int( $value )                         => 'integer',
-			is_float( $value )                       => 'number',
-			null === $value                          => 'null',
+			null === $value => 'null',
+			is_string( $value ) => 'string',
+			is_int( $value ) => 'integer',
+			is_float( $value ) => 'number',
+			is_bool( $value ) => 'boolean',
 			is_array( $value ) && $this->isList( $value ) => 'array',
-			is_array( $value )                       => 'object',
-			default                                  => gettype( $value ),
+			is_array( $value ) => 'object',
+			default => gettype( $value ),
 		};
 	}
 
@@ -279,6 +279,7 @@ final class SchemaValidator {
 	 * json_decode(..., true) would have produced it from `[]`.
 	 *
 	 * @param array<mixed> $value
+	 * @phpstan-assert-if-true list<mixed> $value
 	 */
 	private function isList( array $value ): bool {
 		return array() === $value || array_is_list( $value );

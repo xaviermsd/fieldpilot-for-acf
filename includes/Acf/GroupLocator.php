@@ -30,12 +30,13 @@ final class GroupLocator {
 		$reference = trim( $reference );
 
 		if ( '' === $reference ) {
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::MISSING_TARGET,
-				__( 'No field group was named.', 'fieldpilot-for-acf' ),
+				esc_html__( 'No field group was named.', 'fieldpilot-for-acf' ),
 				array(),
 				$this->allLabels()
 			);
+			throw $e;
 		}
 
 		// 1. Exact key.
@@ -46,7 +47,7 @@ final class GroupLocator {
 				}
 			}
 
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::GROUP_NOT_FOUND,
 				sprintf(
 					/* translators: %s: field group key */
@@ -56,6 +57,7 @@ final class GroupLocator {
 				array( 'reference' => $reference ),
 				$this->allLabels()
 			);
+			throw $e;
 		}
 
 		// 2. Exact title, case-insensitive.
@@ -72,7 +74,7 @@ final class GroupLocator {
 		}
 
 		if ( count( $exact ) > 1 ) {
-			throw new ResolutionException(
+			$e = new ResolutionException(
 				ErrorCodes::AMBIGUOUS_TARGET,
 				sprintf(
 					/* translators: %1$d: number of matches, %2$s: the title */
@@ -86,10 +88,11 @@ final class GroupLocator {
 					$exact
 				)
 			);
+			throw $e;
 		}
 
 		// 3. Nothing matched. Suggest, never guess.
-		throw new ResolutionException(
+		$e = new ResolutionException(
 			ErrorCodes::GROUP_NOT_FOUND,
 			sprintf(
 				/* translators: %s: the field group reference supplied */
@@ -99,6 +102,7 @@ final class GroupLocator {
 			array( 'reference' => $reference ),
 			$this->suggest( $reference )
 		);
+		throw $e;
 	}
 
 	public function exists( string $reference ): bool {

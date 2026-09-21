@@ -120,9 +120,11 @@ final class Journal {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
 		$rows = $wpdb->get_results( $wpdb->prepare( $sql, ...$params ), ARRAY_A );
 
-		return array_map(
-			static fn( array $row ): Entry => Entry::fromRow( $row ),
-			is_array( $rows ) ? $rows : array()
+		return array_values(
+			array_map(
+				static fn( array $row ): Entry => Entry::fromRow( $row ),
+				is_array( $rows ) ? $rows : array()
+			)
 		);
 	}
 
@@ -134,8 +136,9 @@ final class Journal {
 			return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$this->table}" );
 		}
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		return (int) $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare( "SELECT COUNT(*) FROM {$this->table} WHERE group_key = %s", $groupKey )
 		);
 	}
@@ -178,12 +181,11 @@ final class Journal {
 		$groupKeys = $wpdb->get_col( "SELECT DISTINCT group_key FROM {$this->table}" );
 
 		foreach ( (array) $groupKeys as $groupKey ) {
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$stale = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT id, before_hash, after_hash FROM {$this->table}
-					 WHERE group_key = %s AND created_at < %s
-					 ORDER BY id DESC LIMIT 18446744073709551615 OFFSET %d",
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					"SELECT id, before_hash, after_hash FROM {$this->table} WHERE group_key = %s AND created_at < %s ORDER BY id DESC LIMIT 18446744073709551615 OFFSET %d",
 					$groupKey,
 					$cutoff,
 					$keepPerGroup

@@ -60,14 +60,15 @@ final class Normalizer {
 		$groups = $this->dialect->nativeGroups( $raw );
 
 		if ( array() === $groups ) {
-			throw new ValidationException(
+			$e = new ValidationException(
 				ErrorCodes::MISSING_FIELDS,
 				__( 'This looks like an ACF export but contains no field groups.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		if ( count( $groups ) > 1 ) {
-			throw new ValidationException(
+			$e = new ValidationException(
 				ErrorCodes::INVALID_FIELD,
 				sprintf(
 					/* translators: %d: number of field groups found */
@@ -77,6 +78,7 @@ final class Normalizer {
 				array( 'group_count' => count( $groups ) ),
 				array( __( 'Split the export into one file per field group.', 'fieldpilot-for-acf' ) )
 			);
+			throw $e;
 		}
 
 		$groupArray           = $groups[0];
@@ -128,7 +130,7 @@ final class Normalizer {
 		if ( null === $group && Operation::Create === $operation && isset( $raw['fields'] ) ) {
 			$group = FieldGroup::fromAcfArray(
 				array(
-					'title'  => (string) ( $raw['title'] ?? ( $target?->group ?? '' ) ),
+					'title'  => (string) ( $raw['title'] ?? ( null !== $target ? $target->group : '' ) ),
 					'key'    => isset( $raw['key'] ) ? (string) $raw['key'] : null,
 					'fields' => $this->normalizeFieldList( $raw['fields'], 1, '/fields' ),
 				)
@@ -161,19 +163,20 @@ final class Normalizer {
 				return $default;
 			}
 
-			throw new ValidationException(
+			$e = new ValidationException(
 				ErrorCodes::MISSING_OPERATION,
 				__( 'The payload does not say what to do. Add an "operation".', 'fieldpilot-for-acf' ),
 				array(),
 				Operation::names(),
 				'/operation'
 			);
+			throw $e;
 		}
 
 		try {
 			return Operation::fromString( (string) $raw['operation'] );
 		} catch ( \ValueError ) {
-			throw new ValidationException(
+			$e = new ValidationException(
 				ErrorCodes::UNKNOWN_OPERATION,
 				sprintf(
 					/* translators: %s: the operation supplied */
@@ -184,6 +187,7 @@ final class Normalizer {
 				Operation::names(),
 				'/operation'
 			);
+			throw $e;
 		}
 	}
 
@@ -377,7 +381,7 @@ final class Normalizer {
 	 */
 	private function normalizeField( array $raw, int $depth, string $pointer ): array {
 		if ( $depth > self::MAX_DEPTH ) {
-			throw new ValidationException(
+			$e = new ValidationException(
 				ErrorCodes::MAX_DEPTH_EXCEEDED,
 				sprintf(
 					/* translators: %d: maximum nesting depth */
@@ -388,6 +392,7 @@ final class Normalizer {
 				array(),
 				$pointer
 			);
+			throw $e;
 		}
 
 		$raw  = Aliases::field( $raw );
@@ -411,7 +416,7 @@ final class Normalizer {
 			$normalized = KeyFactory::normalizeName( $name );
 
 			if ( null === $normalized ) {
-				throw new ValidationException(
+				$e = new ValidationException(
 					ErrorCodes::INVALID_FIELD_NAME,
 					sprintf(
 						/* translators: %s: the supplied field name */
@@ -422,6 +427,7 @@ final class Normalizer {
 					array( __( 'Field names must match ^[a-z_][a-z0-9_]*$ - lowercase letters, digits and underscores.', 'fieldpilot-for-acf' ) ),
 					$pointer . '/name'
 				);
+				throw $e;
 			}
 
 			$name = $normalized;

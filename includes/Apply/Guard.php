@@ -94,7 +94,7 @@ final class Guard {
 
 		Journal::audit( 'read_only_blocked', array() );
 
-		throw new GuardException(
+		$e = new GuardException(
 			ErrorCodes::READ_ONLY_MODE,
 			__( 'FieldPilot is in read-only mode. Previews and validation work; nothing can be written.', 'fieldpilot-for-acf' ),
 			array( 'read_only' => true ),
@@ -104,6 +104,7 @@ final class Guard {
 					: __( 'Turn off read-only mode under FieldPilot → Settings to allow changes.', 'fieldpilot-for-acf' ),
 			)
 		);
+		throw $e;
 	}
 
 	/**
@@ -123,11 +124,12 @@ final class Guard {
 
 		Journal::audit( 'capability_denied', array( 'capability' => $capability ) );
 
-		throw new GuardException(
+		$e = new GuardException(
 			ErrorCodes::INSUFFICIENT_CAPABILITY,
 			__( 'You do not have permission to change ACF field configuration.', 'fieldpilot-for-acf' ),
 			array( 'capability' => $capability )
 		);
+		throw $e;
 	}
 
 	/**
@@ -140,7 +142,7 @@ final class Guard {
 			return;
 		}
 
-		throw match ( $report->mutability ) {
+		$exception = match ( $report->mutability ) {
 			Mutability::LocalPhp => new GuardException(
 				ErrorCodes::GROUP_REGISTERED_IN_PHP,
 				sprintf(
@@ -171,6 +173,7 @@ final class Guard {
 				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value )
 			),
 		};
+		throw $exception;
 	}
 
 	/**
@@ -191,12 +194,13 @@ final class Guard {
 			return;
 		}
 
-		throw new GuardException(
+		$e = new GuardException(
 			ErrorCodes::STATE_CHANGED,
 			__( 'This field group changed after the preview was generated. Review the changes again before applying.', 'fieldpilot-for-acf' ),
 			array( 'expected' => $expectedHash, 'actual' => $actual ),
 			array( __( 'Re-run the preview to see a diff against the current state.', 'fieldpilot-for-acf' ) )
 		);
+		throw $e;
 	}
 
 	/**
@@ -221,7 +225,7 @@ final class Guard {
 			return;
 		}
 
-		throw new GuardException(
+		$e = new GuardException(
 			ErrorCodes::FIELD_TYPE_REQUIRES_PRO,
 			sprintf(
 				/* translators: %s: comma-separated list of field types */
@@ -230,6 +234,7 @@ final class Guard {
 			),
 			array( 'types' => array_keys( $missing ) )
 		);
+		throw $e;
 	}
 
 	/**
@@ -242,7 +247,7 @@ final class Guard {
 			return;
 		}
 
-		throw new GuardException(
+		$e = new GuardException(
 			ErrorCodes::UNRESOLVED_CONFLICTS,
 			sprintf(
 				/* translators: %d: number of unresolved conflicts */
@@ -256,6 +261,7 @@ final class Guard {
 			),
 			array( 'conflicts' => array_map( static fn( $c ): array => $c->jsonSerialize(), $unresolved ) )
 		);
+		throw $e;
 	}
 
 	/**
@@ -273,7 +279,7 @@ final class Guard {
 			)
 		);
 
-		throw new GuardException(
+		$e = new GuardException(
 			ErrorCodes::CONFIRMATION_REQUIRED,
 			sprintf(
 				/* translators: %d: number of destructive changes */
@@ -289,6 +295,7 @@ final class Guard {
 				'changes' => array_map( static fn( Change $c ): array => $c->jsonSerialize(), $destructive ),
 			)
 		);
+		throw $e;
 	}
 
 	/**
@@ -305,7 +312,7 @@ final class Guard {
 			}
 
 			if ( ! $current->has( $change->targetKey ) ) {
-				throw new GuardException(
+				$e = new GuardException(
 					ErrorCodes::GROUP_NOT_PATCHABLE,
 					sprintf(
 						/* translators: 1: field label, 2: field group title */
@@ -315,6 +322,7 @@ final class Guard {
 					),
 					array( 'field_key' => $change->targetKey, 'group_key' => $current->group->key )
 				);
+				throw $e;
 			}
 		}
 	}

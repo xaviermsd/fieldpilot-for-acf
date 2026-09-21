@@ -120,7 +120,7 @@ final class Writer {
 		$imported = acf_import_field_group( $array );
 
 		if ( ! is_array( $imported ) || empty( $imported['ID'] ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field group title */
@@ -129,6 +129,7 @@ final class Writer {
 				),
 				array( 'change_id' => $change->id )
 			);
+			throw $e;
 		}
 
 		$this->idMap[ (string) $imported['key'] ] = (int) $imported['ID'];
@@ -142,7 +143,7 @@ final class Writer {
 		$raw = acf_get_raw_field_group( $groupKey );
 
 		if ( ! is_array( $raw ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field group key */
@@ -150,6 +151,7 @@ final class Writer {
 					$groupKey
 				)
 			);
+			throw $e;
 		}
 
 		foreach ( $change->settingDiffs as $setting => $diff ) {
@@ -159,11 +161,12 @@ final class Writer {
 		$updated = acf_update_field_group( $raw );
 
 		if ( ! is_array( $updated ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				__( 'The field group settings could not be saved.', 'fieldpilot-for-acf' ),
 				array( 'change_id' => $change->id )
 			);
+			throw $e;
 		}
 
 		$this->updated[] = $groupKey;
@@ -230,7 +233,7 @@ final class Writer {
 		$raw = acf_get_raw_field( $key );
 
 		if ( ! is_array( $raw ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field key */
@@ -239,6 +242,7 @@ final class Writer {
 				),
 				array( 'field_key' => $key, 'change_id' => $change->id )
 			);
+			throw $e;
 		}
 
 		// THE partial-update primitive. Only the named settings are touched;
@@ -250,7 +254,7 @@ final class Writer {
 		$result = acf_update_field( $raw );
 
 		if ( ! is_array( $result ) || empty( $result['ID'] ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field label */
@@ -259,6 +263,7 @@ final class Writer {
 				),
 				array( 'field_key' => $key, 'change_id' => $change->id )
 			);
+			throw $e;
 		}
 
 		$this->updated[] = $key;
@@ -287,7 +292,7 @@ final class Writer {
 		}
 
 		if ( ! acf_delete_field( $id ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field label */
@@ -296,6 +301,7 @@ final class Writer {
 				),
 				array( 'field_key' => $key, 'change_id' => $change->id )
 			);
+			throw $e;
 		}
 
 		$this->deleted[] = $key;
@@ -314,7 +320,7 @@ final class Writer {
 		$raw = acf_get_raw_field( $key );
 
 		if ( ! is_array( $raw ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field key */
@@ -323,6 +329,7 @@ final class Writer {
 				),
 				array( 'field_key' => $key )
 			);
+			throw $e;
 		}
 
 		$newParentKey = $change->parentKey ?? $groupKey;
@@ -343,7 +350,7 @@ final class Writer {
 		$raw['menu_order'] = (int) array_search( $key, $ordered, true );
 
 		if ( ! is_array( acf_update_field( $raw ) ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field label */
@@ -352,6 +359,7 @@ final class Writer {
 				),
 				array( 'field_key' => $key )
 			);
+			throw $e;
 		}
 
 		$this->updated[] = $key;
@@ -382,7 +390,7 @@ final class Writer {
 		$raw       = acf_get_raw_field( $parentKey );
 
 		if ( ! is_array( $raw ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
 					/* translators: %s: field key */
@@ -391,6 +399,7 @@ final class Writer {
 				),
 				array( 'field_key' => $parentKey )
 			);
+			throw $e;
 		}
 
 		$layouts = is_array( $raw['layouts'] ?? null ) ? $raw['layouts'] : array();
@@ -413,11 +422,12 @@ final class Writer {
 			$raw['layouts']        = $layouts;
 
 			if ( ! is_array( acf_update_field( $raw ) ) ) {
-				throw new ApplyException(
+				$e = new ApplyException(
 					ErrorCodes::WRITE_FAILED,
 					__( 'The layout could not be added.', 'fieldpilot-for-acf' ),
 					array( 'field_key' => $parentKey )
 				);
+				throw $e;
 			}
 
 			// Layout sub-fields are ordinary acf-field posts parented to the FC
@@ -490,7 +500,7 @@ final class Writer {
 			$saved = acf_update_field( $field );
 
 			if ( ! is_array( $saved ) || empty( $saved['ID'] ) ) {
-				throw new ApplyException(
+				$e = new ApplyException(
 					ErrorCodes::WRITE_FAILED,
 					sprintf(
 						/* translators: %s: field label */
@@ -499,6 +509,7 @@ final class Writer {
 					),
 					array( 'field_key' => (string) $field['key'], 'change_id' => $change->id )
 				);
+				throw $e;
 			}
 
 			$key = (string) $saved['key'];
@@ -631,7 +642,7 @@ final class Writer {
 
 		array_splice( $keys, $index, 0, array( $movingKey ) );
 
-		return $keys;
+		return array_values( $keys );
 	}
 
 	/**

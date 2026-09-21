@@ -176,6 +176,6 @@ final class MutabilityClassifier {
 
 		$files = acf_get_local_json_files( 'acf-field-group' );
 
-		return is_array( $files ) && isset( $files[ $groupKey ] ) ? (string) $files[ $groupKey ] : null;
+		return isset( $files[ $groupKey ] ) ? (string) $files[ $groupKey ] : null;
 	}
 }

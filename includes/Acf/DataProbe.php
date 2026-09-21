@@ -61,11 +61,10 @@ final class DataProbe {
 		$found = false;
 
 		foreach ( $tables as $table ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is a core property.
-			$sql = $wpdb->prepare( "SELECT 1 FROM {$table} WHERE meta_value = %s LIMIT 1", $fieldKey );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
+			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT 1 FROM {$table} WHERE meta_value = %s LIMIT 1", $fieldKey ) );
 
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			if ( null !== $wpdb->get_var( $sql ) ) {
+			if ( null !== $exists ) {
 				$found = true;
 				break;
 			}

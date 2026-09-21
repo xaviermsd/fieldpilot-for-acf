@@ -108,7 +108,7 @@ final class Comparator {
 			// to the same meta key as the existing one.
 			$collision = $this->findSiblingByName( $siblings, $field->name );
 
-			if ( null !== $collision && null !== $change ) {
+			if ( null !== $collision ) {
 				$this->replaceLast(
 					$change->withConflict(
 						Conflict::nameCollision(
@@ -165,7 +165,7 @@ final class Comparator {
 	 * to fields the payload does not mention.
 	 */
 	private function planDeclarative( RawTree $current, Payload $payload, Locus $locus ): void {
-		$incoming = $payload->group?->fields ?? $payload->add;
+		$incoming = null !== $payload->group ? $payload->group->fields : $payload->add;
 
 		$this->walkDeclarative(
 			$current,
@@ -557,7 +557,7 @@ final class Comparator {
 			return null === $layout ? array() : $layout->subFields;
 		}
 
-		return $locus->parent?->children ?? array();
+		return null !== $locus->parent ? $locus->parent->children : array();
 	}
 
 	/**

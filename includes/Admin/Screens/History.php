@@ -23,7 +23,7 @@ final class History extends Screen {
 	protected function body(): void {
 		$journal = $this->container->get( Journal::class );
 
-		$page    = max( 1, (int) ( $_GET['paged'] ?? 1 ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$page    = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification
 		$perPage = 25;
 
 		$entries = $journal->find( array( 'limit' => $perPage, 'offset' => ( $page - 1 ) * $perPage ) );

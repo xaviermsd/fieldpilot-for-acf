@@ -103,17 +103,11 @@ final class Requirements {
 					return;
 				}
 
-				printf(
-					'<div class="notice notice-error"><p><strong>%s</strong></p><ul style="list-style:disc;margin-left:20px">%s</ul></div>',
-					esc_html__( 'FieldPilot is inactive.', 'fieldpilot-for-acf' ),
-					implode(
-						'',
-						array_map(
-							static fn( string $f ): string => '<li>' . esc_html( $f ) . '</li>',
-							$this->failures()
-						)
-					)
-				);
+				echo '<div class="notice notice-error"><p><strong>' . esc_html__( 'FieldPilot is inactive.', 'fieldpilot-for-acf' ) . '</strong></p><ul style="list-style:disc;margin-left:20px">';
+				foreach ( $this->failures() as $failure ) {
+					echo '<li>' . esc_html( $failure ) . '</li>';
+				}
+				echo '</ul></div>';
 			}
 		);
 	}

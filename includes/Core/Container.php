@@ -51,7 +51,8 @@ final class Container {
 		}
 
 		if ( ! isset( $this->factories[ $id ] ) ) {
-			throw new \LogicException( sprintf( 'ACFJP: service "%s" is not registered.', $id ) );
+			$e = new \LogicException( sprintf( 'ACFJP: service "%s" is not registered.', esc_html( $id ) ) );
+			throw $e;
 		}
 
 		/** @var T $service */

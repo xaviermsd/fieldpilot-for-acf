@@ -35,11 +35,12 @@ final class Restore {
 		$snapshot = $this->snapshots->get( $hash );
 
 		if ( null === $snapshot ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::SNAPSHOT_NOT_FOUND,
 				__( 'The saved snapshot could not be found, so this cannot be rolled back automatically.', 'fieldpilot-for-acf' ),
 				array( 'hash' => $hash )
 			);
+			throw $e;
 		}
 
 		$this->fromArray( $snapshot );
@@ -51,10 +52,11 @@ final class Restore {
 	 */
 	public function fromArray( array $snapshot ): void {
 		if ( empty( $snapshot['key'] ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::RESTORE_FAILED,
 				__( 'The snapshot is missing its field group key and cannot be restored.', 'fieldpilot-for-acf' )
 			);
+			throw $e;
 		}
 
 		$groupKey = (string) $snapshot['key'];
@@ -70,7 +72,7 @@ final class Restore {
 		$restored = acf_import_field_group( $snapshot );
 
 		if ( ! is_array( $restored ) || empty( $restored['ID'] ) ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::RESTORE_FAILED,
 				sprintf(
 					/* translators: %s: field group key */
@@ -79,6 +81,7 @@ final class Restore {
 				),
 				array( 'group_key' => $groupKey )
 			);
+			throw $e;
 		}
 
 		$this->reader->forget( $groupKey );

@@ -74,11 +74,12 @@ final class SnapshotStore {
 		);
 
 		if ( false === $inserted ) {
-			throw new ApplyException(
+			$e = new ApplyException(
 				ErrorCodes::SNAPSHOT_FAILED,
-				__( 'The snapshot could not be saved, so no changes were applied.', 'fieldpilot-for-acf' ),
+				esc_html__( 'The snapshot could not be saved, so no changes were applied.', 'fieldpilot-for-acf' ),
 				array( 'hash' => $hash, 'db_error' => $wpdb->last_error )
 			);
+			throw $e;
 		}
 
 		return $hash;
@@ -90,11 +91,10 @@ final class SnapshotStore {
 	public function get( string $hash ): ?array {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$row = $wpdb->get_row(
-			$wpdb->prepare( "SELECT payload, encoding FROM {$this->table} WHERE hash = %s", $hash ),
-			ARRAY_A
-		);
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+		$sql = $wpdb->prepare( "SELECT payload, encoding FROM {$this->table} WHERE hash = %s", $hash );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		$row = $wpdb->get_row( $sql, ARRAY_A );
 
 		if ( null === $row ) {
 			return null;
@@ -125,13 +125,10 @@ final class SnapshotStore {
 	public function release( string $hash ): void {
 		global $wpdb;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$this->table} SET refcount = GREATEST(refcount - 1, 0) WHERE hash = %s",
-				$hash
-			)
-		);
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+		$sql = $wpdb->prepare( "UPDATE {$this->table} SET refcount = GREATEST(refcount - 1, 0) WHERE hash = %s", $hash );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		$wpdb->query( $sql );
 	}
 
 	/**
@@ -144,13 +141,10 @@ final class SnapshotStore {
 
 		$cutoff = gmdate( 'Y-m-d H:i:s', time() - ( $olderThanDays * DAY_IN_SECONDS ) );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return (int) $wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM {$this->table} WHERE refcount = 0 AND created_at < %s",
-				$cutoff
-			)
-		);
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+		$sql = $wpdb->prepare( "DELETE FROM {$this->table} WHERE refcount = 0 AND created_at < %s", $cutoff );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		return (int) $wpdb->query( $sql );
 	}
 
 	/**
