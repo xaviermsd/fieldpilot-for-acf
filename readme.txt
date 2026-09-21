@@ -1,5 +1,6 @@
 === WP ACF JSON Pro ===
-Contributors: harshprajapati
+Contributors: xaviermsd
+Donate link: https://profiles.wordpress.org/xaviermsd/
 Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
