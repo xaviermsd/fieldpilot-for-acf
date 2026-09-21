@@ -4,7 +4,7 @@ Tags: acf, advanced custom fields, json, developer, fields
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 8.1
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,7 +44,10 @@ come out byte-identical.
   One click restores the exact prior configuration. If a write fails verification,
   it rolls back automatically.
 * **Interactive Custom Field Builder.** Type exact field names, choose from all 36
-  ACF field types, toggle required, and append multi-field specifications in bulk.
+  ACF field types, select presentation width (100%, 50%, 33%, 25%), toggle required,
+  add instructions, and append multi-field specifications in bulk.
+* **Deep 4-Tab Settings Mapping.** Full parameter mapping for General, Validation,
+  Presentation, and Conditional Logic across all 36 ACF field types.
 * **Deep nesting.** Groups, Repeaters, Flexible Content layouts and Clone fields,
   at any depth, targeted by human path: `["Agent", "Contact", "Social"]`.
 * **Reads sloppy JSON.** AI output uses `group` for `field_group`, `description` for
@@ -129,6 +132,11 @@ AI you already use.
 
 == Changelog ==
 
+= 1.0.7 =
+* Added: Complete 4-tab parameter mapping (General, Validation, Presentation, Conditional Logic) and comprehensive specifications across all 36 ACF field types.
+* Added: Width and instructions controls in the Interactive Custom Field Builder with Enter key shortcuts.
+* Enhanced: Detailed user guide and complete JSON property mapping documentation in README.md and readme.txt.
+
 = 1.0.6 =
 * Added: Interactive Custom Field Builder in AI tab allowing developers to specify project-specific field names, choose from all 36 ACF types, toggle required flags, and append specs into prompt.
 * Enhanced: AI prompt generator with deep parameter rules, return formats, choice schemas, and bulk multi-field addition examples.
@@ -160,5 +168,5 @@ AI you already use.
 
 == Upgrade Notice ==
 
-= 1.0.6 =
-Upgrade recommended for all users to get full 36 ACF field type support, interactive field builder, and snapshot integrity improvements.
+= 1.0.7 =
+Upgrade recommended for all users to get full 4-tab settings mapping, 36 ACF field type specifications, and Custom Field Builder controls.

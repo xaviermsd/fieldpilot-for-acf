@@ -3,7 +3,7 @@
 > **A declarative, target-scoped configuration patch engine for Advanced Custom Fields (ACF Free & PRO).**  
 > Diff before you apply. Snapshot before you write. Roll back whenever you need. Zero runtime dependencies.
 
-[![Version](https://img.shields.io/badge/Version-1.0.6-blue.svg?style=flat-square)](https://github.com/xaviermsd/wp-json-pro)
+[![Version](https://img.shields.io/badge/Version-1.0.7-blue.svg?style=flat-square)](https://github.com/xaviermsd/wp-json-pro)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%20--%208.4-777bb4.svg?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5%20--%206.8%2B-21759b.svg?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org/)
 [![ACF Compatibility](https://img.shields.io/badge/ACF%20%2F%20PRO-6.2%20--%206.8%2B-00a32a.svg?style=flat-square)](https://www.advancedcustomfields.com/)
@@ -41,7 +41,13 @@
   - [Tab 1: JSON Editor & Direct Import](#tab-1-json-editor--direct-import)
   - [Tab 2: AI Prompt Builder & Custom Field Generator](#tab-2-ai-prompt-builder--custom-field-generator)
   - [Tab 3: Schema & Operations Guide](#tab-3-schema--operations-guide)
-- [Interactive Custom Field Builder & 36 ACF Field Types](#interactive-custom-field-builder--36-acf-field-types)
+- [Interactive Custom Field Builder & Multi-Field Workflow](#interactive-custom-field-builder--multi-field-workflow)
+- [The 4 ACF Tabs & JSON Property Mapping Guide](#the-4-acf-tabs--json-property-mapping-guide)
+  - [1. General Tab](#1-general-tab)
+  - [2. Validation Tab](#2-validation-tab)
+  - [3. Presentation Tab](#3-presentation-tab)
+  - [4. Conditional Logic Tab](#4-conditional-logic-tab)
+- [Complete 36 ACF Field Types Reference](#complete-36-acf-field-types-reference)
 - [REST API Reference](#rest-api-reference)
 - [WP-CLI Commands](#wp-cli-commands)
 - [Extensibility & Developer Hooks](#extensibility--developer-hooks)
@@ -357,18 +363,137 @@ The main admin interface (**ACF JSON Pro -> Import JSON**) features a segmented 
 
 ---
 
-## Interactive Custom Field Builder & 36 ACF Field Types
+## Interactive Custom Field Builder & Multi-Field Workflow
 
-WP ACF JSON Pro natively maps and validates all **36 ACF Field Types**:
+The **Custom Field Builder** in Tab 2 allows developers and content architects to construct multi-field patch specifications without writing JSON by hand:
 
-| Category | Supported ACF Field Types |
-|---|---|
-| **Basic & Text** | `text`, `textarea`, `number`, `range`, `email`, `url`, `password` |
-| **Content & Media** | `wysiwyg`, `image`, `file`, `gallery`, `oembed`, `icon_picker` |
-| **Choice Fields** | `select`, `checkbox`, `radio`, `button_group`, `true_false` |
-| **Relational & Objects** | `link`, `post_object`, `page_link`, `relationship`, `taxonomy`, `user` |
-| **Layout & Structure** | `repeater`, `group`, `flexible_content`, `accordion`, `tab`, `message`, `clone` |
-| **jQuery & Pickers** | `google_map`, `date_picker`, `date_time_picker`, `time_picker`, `color_picker` |
+1. **Exact Custom Field Names**: Enter project-specific field labels/names (e.g. `Featured Hero Video`, `Director Bio`, `Corporate Brochure`). The engine normalizes labels to valid ACF identifiers (`^[a-z_][a-z0-9_]*$`).
+2. **All 36 ACF Field Types**: Select from all 36 ACF field types organized by category (`Basic & Text`, `Content & Media`, `Choice Fields`, `Relational & Objects`, `Layout & Structure`, `jQuery & Pickers`).
+3. **Presentation Width**: Choose responsive column widths (`100%`, `50%`, `33%`, `25%`) which automatically map to ACF's `wrapper: { "width": "..." }`.
+4. **Validation Toggle**: Enable the `Required` toggle to enforce mandatory input.
+5. **Presentation Instructions**: Add contextual editor guidance text.
+6. **Bulk Multi-Field Quick Append**: Click `+ Append Field` or press `Enter` to add multiple specifications to the intent box line by line without overwriting previous selections.
+7. **1-Click AI Launchers**: Generate an AI-optimized prompt and send it to **ChatGPT**, **Claude**, **Gemini**, or **Cursor** with one click.
+8. **Paste AI Response & Switch**: Paste the generated JSON directly into the importer; code fences (````json ... ````) are stripped automatically and diff preview is triggered instantly.
+
+---
+
+## The 4 ACF Tabs & JSON Property Mapping Guide
+
+In ACF's native admin modal, every field's configuration is divided into **4 distinct tabs**: **General**, **Validation**, **Presentation**, and **Conditional Logic**. WP ACF JSON Pro maps these 1-to-1 into declarative JSON properties.
+
+### 1. General Tab
+Defines the field's fundamental identity, data storage, and return shape.
+
+| ACF UI Setting | JSON Key | Type | Description / Accepted Values |
+|---|---|---|---|
+| Field Label | `label` | string | The human-readable label shown in the admin editor. |
+| Field Name | `name` | string | The programmatic meta key (`^[a-z_][a-z0-9_]*$`). |
+| Field Type | `type` | string | Any of the 36 supported ACF field types. |
+| Default Value | `default_value` | mixed | Initial value for new posts/terms. |
+| Return Format | `return_format` | string | Format returned by `get_field()` (e.g. `'array'`, `'url'`, `'id'`, `'object'`). |
+| Choices | `choices` | object | Key-value options for select, checkbox, radio, button_group (e.g. `{"draft": "Draft", "published": "Published"}`). |
+| Sub Fields | `sub_fields` | array | Array of nested field definitions for `repeater` and `group`. |
+| Layouts | `layouts` | array | Array of layout definitions for `flexible_content`. |
+| Button Label | `button_label` | string | Custom button text (e.g. `"Add Slide"`, `"Add Section"`). |
+
+### 2. Validation Tab
+Defines data validation constraints enforced before post saving.
+
+| ACF UI Setting | JSON Key | Type | Description / Accepted Values |
+|---|---|---|---|
+| Required? | `required` | int / bool | `1` (true) or `0` (false). Prevents saving empty values. |
+| Character Limit | `maxlength` | int | Maximum character count for text and textarea fields. |
+| Minimum Value | `min` | int / float | Minimum allowable value for number, range, gallery, or relationship. |
+| Maximum Value | `max` | int / float | Maximum allowable value for number, range, gallery, or relationship. |
+| Step Size | `step` | int / float | Step increment for number and range fields. |
+| Allowed File Types | `mime_types` | string | Comma-separated list of file extensions (e.g. `"jpg,jpeg,png,webp,pdf"`). |
+| Minimum Dimensions | `min_width`, `min_height` | int | Minimum pixel dimensions for images. |
+| Maximum Dimensions | `max_width`, `max_height` | int | Maximum pixel dimensions for images. |
+| File Size Limit | `min_size`, `max_size` | string / int | Minimum/maximum file size (e.g. `"2MB"`, `"500KB"`). |
+
+### 3. Presentation Tab
+Controls admin visual styling, width, column wrappers, and instructional copy.
+
+| ACF UI Setting | JSON Key | Type | Description / Accepted Values |
+|---|---|---|---|
+| Instructions | `instructions` | string | Contextual guidance shown to editors below the field label. |
+| Placeholder Text | `placeholder` | string | Placeholder shown inside text, number, email, url, or select inputs. |
+| Prepend Text | `prepend` | string | Visual prefix inside the input field (e.g. `"$"` or `"https://"`). |
+| Append Text | `append` | string | Visual suffix inside the input field (e.g. `"USD"`, `"%"`, or `"px"`). |
+| Number of Rows | `rows` | int | Visual line height for textarea fields (e.g. `4`, `8`). |
+| New Lines Handling | `new_lines` | string | Formatting for textareas: `'wpautop'`, `'br'`, or `''`. |
+| Wrapper Attributes | `wrapper` | object | Container DOM styling: `{"width": "50", "class": "custom-col", "id": "custom-id"}`. |
+
+### 4. Conditional Logic Tab
+Controls dynamic display rules based on values of other fields within the same group.
+
+| ACF UI Setting | JSON Key | Type | Description / Accepted Values |
+|---|---|---|---|
+| Conditional Rules | `conditional_logic` | array | 2D array of rule groups (AND within group, OR between groups). |
+
+#### Conditional Logic JSON Structure:
+```json
+"conditional_logic": [
+  [
+    {
+      "field": "display_hero_banner",
+      "operator": "==",
+      "value": "1"
+    },
+    {
+      "field": "hero_type",
+      "operator": "==",
+      "value": "video"
+    }
+  ]
+]
+```
+
+---
+
+## Complete 36 ACF Field Types Reference
+
+WP ACF JSON Pro provides complete first-class support for all 36 ACF field types across Free and PRO editions:
+
+| Category | Type | Common General Settings | Validation Settings | Presentation Settings |
+|---|---|---|---|---|
+| **Basic & Text** | `text` | `default_value` | `required`, `maxlength` | `placeholder`, `prepend`, `append`, `wrapper` |
+| | `textarea` | `default_value`, `new_lines` | `required`, `maxlength` | `rows`, `placeholder`, `wrapper` |
+| | `number` | `default_value`, `step` | `required`, `min`, `max` | `placeholder`, `prepend`, `append`, `wrapper` |
+| | `range` | `default_value`, `step` | `required`, `min`, `max` | `prepend`, `append`, `wrapper` |
+| | `email` | `default_value` | `required` | `placeholder`, `prepend`, `append`, `wrapper` |
+| | `url` | `default_value` | `required` | `placeholder`, `wrapper` |
+| | `password` | `default_value` | `required` | `placeholder`, `wrapper` |
+| **Content & Media** | `wysiwyg` | `toolbar`, `media_upload`, `tabs`, `delay` | `required` | `instructions`, `wrapper` |
+| | `image` | `return_format`, `preview_size`, `library` | `required`, `min_width`, `max_width`, `min_height`, `max_height`, `min_size`, `max_size`, `mime_types` | `instructions`, `wrapper` |
+| | `file` | `return_format`, `library` | `required`, `min_size`, `max_size`, `mime_types` | `instructions`, `wrapper` |
+| | `gallery` | `return_format`, `library`, `insert` | `required`, `min`, `max`, `min_width`, `max_width`, `min_size`, `max_size`, `mime_types` | `instructions`, `wrapper` |
+| | `oembed` | `width`, `height` | `required` | `instructions`, `wrapper` |
+| | `icon_picker` | `return_format` | `required` | `instructions`, `wrapper` |
+| **Choice Fields** | `select` | `choices`, `default_value`, `allow_null`, `multiple`, `ui`, `ajax` | `required` | `placeholder`, `instructions`, `wrapper` |
+| | `checkbox` | `choices`, `default_value`, `layout`, `toggle`, `allow_custom`, `save_custom` | `required` | `instructions`, `wrapper` |
+| | `radio` | `choices`, `default_value`, `other_choice`, `save_other_choice`, `layout` | `required` | `instructions`, `wrapper` |
+| | `button_group` | `choices`, `default_value`, `allow_null`, `layout` | `required` | `instructions`, `wrapper` |
+| | `true_false` | `default_value`, `ui`, `ui_on_text`, `ui_off_text`, `message` | `required` | `instructions`, `wrapper` |
+| **Relational & Objects** | `link` | `return_format` (`array`, `url`) | `required` | `instructions`, `wrapper` |
+| | `post_object` | `post_type`, `taxonomy`, `return_format`, `multiple`, `allow_null` | `required` | `instructions`, `wrapper` |
+| | `page_link` | `post_type`, `taxonomy`, `allow_null`, `multiple`, `allow_archives` | `required` | `instructions`, `wrapper` |
+| | `relationship` | `post_type`, `taxonomy`, `filters`, `return_format` | `required`, `min`, `max` | `instructions`, `wrapper` |
+| | `taxonomy` | `taxonomy`, `field_type`, `add_term`, `save_terms`, `load_terms`, `return_format` | `required` | `instructions`, `wrapper` |
+| | `user` | `role`, `return_format`, `multiple`, `allow_null` | `required` | `instructions`, `wrapper` |
+| **Layout & Structure** | `repeater` | `layout`, `button_label`, `collapsed`, `sub_fields` | `required`, `min`, `max` | `instructions`, `wrapper` |
+| | `group` | `layout`, `sub_fields` | `required` | `instructions`, `wrapper` |
+| | `flexible_content` | `button_label`, `layouts` (`[ { name, label, display, sub_fields } ]`) | `required`, `min`, `max` | `instructions`, `wrapper` |
+| | `accordion` | `open`, `multi_expand`, `endpoint` | N/A | `instructions`, `wrapper` |
+| | `tab` | `placement`, `endpoint` | N/A | `instructions`, `wrapper` |
+| | `message` | `message`, `new_lines`, `esc_html` | N/A | `instructions`, `wrapper` |
+| | `clone` | `clone` (`["field_key"]`), `display`, `prefix_label`, `prefix_name` | N/A | `instructions`, `wrapper` |
+| **jQuery & Pickers** | `google_map` | `center_lat`, `center_lng`, `zoom`, `height` | `required` | `instructions`, `wrapper` |
+| | `date_picker` | `display_format`, `return_format`, `first_day` | `required` | `placeholder`, `instructions`, `wrapper` |
+| | `date_time_picker` | `display_format`, `return_format`, `first_day` | `required` | `placeholder`, `instructions`, `wrapper` |
+| | `time_picker` | `display_format`, `return_format` | `required` | `placeholder`, `instructions`, `wrapper` |
+| | `color_picker` | `default_value`, `enable_opacity` | `required` | `instructions`, `wrapper` |
 
 ---
 
