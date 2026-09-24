@@ -1,21 +1,23 @@
 <?php
 /**
- * Plugin Name:       FieldPilot - AI & JSON Copilot for ACF
- * Plugin URI:        https://github.com/xaviermsd/fieldpilot-for-acf
- * Description:       Build, import, update and manage ACF field structures with AI prompts and JSON. A safe, deterministic configuration patch copilot for Advanced Custom Fields.
- * Version:           1.0.13
+ * Plugin Name: FieldPilot - AI & JSON Copilot for ACF
+ * Plugin URI: https://github.com/xaviermsd/fieldpilot-for-acf
+ * Description: Build, import, update and manage ACF field structures with AI prompts and JSON. A safe, deterministic configuration patch copilot for Advanced Custom Fields.
+ * Version: 1.0.13
  * Requires at least: 6.5
- * Requires PHP:      8.1
- * Author:            Harsh Prajapati
- * Author URI:        https://profiles.wordpress.org/xaviermsd/
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       fieldpilot-for-acf
- *
- * @package ACFJP
+ * Requires PHP: 8.1
+ * Author: Harsh Prajapati
+ * Author URI: https://profiles.wordpress.org/xaviermsd/
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: fieldpilot-for-acf
  */
 
 declare( strict_types = 1 );
+
+/**
+ * @package ACFJP
+ */
 
 defined( 'ABSPATH' ) || exit;
 
