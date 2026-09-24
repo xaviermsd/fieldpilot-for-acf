@@ -1206,6 +1206,7 @@ final class Import extends Screen {
 			return '';
 		}
 
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- raw array accessed to validate and sanitize individual elements below.
 		$rawFile = $_FILES['acfjp_file'];
 
 		// Validate upload error code.
