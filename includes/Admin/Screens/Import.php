@@ -14,6 +14,7 @@ declare( strict_types = 1 );
 namespace ACFJP\Admin\Screens;
 
 use ACFJP\Acf\MutabilityClassifier;
+use ACFJP\Apply\Guard;
 use ACFJP\Json\Parser;
 use ACFJP\Model\Operation;
 
@@ -1191,14 +1192,53 @@ final class Import extends Screen {
 			return '';
 		}
 
+		if ( ! current_user_can( (string) apply_filters( 'acfjp_capability', Guard::CAPABILITY ) ) ) {
+			$this->notice( esc_html__( 'You do not have permission to upload files.', 'fieldpilot-for-acf' ), 'error' );
+			return '';
+		}
+
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), self::NONCE ) ) {
 			$this->notice( esc_html__( 'That request could not be verified. Please try again.', 'fieldpilot-for-acf' ), 'error' );
 			return '';
 		}
 
+		if ( ! is_array( $_FILES['acfjp_file'] ) ) {
+			return '';
+		}
+
+		$rawFile = $_FILES['acfjp_file'];
+
+		// Validate upload error code.
+		$errorCode = isset( $rawFile['error'] ) ? absint( $rawFile['error'] ) : UPLOAD_ERR_NO_FILE;
+		if ( UPLOAD_ERR_NO_FILE === $errorCode ) {
+			return '';
+		}
+
+		if ( UPLOAD_ERR_OK !== $errorCode ) {
+			$this->notice( esc_html__( 'File upload failed. Please try again.', 'fieldpilot-for-acf' ), 'error' );
+			return '';
+		}
+
+		// Sanitize each component of the uploaded file array.
+		$file = array(
+			'name'     => isset( $rawFile['name'] ) ? sanitize_file_name( wp_unslash( (string) $rawFile['name'] ) ) : '',
+			'type'     => isset( $rawFile['type'] ) ? sanitize_mime_type( wp_unslash( (string) $rawFile['type'] ) ) : '',
+			'tmp_name' => isset( $rawFile['tmp_name'] ) ? sanitize_text_field( wp_unslash( (string) $rawFile['tmp_name'] ) ) : '',
+			'error'    => $errorCode,
+			'size'     => isset( $rawFile['size'] ) ? absint( $rawFile['size'] ) : 0,
+		);
+
+		// Validate file extension.
+		if ( '' !== $file['name'] ) {
+			$extension = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+			if ( 'json' !== $extension ) {
+				$this->notice( esc_html__( 'Please upload a valid .json file.', 'fieldpilot-for-acf' ), 'error' );
+				return '';
+			}
+		}
+
 		try {
-			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- handed to a validating parser.
-			$decoded = $this->container->get( Parser::class )->parseUpload( (array) $_FILES['acfjp_file'] );
+			$decoded = $this->container->get( Parser::class )->parseUpload( $file );
 
 			return (string) wp_json_encode( $decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 		} catch ( \Throwable $e ) {

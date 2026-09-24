@@ -3,12 +3,12 @@
 > **A declarative, target-scoped configuration patch engine for Advanced Custom Fields (ACF Free & PRO).**  
 > Diff before you apply. Snapshot before you write. Roll back whenever you need. Zero runtime dependencies.
 
-[![Version](https://img.shields.io/badge/Version-1.0.12-blue.svg?style=flat-square)](https://github.com/xaviermsd/fieldpilot-for-acf)
+[![Version](https://img.shields.io/badge/Version-1.0.13-blue.svg?style=flat-square)](https://github.com/xaviermsd/fieldpilot-for-acf)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%20--%208.4-777bb4.svg?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5%20--%206.8%2B-21759b.svg?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org/)
 [![ACF Compatibility](https://img.shields.io/badge/ACF%20%2F%20PRO-6.2%20--%206.8%2B-00a32a.svg?style=flat-square)](https://www.advancedcustomfields.com/)
 [![Static Analysis](https://img.shields.io/badge/PHPStan-Level%208%20(0%20errors)-00a32a.svg?style=flat-square)](https://phpstan.org/)
-[![Tests](https://img.shields.io/badge/PHPUnit-95%20tests%20%2F%20186%20assertions-brightgreen.svg?style=flat-square)](https://phpunit.de/)
+[![Tests](https://img.shields.io/badge/PHPUnit-101%20tests%20%2F%20576%20assertions-brightgreen.svg?style=flat-square)](https://phpunit.de/)
 [![License](https://img.shields.io/badge/License-GPLv2%2B-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ---

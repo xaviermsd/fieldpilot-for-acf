@@ -5,7 +5,7 @@ Tags: acf, advanced custom fields, ai, json, developer
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.12
+Stable tag: 1.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,11 @@ AI you already use.
 5. Dashboard showing which field groups are editable
 
 == Changelog ==
+
+= 1.0.13 =
+* Security: Converted Export admin screen to POST method with explicit nonce verification and permission checks.
+* Security: Sanitized and validated all components of uploaded JSON file structures before processing.
+* Security: Added explicit capability checks to all form and file submission handlers.
 
 = 1.0.12 =
 * Added: Side-by-side split review workbench in Tab 2 with live diff preview rendering directly alongside JSON editor.

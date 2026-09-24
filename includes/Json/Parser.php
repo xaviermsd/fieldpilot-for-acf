@@ -94,7 +94,7 @@ final class Parser {
 	/**
 	 * Read an uploaded .json file.
 	 *
-	 * @param array{tmp_name?:string,size?:int,name?:string} $file A $_FILES entry.
+	 * @param array{tmp_name?:string,size?:int,name?:string,type?:string,error?:int} $file Sanitized upload entry.
 	 * @return array<string,mixed>
 	 * @throws ParseException
 	 */

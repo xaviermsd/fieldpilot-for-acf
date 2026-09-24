@@ -11,27 +11,46 @@ namespace ACFJP\Admin\Screens;
 
 use ACFJP\Acf\GroupLocator;
 use ACFJP\Acf\TreeReader;
+use ACFJP\Apply\Guard;
 use ACFJP\Model\Field;
 
 defined( 'ABSPATH' ) || exit;
 
 final class Export extends Screen {
 
+	private const NONCE = 'acfjp_export_action';
+
 	protected function title(): string {
 		return __( 'Export', 'fieldpilot-for-acf' );
 	}
 
 	protected function body(): void {
-		$groups = $this->container->get( GroupLocator::class )->groups();
+		$groups   = $this->container->get( GroupLocator::class )->groups();
+		$selected = '';
+		$dialect  = 'native';
 
-		// phpcs:ignore WordPress.Security.NonceVerification -- read-only view.
-		$selected = isset( $_GET['group'] ) ? sanitize_text_field( wp_unslash( (string) $_GET['group'] ) ) : '';
-		// phpcs:ignore WordPress.Security.NonceVerification -- read-only view.
-		$dialect = isset( $_GET['dialect'] ) ? sanitize_key( (string) $_GET['dialect'] ) : 'native';
+		if ( isset( $_POST['_wpnonce'] ) ) {
+			if ( ! current_user_can( (string) apply_filters( 'acfjp_capability', Guard::CAPABILITY ) ) ) {
+				$this->notice( esc_html__( 'You do not have permission to export field groups.', 'fieldpilot-for-acf' ), 'error' );
+				return;
+			}
+
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), self::NONCE ) ) {
+				$this->notice( esc_html__( 'That request could not be verified. Please try again.', 'fieldpilot-for-acf' ), 'error' );
+				return;
+			}
+
+			$selected = isset( $_POST['group'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['group'] ) ) : '';
+			$dialect  = isset( $_POST['dialect'] ) ? sanitize_key( (string) $_POST['dialect'] ) : 'native';
+
+			if ( ! in_array( $dialect, array( 'native', 'acfjp' ), true ) ) {
+				$dialect = 'native';
+			}
+		}
 
 		?>
-		<form method="get" class="acfjp-export-form">
-			<input type="hidden" name="page" value="fieldpilot-for-acf-export" />
+		<form method="post" class="acfjp-export-form">
+			<?php wp_nonce_field( self::NONCE ); ?>
 			<select name="group">
 				<option value=""><?php esc_html_e( 'Choose a field group…', 'fieldpilot-for-acf' ); ?></option>
 				<?php foreach ( $groups as $group ) : ?>

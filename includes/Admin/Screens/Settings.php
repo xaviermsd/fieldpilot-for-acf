@@ -127,6 +127,11 @@ final class Settings extends Screen {
 			return;
 		}
 
+		if ( ! current_user_can( (string) apply_filters( 'acfjp_capability', Guard::CAPABILITY ) ) ) {
+			$this->notice( esc_html__( 'You do not have permission to modify settings.', 'fieldpilot-for-acf' ), 'error' );
+			return;
+		}
+
 		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), self::NONCE ) ) {
 			$this->notice( esc_html__( 'That request could not be verified.', 'fieldpilot-for-acf' ), 'error' );
 			return;
