@@ -164,25 +164,15 @@ final class Command {
 	 * <group>
 	 * : Field group title or key.
 	 *
-	 * [--file=<path>]
-	 * : Write to this file instead of STDOUT.
-	 *
-	 * @param list<string>         $args
-	 * @param array<string,string> $assoc
+	 * @param list<string> $args Positional arguments.
 	 */
-	public function export( array $args, array $assoc ): void {
+	public function export( array $args ): void {
 		try {
 			$reader = $this->container->get( \ACFJP\Acf\TreeReader::class );
 			$groups = $this->container->get( \ACFJP\Acf\GroupLocator::class );
 
 			$key  = $groups->locate( (string) ( $args[0] ?? '' ) );
 			$json = (string) wp_json_encode( $reader->exportArray( $key ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-
-			if ( isset( $assoc['file'] ) ) {
-				file_put_contents( $assoc['file'], $json ); // phpcs:ignore WordPress.WP.AlternativeFunctions
-				\WP_CLI::success( sprintf( 'Exported to %s', $assoc['file'] ) );
-				return;
-			}
 
 			\WP_CLI::line( $json );
 		} catch ( AcfjpException $e ) {
@@ -265,10 +255,9 @@ final class Command {
 	 * <id>
 	 * : History entry id, from `wp acfjp history`.
 	 *
-	 * @param list<string>         $args
-	 * @param array<string,string> $assoc
+	 * @param list<string> $args Positional arguments.
 	 */
-	public function rollback( array $args, array $assoc ): void {
+	public function rollback( array $args ): void {
 		try {
 			$entry = $this->engine->rollback( (int) ( $args[0] ?? 0 ), 'cli' );
 
