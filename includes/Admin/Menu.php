@@ -28,6 +28,33 @@ final class Menu {
 
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'addPages' ) );
+		add_filter(
+			'plugin_action_links_' . plugin_basename( ACFJP_FILE ),
+			array( $this, 'filterActionLinks' )
+		);
+	}
+
+	/**
+	 * Appends shortcut action links under the plugin title in wp-admin/plugins.php.
+	 *
+	 * @param array<string, string> $actions Existing action links.
+	 * @return array<string, string>
+	 */
+	public function filterActionLinks( array $actions ): array {
+		$custom = array(
+			'settings' => sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( admin_url( 'admin.php?page=' . self::SLUG . '-settings' ) ),
+				esc_html__( 'Settings', 'fieldpilot-for-acf' )
+			),
+			'guide'    => sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( admin_url( 'admin.php?page=' . self::SLUG . '-import#guide' ) ),
+				esc_html__( 'Schema & Operations Guide', 'fieldpilot-for-acf' )
+			),
+		);
+
+		return array_merge( $actions, $custom );
 	}
 
 	public function addPages(): void {

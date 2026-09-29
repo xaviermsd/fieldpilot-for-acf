@@ -115,6 +115,16 @@ final class Settings extends Screen {
 						?>
 					</td>
 				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Guided Tour', 'fieldpilot-for-acf' ); ?></th>
+					<td>
+						<button type="button" class="button button-secondary acfjp-tour-replay-btn">
+							<span class="dashicons dashicons-controls-play" style="vertical-align: middle; margin-right: 4px;"></span>
+							<?php esc_html_e( 'Replay tour', 'fieldpilot-for-acf' ); ?>
+						</button>
+						<p class="description"><?php esc_html_e( 'Restart the guided visual tour anytime.', 'fieldpilot-for-acf' ); ?></p>
+					</td>
+				</tr>
 			</table>
 
 			<?php submit_button(); ?>

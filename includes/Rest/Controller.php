@@ -17,6 +17,7 @@ namespace ACFJP\Rest;
 use ACFJP\Acf\GroupLocator;
 use ACFJP\Acf\MutabilityClassifier;
 use ACFJP\Acf\TreeReader;
+use ACFJP\Admin\Tour;
 use ACFJP\Apply\Engine;
 use ACFJP\Apply\Guard;
 use ACFJP\Diagnostics\SelfTest;
@@ -38,6 +39,7 @@ final class Controller {
 		private readonly GroupLocator $groups,
 		private readonly FieldTypeSchemas $schemas,
 		private readonly SelfTest $selfTest,
+		private readonly Tour $tour,
 	) {}
 
 	public function registerRoutes(): void {
@@ -161,6 +163,26 @@ final class Controller {
 					'group_key' => array( 'type' => 'string' ),
 					'intent'    => array( 'type' => 'string', 'default' => '' ),
 				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/tour/dismiss',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'permission_callback' => $auth,
+				'callback'            => array( $this, 'tourDismiss' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/tour/reset',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'permission_callback' => $auth,
+				'callback'            => array( $this, 'tourReset' ),
 			)
 		);
 	}
@@ -377,5 +399,17 @@ final class Controller {
 			'operation'       => array( 'type' => 'string', 'enum' => Operation::names() ),
 			'skip_data_probe' => array( 'type' => 'boolean', 'default' => false ),
 		);
+	}
+
+	public function tourDismiss(): \WP_REST_Response {
+		$this->tour->dismissTour();
+
+		return new \WP_REST_Response( array( 'success' => true, 'tourDone' => true ) );
+	}
+
+	public function tourReset(): \WP_REST_Response {
+		$this->tour->resetTour();
+
+		return new \WP_REST_Response( array( 'success' => true, 'tourDone' => false ) );
 	}
 }

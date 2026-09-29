@@ -34,7 +34,7 @@ final class Dashboard extends Screen {
 		$reports   = $classifier->classifyAll();
 		$patchable = array_filter( $reports, static fn ( $r ): bool => $r->isPatchable() );
 
-		echo '<div class="acfjp-cards">';
+		echo '<div class="acfjp-cards" data-tour="cards">';
 
 		$this->card(
 			__( 'Field groups', 'fieldpilot-for-acf' ),
@@ -62,24 +62,33 @@ final class Dashboard extends Screen {
 
 		echo '</div>';
 
+		echo '<div class="acfjp-dashboard-actions">';
 		printf(
-			'<p><a href="%s" class="button button-primary button-hero">%s</a></p>',
+			'<a href="%s" class="button button-primary acfjp-dashboard-btn">%s</a>',
 			esc_url( $this->url( '-import' ) ),
 			esc_html__( 'Import JSON', 'fieldpilot-for-acf' )
 		);
 
+		echo '<button type="button" class="button button-secondary acfjp-dashboard-btn acfjp-tour-replay-btn">';
+		echo '<span class="dashicons dashicons-controls-play"></span>';
+		esc_html_e( 'Replay tour', 'fieldpilot-for-acf' );
+		echo '</button>';
+		echo '</div>';
+
 		echo '<h2>' . esc_html__( 'Field groups', 'fieldpilot-for-acf' ) . '</h2>';
 
 		if ( array() === $reports ) {
+			echo '<div data-tour="status-table">';
 			$this->notice( esc_html__( 'No ACF field groups exist yet. Create one with an "operation": "create" payload on the Import screen.', 'fieldpilot-for-acf' ) );
+			echo '</div>';
 			return;
 		}
 
-		echo '<table class="wp-list-table widefat fixed striped"><thead><tr>';
+		echo '<table class="wp-list-table widefat fixed striped" data-tour="status-table"><thead><tr>';
 		printf( '<th>%s</th>', esc_html__( 'Field group', 'fieldpilot-for-acf' ) );
 		printf( '<th>%s</th>', esc_html__( 'Key', 'fieldpilot-for-acf' ) );
 		printf( '<th>%s</th>', esc_html__( 'Source', 'fieldpilot-for-acf' ) );
-		printf( '<th>%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
+		printf( '<th data-tour="status-col">%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
 		echo '</tr></thead><tbody>';
 
 		foreach ( $reports as $report ) {

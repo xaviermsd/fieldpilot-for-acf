@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
 
 final class Assets {
 
+	public function __construct( private readonly Tour $tour ) {}
+
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
@@ -889,6 +891,14 @@ final class Assets {
 			true
 		);
 
+		wp_enqueue_script(
+			'acfjp-tour',
+			ACFJP_URL . 'assets/js/tour.js',
+			array( 'acfjp-admin', 'wp-i18n' ),
+			ACFJP_VERSION,
+			true
+		);
+
 		$examples = $this->examplePayloads();
 
 		wp_localize_script(
@@ -900,6 +910,14 @@ final class Assets {
 				'editor'   => false === $editor ? null : $editor,
 				'example'  => $examples['add_field']['payload'] ?? null,
 				'examples' => $examples,
+				'tour'     => array(
+					'active'       => $this->tour->isAcfActive(),
+					'done'         => $this->tour->isTourDone(),
+					'stepParam'    => isset( $_GET['tour_step'] ) ? (int) $_GET['tour_step'] : null,
+					'dashboardUrl' => admin_url( 'admin.php?page=' . Menu::SLUG ),
+					'importUrl'    => admin_url( 'admin.php?page=' . Menu::SLUG . '-import' ),
+					'historyUrl'   => admin_url( 'admin.php?page=' . Menu::SLUG . '-history' ),
+				),
 				'strings'  => array(
 					'validating'       => __( 'Validating...', 'fieldpilot-for-acf' ),
 					'planning'         => __( 'Calculating changes...', 'fieldpilot-for-acf' ),

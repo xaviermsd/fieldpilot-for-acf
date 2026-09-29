@@ -21,6 +21,7 @@ use ACFJP\Acf\MutabilityClassifier;
 use ACFJP\Acf\TreeReader;
 use ACFJP\Admin\Assets;
 use ACFJP\Admin\Menu;
+use ACFJP\Admin\Tour;
 use ACFJP\Apply\Engine;
 use ACFJP\Apply\Guard;
 use ACFJP\Apply\PlanStore;
@@ -234,6 +235,8 @@ final class Plugin {
 		);
 
 		// -- Surfaces ----------------------------------------------------------
+		$c->set( Tour::class, static fn (): Tour => new Tour() );
+
 		$c->set(
 			Controller::class,
 			static fn ( Container $c ): Controller => new Controller(
@@ -244,6 +247,7 @@ final class Plugin {
 				$c->get( GroupLocator::class ),
 				$c->get( FieldTypeSchemas::class ),
 				$c->get( SelfTest::class ),
+				$c->get( Tour::class ),
 			)
 		);
 
@@ -252,6 +256,9 @@ final class Plugin {
 			static fn ( Container $c ): Menu => new Menu( $c )
 		);
 
-		$c->set( Assets::class, static fn (): Assets => new Assets() );
+		$c->set(
+			Assets::class,
+			static fn ( Container $c ): Assets => new Assets( $c->get( Tour::class ) )
+		);
 	}
 }

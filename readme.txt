@@ -5,7 +5,7 @@ Tags: acf, advanced custom fields, ai, json, developer
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.14
+Stable tag: 1.0.22
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,36 @@ AI you already use.
 5. Dashboard showing which field groups are editable
 
 == Changelog ==
+
+= 1.0.22 =
+* Fixed: Prevented premature sample diff cleanup and sidebar guide flash when transitioning from Step 8 to Step 9.
+* Fixed: Instantly hide previous overlay and spotlight before navigating across screens.
+
+= 1.0.21 =
+* Added: Non-revocable, disabled sample row in History table when empty to cleanly demonstrate rollback functionality.
+* Fixed: Ensured Step 8 targets conflict box directly instead of falling back to sidebar controls.
+* Fixed: Flawless step transitions between Import (Step 8) and History (Step 9).
+
+= 1.0.20 =
+* Fixed: Replaced collapsed empty notice in History screen with styled empty card to fix spotlight rendering.
+* Fixed: Ensured backward step navigation from History to Import page restores editor tab and diff preview.
+* Enhanced: Robust retry and auto-recovery for tour spotlights across all screen transitions.
+
+= 1.0.19 =
+* Added: Visual 10-step guided onboarding tour with target spotlight overlay.
+* Added: Direct Settings and Schema & Operations Guide action links on Plugins screen.
+* Added: Replay tour action on Dashboard and Settings screens.
+* Enhanced: Completely eliminated demo data from code, history screen, and UI.
+* Enhanced: Polished tour modal styling, close button, and diff review layout.
+
+= 1.0.18 =
+* Maintenance release.
+
+= 1.0.17 =
+* Maintenance release.
+
+= 1.0.15 =
+* Maintenance release.
 
 = 1.0.14 =
 * Hardened: Removed --file option and arbitrary file write from WP-CLI export command in favor of standard shell output redirection.

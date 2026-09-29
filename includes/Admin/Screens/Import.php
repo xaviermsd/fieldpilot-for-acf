@@ -88,7 +88,7 @@ final class Import extends Screen {
 							</div>
 
 							<!-- Custom Field Builder Box (4 Tabs: General, Validation, Presentation, Conditional Logic) -->
-							<div class="acfjp-builder-box">
+							<div class="acfjp-builder-box" data-tour="builder">
 								<div class="acfjp-builder-header">
 									<div class="acfjp-builder-title">
 										<span class="dashicons dashicons-forms"></span>
@@ -422,7 +422,7 @@ final class Import extends Screen {
 							</div>
 
 							<!-- Step 1 Action Bar -->
-							<div style="margin-top: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+							<div style="margin-top: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;" data-tour="prompt">
 								<button type="button" class="button button-primary button-hero acfjp-btn-generate" id="acfjp-prompt-build">
 									<span class="dashicons dashicons-update"></span>
 									<?php esc_html_e( 'Generate AI Prompt ➔', 'fieldpilot-for-acf' ); ?>
@@ -497,7 +497,7 @@ final class Import extends Screen {
 			<div class="acfjp-tab-content" id="acfjp-tab-editor" role="tabpanel" hidden>
 				<div class="acfjp-import" id="acfjp-import">
 
-					<div class="acfjp-import__editor">
+					<div class="acfjp-import__editor" data-tour="editor">
 						<div class="acfjp-box-header">
 							<h2 class="acfjp-step-heading">
 								<span class="dashicons dashicons-edit"></span>
@@ -626,7 +626,7 @@ final class Import extends Screen {
 					</div>
 
 					<!-- Right Column: Live Diff Review Workbench & Sidebar -->
-					<div class="acfjp-import__controls" id="acfjp-import-controls">
+					<div class="acfjp-import__controls" id="acfjp-import-controls" data-tour="diff-preview">
 						<!-- Live Diff Preview / Plan Panel Container -->
 						<div id="acfjp-result" class="acfjp-result" aria-live="polite"></div>
 
