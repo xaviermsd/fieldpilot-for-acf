@@ -1057,6 +1057,27 @@
 	outline: none !important;
 }
 
+.acfjp-tour-replay-btn {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	height: 34px !important;
+	line-height: 32px !important;
+	padding: 0 14px !important;
+	font-size: 13px !important;
+	vertical-align: middle !important;
+	cursor: pointer !important;
+}
+
+.acfjp-tour-replay-btn .dashicons {
+	font-size: 17px !important;
+	width: 17px !important;
+	height: 17px !important;
+	line-height: 17px !important;
+	margin: 0 !important;
+	color: #2271b1 !important;
+}
+
 /* Centered Welcome & Final Modal */
 #acfjp-tour-modal-backdrop {
 	position: fixed;
@@ -1259,3 +1280,74 @@
 	cursor: not-allowed !important;
 	pointer-events: none !important;
 }
+
+/* Validation States & Mandatory Gate */
+.acfjp-input-error {
+	border-color: #d63638 !important;
+	box-shadow: 0 0 0 1px #d63638 !important;
+	background-color: #fff8f8 !important;
+}
+
+.acfjp-error-text {
+	color: #d63638;
+	font-size: 12px;
+	font-weight: 600;
+	margin-top: 5px;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	line-height: 1.4;
+}
+
+.acfjp-builder-box.is-locked,
+.acfjp-quick-chips.is-locked,
+.acfjp-quick-dropdown-row.is-locked {
+	opacity: 0.42;
+	pointer-events: none;
+	user-select: none;
+	filter: grayscale(60%);
+	transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.acfjp-gate-banner {
+	background: #fcf9e8;
+	border: 1px solid #dba617;
+	border-left: 4px solid #dba617;
+	border-radius: 4px;
+	padding: 10px 14px;
+	margin: 12px 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.acfjp-gate-banner__icon {
+	color: #dba617;
+	font-size: 20px;
+	width: 20px;
+	height: 20px;
+	line-height: 20px;
+	flex-shrink: 0;
+}
+
+.acfjp-gate-banner__text {
+	font-size: 13px;
+	color: #3c434a;
+	line-height: 1.4;
+	margin: 0;
+}
+
+.acfjp-gate-banner__text strong {
+	color: #1d2327;
+}
+
+@keyframes acfjpPulseHighlight {
+	0% { box-shadow: 0 0 0 0 rgba(214, 54, 56, 0.4); }
+	70% { box-shadow: 0 0 0 6px rgba(214, 54, 56, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(214, 54, 56, 0); }
+}
+
+.acfjp-pulse-alert {
+	animation: acfjpPulseHighlight 1.5s ease-out;
+}
+

@@ -70,8 +70,8 @@ final class Dashboard extends Screen {
 		);
 
 		echo '<button type="button" class="button button-secondary acfjp-dashboard-btn acfjp-tour-replay-btn">';
-		echo '<span class="dashicons dashicons-controls-play"></span>';
-		esc_html_e( 'Replay tour', 'fieldpilot-for-acf' );
+		echo '<span class="dashicons dashicons-welcome-learn-more"></span>';
+		esc_html_e( 'Restart Guided Tour', 'fieldpilot-for-acf' );
 		echo '</button>';
 		echo '</div>';
 

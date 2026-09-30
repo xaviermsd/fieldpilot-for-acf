@@ -3,12 +3,12 @@
 > **A declarative, target-scoped configuration patch engine for Advanced Custom Fields (ACF Free & PRO).**  
 > Diff before you apply. Snapshot before you write. Roll back whenever you need. Zero runtime dependencies.
 
-[![Version](https://img.shields.io/badge/Version-1.0.14-blue.svg?style=flat-square)](https://github.com/xaviermsd/fieldpilot-for-acf)
+[![Version](https://img.shields.io/badge/Version-1.0.29-blue.svg?style=flat-square)](https://github.com/xaviermsd/fieldpilot-for-acf)
 [![PHP Version](https://img.shields.io/badge/PHP-8.1%20--%208.4-777bb4.svg?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
 [![WordPress](https://img.shields.io/badge/WordPress-6.5%20--%206.8%2B-21759b.svg?style=flat-square&logo=wordpress&logoColor=white)](https://wordpress.org/)
 [![ACF Compatibility](https://img.shields.io/badge/ACF%20%2F%20PRO-6.2%20--%206.8%2B-00a32a.svg?style=flat-square)](https://www.advancedcustomfields.com/)
 [![Static Analysis](https://img.shields.io/badge/PHPStan-Level%208%20(0%20errors)-00a32a.svg?style=flat-square)](https://phpstan.org/)
-[![Tests](https://img.shields.io/badge/PHPUnit-101%20tests%20%2F%20576%20assertions-brightgreen.svg?style=flat-square)](https://phpunit.de/)
+[![Tests](https://img.shields.io/badge/PHPUnit-106%20tests%20%2F%20597%20assertions-brightgreen.svg?style=flat-square)](https://phpunit.de/)
 [![License](https://img.shields.io/badge/License-GPLv2%2B-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ---
@@ -42,6 +42,7 @@
   - [3. Presentation Tab](#3-presentation-tab)
   - [4. Conditional Logic Tab](#4-conditional-logic-tab)
 - [Complete 36 ACF Field Types Reference](#complete-36-acf-field-types-reference)
+- [Visual Tour & Screenshots](#visual-tour--screenshots)
 - [REST API Reference](#rest-api-reference)
 - [WP-CLI Commands](#wp-cli-commands)
 - [Extensibility & Developer Hooks](#extensibility--developer-hooks)
@@ -338,7 +339,9 @@ The main admin interface (**FieldPilot -> Import JSON**) features a segmented 3-
 
 ### Tab 1: AI Prompt Builder & Custom Field Generator (Default)
 - Zero external API keys needed; zero monthly cost.
-- **Target Field Group Selector**: Embeds your live field names, keys, and types directly into the prompt so the AI never hallucinates non-existent field names.
+- **Target Field Group Selector & Inline Creator**: Embeds your live field names, keys, and types directly into the prompt so the AI never hallucinates non-existent field names. Click `+ Add New Field Group` (toggles to `✕ Close`) to create a brand-new ACF field group via AJAX with instant auto-selection.
+- **Mandatory Step 1 Gate**: Prevents ambiguous patching by locking builder controls until a target group is active; automatically keeps the creation form open when no groups exist.
+- **Real-Time Soft Error Validation**: Soft red borders and clear guidance messages for required field labels, empty group titles, and numeric limits that dismiss automatically as you type.
 - **Interactive 4-Tab Custom Field Builder**: Configure General, Validation, Presentation, and Conditional Logic across all 36 ACF types and click `Append Field to Queue ➔`.
 - **Bulk Multi-Field Quick Add**: Click quick chips (`+ Text`, `+ Repeater`, `+ Image`, `+ WYSIWYG`, `+ Select`) to append multiple field specifications on separate lines without overwriting.
 - **Clear 2-Step Sequential AI Workflow**: Sub-step 2A (`1. Copy Prompt to Clipboard` & 1-click launchers for ChatGPT, Claude, Gemini, Cursor) followed by Sub-step 2B (`2. Paste AI Response & Switch to Editor ➔`).
@@ -357,6 +360,24 @@ The main admin interface (**FieldPilot -> Import JSON**) features a segmented 3-
 
 ### Tab 3: Schema & Operations Guide
 - Visual reference grid explaining all 8 patch operations (`add`, `update`, `create`, `move`, `delete`, `merge`, `sync`, `replace`) with safety ratings and behavior.
+
+---
+
+## Visual 10-Step Guided Onboarding Tour
+
+FieldPilot includes a built-in, lightweight (zero external library) interactive visual onboarding tour:
+- **Target Spotlight & SVG Masking**: Guides new users through group health verification on Dashboard, visual field authoring, AI prompt generation, diff previewing, conflict resolution, and one-click rollback in History.
+- **Sample Rollback Showcase**: On new installations with an empty history table, a sample snapshot record demonstrates rollback mechanics without creating real database records.
+- **Replay Anytime**: The tour can be restarted on demand using the `[ ↺ Replay Guided Tour ]` action located on both Dashboard and Settings screens.
+
+---
+
+## Settings & WordPress.org Compliant Uninstall
+
+FieldPilot follows 100% WordPress.org plugin directory guidelines:
+- **Zero Deactivation Interception**: Does not block, modal-intercept, or hijack the WordPress `Plugins` deactivate action.
+- **Configurable Data Retention**: Head to **FieldPilot -> Settings** to choose whether snapshots and options are preserved upon deletion or completely wiped.
+- **Safe `uninstall.php` Purge**: If data wipe is enabled, deleting the plugin silently and cleanly removes all custom journal tables, metadata markers, scheduled crons, and options with zero leftover footprint.
 
 ---
 
@@ -570,13 +591,24 @@ add_filter( 'acfjp/journal_retention_limit', function( int $limit ): int {
 
 ---
 
+## Visual Tour & Screenshots
+
+1. **Inline Field Group Creator**: Toggle between `+ Add New Field Group` and `✕ Close` with instant AJAX auto-selection and Step 1 safety gate.
+2. **Interactive 4-Tab Custom Field Builder & AI Prompts**: Configure fields across General, Validation, Presentation, and Conditional Logic with 1-click model launchers (ChatGPT, Claude, Gemini, Cursor).
+3. **Side-by-Side Review Workbench**: Split view with real-time JSON linting, live diff calculations, Target Isolated scope protection badge, and Pre-Apply Safety Checklist.
+4. **Transparent Conflict Resolver**: Detects field-type collisions before database writes, offering clear choices (*Keep existing*, *Change type*, *Add as new*).
+5. **Snapshot Audit Journal & 1-Click Rollback**: View all past configuration patches with complete field tree diffs and restore prior states with 1 click.
+6. **Field Group Health Dashboard**: Inspect editable database groups and re-launch the 10-step visual onboarding tour anytime.
+
+---
+
 ## Testing & Quality Gates
 
 The plugin includes a comprehensive test matrix adhering to WordPress Core standards and PHP 8.1+ strict typing:
 
 ```bash
-# Run PHPUnit unit & invariant test suite (95 tests, 186 assertions)
-vendor/bin/phpunit --testsuite unit
+# Run PHPUnit unit & invariant test suite (106 tests, 597 assertions)
+vendor/bin/phpunit
 
 # Run PHPStan Level 8 static analysis across all 70 plugin files
 vendor/bin/phpstan analyse

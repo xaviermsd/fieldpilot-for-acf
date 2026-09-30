@@ -5,7 +5,7 @@ Tags: acf, advanced custom fields, ai, json, developer
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.22
+Stable tag: 1.0.29
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,9 @@ come out byte-identical.
   `instructions`, `true` where ACF wants `1`. All of it is normalised rather than
   rejected, so you paste instead of hand-fixing.
 * **Reads native ACF exports** too, in both directions.
+* **Visual 10-Step Guided Onboarding Tour.** An interactive walkthrough across Dashboard, Import, and History with target spotlights, safety checklists, and replay controls.
+* **Target Field Group Gate & Inline Creation.** Select an existing group or click "+ Add New Field Group" to generate one in ACF with instant AJAX selection and builder unlock.
+* **WordPress.org Compliant Uninstall Controls.** Configure data cleanup options in Settings to preserve or completely wipe snapshots, options, and logs on uninstall.
 * **REST API and WP-CLI** with full parity, so deployments can do everything the UI
   can.
 * **Knows what it cannot touch.** Field groups registered in PHP, or loaded from
@@ -100,6 +103,24 @@ re-reading what was saved. If the result does not match the plan, the snapshot i
 restored automatically and you are told nothing was changed. You can also roll back
 any past change manually from the History screen.
 
+= How do I create a new field group if none exist yet? =
+
+Click "+ Add New Field Group" in the Target Field Group bar on the Import screen,
+enter a title, and click "Create & Select". FieldPilot creates the ACF group via AJAX
+and instantly unlocks the custom field builder and prompt generator.
+
+= What happens to my data when I delete the plugin? =
+
+By default, your settings and rollback history remain safely stored in the database
+in case you reinstall. If you want a complete wipe, go to FieldPilot -> Settings and
+enable "Wipe all FieldPilot data on uninstall". When deleted through the WordPress
+Plugins screen, all snapshots, options, and demo flags are cleanly purged.
+
+= How do I replay or restart the guided onboarding tour? =
+
+You can restart the 10-step guided tour anytime by clicking the "Replay Guided Tour"
+button at the top of the FieldPilot Dashboard or Settings screen.
+
 = Can I delete fields? =
 
 Yes, but deliberately. The plugin scans for stored content first - including values
@@ -125,13 +146,34 @@ AI you already use.
 
 == Screenshots ==
 
-1. Import screen with JSON editor, Custom Field Builder, and prompt generator
-2. Diff preview showing exact target locus, scope isolation, and changes
-3. Conflict resolution with the trade-offs spelled out
-4. History with one-click rollback
-5. Dashboard showing which field groups are editable
+1. Inline ACF Field Group creator with instant AJAX auto-selection and safety gate
+2. Interactive Custom Field Builder and AI prompt generator with 1-click model launchers
+3. Side-by-side split review workbench showing diff preview and Target Isolated scope badge
+4. Non-destructive conflict resolution with transparent trade-offs (keep, replace, or duplicate)
+5. History screen with snapshot audit logs and one-click rollback points
+6. Dashboard showing field group health, editable database groups, and guided tour launcher
 
 == Changelog ==
+
+= 1.0.29 =
+* Enhanced: Updated Guided Onboarding Tour Step 3 to highlight Target Field Group selection and inline creation gate.
+* Enhanced: Comprehensive documentation updates across README, FAQs, and developer screenshot guides.
+* Fixed: Resolved Plugin Check (PCP) NonceVerification warning on tour step parameter handling.
+
+= 1.0.28 =
+* Enhanced: Target Field Group creation UX with toggle button state switching between "+ Add New Field Group" and "Close".
+* Enhanced: Persistent creation form when no field groups exist, preventing dead-end UI states on fresh installations.
+* Enhanced: 100% WordPress.org guideline compliance for uninstall cleanup by configuring data purge exclusively via FieldPilot Settings.
+* Fixed: Form cancellation and focus state handling when closing field group creation box.
+
+= 1.0.27 =
+* Added: Uninstall data cleanup setting in FieldPilot Settings to wipe or preserve settings, history snapshots, and demo data when deleting the plugin.
+* Added: Safe, idempotent uninstall routine (uninstall.php) with prefix handling, demo marker checks, and scheduled cron cleanup.
+* Added: Direct "Add New Field Group" creation button with instant AJAX ACF group generation and auto-selection.
+* Added: Mandatory Step 1 gate requiring an active Target Field Group before unlocking the custom field builder or prompt generator.
+* Added: Soft red validation error borders and clear warning messages for required field labels, empty group titles, and validation range limits.
+* Fixed: Resolved JavaScript SyntaxError on variable declarations in custom field builder.
+* Fixed: Guided tour replay button icon and styling alignment in Settings and Dashboard screens.
 
 = 1.0.22 =
 * Fixed: Prevented premature sample diff cleanup and sidebar guide flash when transitioning from Step 8 to Step 9.
@@ -234,6 +276,12 @@ AI you already use.
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.29 =
+Upgrade recommended for refined guided onboarding tour, updated documentation, and Plugin Check security compliance.
+
+= 1.0.28 =
+Upgrade recommended for improved Target Field Group creation UX, zero-group state handling, and WordPress.org compliant uninstall configuration.
 
 = 1.0.11 =
 Upgrade recommended for all users to get dual append buttons and Enter key shortcuts in Custom Field Builder.

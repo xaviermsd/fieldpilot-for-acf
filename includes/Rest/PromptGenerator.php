@@ -35,9 +35,21 @@ final class PromptGenerator {
 	) {}
 
 	public function generate( ?string $groupReference = null, string $intent = '' ): string {
-		$sections = array( $this->instructions() );
+		$targetTitle = null;
 
-		if ( null !== $groupReference ) {
+		if ( ! empty( $groupReference ) && '__new__' !== $groupReference ) {
+			try {
+				$key         = $this->groups->locate( $groupReference );
+				$tree        = $this->reader->readRaw( $key );
+				$targetTitle = $tree->group->title;
+			} catch ( \Throwable ) {
+				$targetTitle = $groupReference;
+			}
+		}
+
+		$sections = array( $this->instructions( $targetTitle ) );
+
+		if ( ! empty( $groupReference ) && '__new__' !== $groupReference ) {
 			$structure = $this->structureFor( $groupReference );
 
 			if ( null !== $structure ) {
@@ -46,13 +58,17 @@ final class PromptGenerator {
 		}
 
 		$sections[] = $this->availableTypes();
-		$sections[] = $this->examples();
-		$sections[] = $this->task( $intent );
+		$sections[] = $this->examples( $targetTitle );
+		$sections[] = $this->task( $intent, $targetTitle );
 
 		return implode( "\n\n", $sections );
 	}
 
-	private function instructions(): string {
+	private function instructions( ?string $targetTitle = null ): string {
+		$targetModeRule = null !== $targetTitle
+			? sprintf( 'TARGET MODE: You are updating the EXISTING field group "%s". Always use "operation": "add" (or "update") and include "target": { "field_group": "%s" }.', $targetTitle, $targetTitle )
+			: 'TARGET MODE: You are CREATING A BRAND NEW field group. Always use "operation": "create", "group_changes": { "title": "Field Group Title" }, and "add": [ ... ]. Do NOT include a "target" object!';
+
 		return implode(
 			"\n",
 			array(
@@ -60,20 +76,22 @@ final class PromptGenerator {
 				'',
 				'Reply with EXACTLY ONE raw JSON object and nothing else. No surrounding prose, no explanation, no markdown code fences.',
 				'',
+				$targetModeRule,
+				'',
 				'Patch Schema:',
 				'{',
 				'  "version": "1.0",',
 				'  "operation": "create | add | update | delete | move | merge | sync | replace",',
 				'  "target": {',
-				'    "field_group": "Group title or group_xxxxx key",',
+				'    "field_group": "Group title or group_xxxxx key (REQUIRED for add/update/delete; OMIT for create)",',
 				'    "path": ["Parent Field", "Nested Field"],',
 				'    "layout": "layout_name_for_flexible_content"',
 				'  },',
+				'  "group_changes": { "title": "Field Group Title (REQUIRED for create)" },',
 				'  "changes": { "field_name": { "setting": value } },',
 				'  "add":     [ { "name": "...", "label": "...", "type": "...", ...settings } ],',
 				'  "delete":  [ "field_name" ],',
-				'  "moves":   [ { "field": "...", "to": { "path": [...] }, "position": "first|last|before|after", "anchor": "..." } ],',
-				'  "group_changes": { "title": "..." }',
+				'  "moves":   [ { "field": "...", "to": { "path": [...] }, "position": "first|last|before|after", "anchor": "..." } ]',
 				'}',
 				'',
 				'Core Architectural Rules:',
@@ -233,16 +251,18 @@ final class PromptGenerator {
 		return implode( "\n", $doc );
 	}
 
-	private function examples(): string {
+	private function examples( ?string $targetTitle = null ): string {
+		$targetName = $targetTitle ?? 'Example Field Group';
+
 		$ex = array(
 			'Examples:',
 			'',
-			'1. Bulk Multi-Field Addition into an existing group:',
+			'1. Create a Brand New Field Group (operation: "create"):',
 			'{',
 			'  "version": "1.0",',
-			'  "operation": "add",',
-			'  "target": {',
-			'    "field_group": "Property"',
+			'  "operation": "create",',
+			'  "group_changes": {',
+			'    "title": "Property Details"',
 			'  },',
 			'  "add": [',
 			'    {',
@@ -253,7 +273,7 @@ final class PromptGenerator {
 			'      "required": 1',
 			'    },',
 			'    {',
-			'      "name": "status",',
+			'      "name": "listing_status",',
 			'      "label": "Listing Status",',
 			'      "type": "select",',
 			'      "choices": {',
@@ -262,27 +282,33 @@ final class PromptGenerator {
 			'        "sold": "Sold"',
 			'      },',
 			'      "default_value": "active"',
-			'    },',
-			'    {',
-			'      "name": "team_members",',
-			'      "label": "Team Members",',
-			'      "type": "repeater",',
-			'      "layout": "table",',
-			'      "sub_fields": [',
-			'        { "name": "full_name", "label": "Full Name", "type": "text", "required": 1 },',
-			'        { "name": "role", "label": "Role", "type": "text" },',
-			'        { "name": "photo", "label": "Photo", "type": "image", "return_format": "array" }',
-			'      ]',
 			'    }',
 			'  ]',
 			'}',
 			'',
-			'2. Update specific settings of an existing field without restating the rest:',
+			'2. Add Fields to an Existing Group (operation: "add"):',
+			'{',
+			'  "version": "1.0",',
+			'  "operation": "add",',
+			'  "target": {',
+			'    "field_group": "' . $targetName . '"',
+			'  },',
+			'  "add": [',
+			'    {',
+			'      "name": "custom_notes",',
+			'      "label": "Custom Notes",',
+			'      "type": "textarea",',
+			'      "rows": 4',
+			'    }',
+			'  ]',
+			'}',
+			'',
+			'3. Update specific settings of an existing field without restating the rest:',
 			'{',
 			'  "version": "1.0",',
 			'  "operation": "update",',
 			'  "target": {',
-			'    "field_group": "Property",',
+			'    "field_group": "' . $targetName . '",',
 			'    "path": ["Agent"]',
 			'  },',
 			'  "changes": {',
@@ -292,69 +318,21 @@ final class PromptGenerator {
 			'    }',
 			'  }',
 			'}',
-			'',
-			'3. Converting 4-Tab Custom Field Builder Multi-Field Intent into a Clean JSON Patch:',
-			'Input Intent:',
-			'- Add an image field named "Hero Banner" (return_format: array, mime_types: "jpg, png, webp", width: 50%, required, instructions: "Upload high-res banner")',
-			'- Add a select field named "Listing Status" (choices: "draft: Draft, active: Active, sold: Sold", default: "active", width: 50%, required, conditional: status == "active")',
-			'',
-			'Output:',
-			'{',
-			'  "version": "1.0",',
-			'  "operation": "add",',
-			'  "target": {',
-			'    "field_group": "Property"',
-			'  },',
-			'  "add": [',
-			'    {',
-			'      "name": "hero_banner",',
-			'      "label": "Hero Banner",',
-			'      "type": "image",',
-			'      "return_format": "array",',
-			'      "mime_types": "jpg, jpeg, png, webp",',
-			'      "required": 1,',
-			'      "instructions": "Upload high-res banner",',
-			'      "wrapper": {',
-			'        "width": "50"',
-			'      }',
-			'    },',
-			'    {',
-			'      "name": "listing_status",',
-			'      "label": "Listing Status",',
-			'      "type": "select",',
-			'      "choices": {',
-			'        "draft": "Draft",',
-			'        "active": "Active",',
-			'        "sold": "Sold"',
-			'      },',
-			'      "default_value": "active",',
-			'      "required": 1,',
-			'      "wrapper": {',
-			'        "width": "50"',
-			'      },',
-			'      "conditional_logic": [',
-			'        [',
-			'          {',
-			'            "field": "status",',
-			'            "operator": "==",',
-			'            "value": "active"',
-			'          }',
-			'        ]',
-			'      ]',
-			'    }',
-			'  ]',
-			'}',
 		);
 
 		return implode( "\n", $ex );
 	}
 
-	private function task( string $intent ): string {
+	private function task( string $intent, ?string $targetTitle = null ): string {
 		$intent = trim( $intent );
 
+		$goal = null !== $targetTitle
+			? sprintf( 'Goal: Add or update fields in existing group "%s".', $targetTitle )
+			: 'Goal: Create a new field group with the requested fields (use "operation": "create").';
+
 		return '' === $intent
-			? 'Task: (describe the change or fields you want to create/update)'
-			: "User Requirements & Task:\n" . $intent;
+			? $goal . "\nTask: (describe the change or fields you want to create/update)"
+			: $goal . "\nUser Requirements & Task:\n" . $intent;
 	}
 
 	/**

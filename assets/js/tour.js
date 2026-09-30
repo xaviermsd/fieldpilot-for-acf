@@ -43,9 +43,9 @@
 		{
 			step: 3,
 			page: 'import',
-			target: '[data-tour="builder"], .acfjp-builder-box',
-			headline: 'Build fields visually, no code',
-			body: 'Describe your field across all 4 ACF tabs - General, Validation, Presentation, Conditional Logic - then append it to your queue. Repeat for every field you need.',
+			target: '[data-tour="target-group"], [data-tour="builder"], .acfjp-builder-box',
+			headline: 'Target field group & visual builder',
+			body: 'Select an existing field group (or click "+ Add New Field Group" to create one instantly) to unlock the custom field builder. Then configure your fields across all 4 ACF tabs and append them to your queue.',
 			placement: 'bottom',
 			onEnter: function () {
 				switchImportTab( 'ai' );

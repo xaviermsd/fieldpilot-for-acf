@@ -96,9 +96,61 @@
 		if ( error.suggestions && error.suggestions.length ) {
 			const list = el( 'ul', 'acfjp-suggestions' );
 			error.suggestions.forEach( function ( suggestion ) {
-				list.appendChild( el( 'li', null, suggestion ) );
+				const li = el( 'li', null );
+				const match = suggestion.match( /^([^(]+)\s*\((group_[a-z0-9_]+)\)$/i );
+				if ( match ) {
+					const groupTitle = match[1].trim();
+					li.appendChild( document.createTextNode( suggestion + ' ' ) );
+					const fixBtn = el( 'button', 'button button-small', 'Use "' + groupTitle + '" as Target' );
+					fixBtn.style.marginLeft = '8px';
+					fixBtn.type = 'button';
+					fixBtn.addEventListener( 'click', function () {
+						const raw = editor ? editor.codemirror.getValue() : ( document.getElementById( 'acfjp-json' ) || {} ).value;
+						try {
+							const parsed = JSON.parse( raw );
+							if ( parsed && parsed.target ) {
+								parsed.target.field_group = groupTitle;
+								setEditorValue( JSON.stringify( parsed, null, 2 ) );
+								const tSelect = document.getElementById( 'acfjp-template-group-select' );
+								if ( tSelect ) tSelect.value = groupTitle;
+								preview();
+							}
+						} catch ( err ) {}
+					} );
+					li.appendChild( fixBtn );
+				} else {
+					li.textContent = suggestion;
+				}
+				list.appendChild( li );
 			} );
 			box.appendChild( list );
+		}
+
+		// If error is about a missing field group, offer to convert to a "create" operation
+		if ( error.message && error.message.toLowerCase().includes( 'not found' ) && error.message.toLowerCase().includes( 'field group' ) ) {
+			const actions = el( 'div', null );
+			actions.style.marginTop = '12px';
+			actions.style.paddingTop = '12px';
+			actions.style.borderTop = '1px solid #f0b849';
+
+			const convertBtn = el( 'button', 'button button-secondary', '➕ Convert to "create" (Add as New Field Group)' );
+			convertBtn.type = 'button';
+			convertBtn.addEventListener( 'click', function () {
+				const raw = editor ? editor.codemirror.getValue() : ( document.getElementById( 'acfjp-json' ) || {} ).value;
+				try {
+					const parsed = JSON.parse( raw );
+					parsed.operation = 'create';
+					const currentTarget = ( parsed.target && parsed.target.field_group ) || 'New Field Group';
+					delete parsed.target;
+					parsed.group_changes = { title: currentTarget };
+					setEditorValue( JSON.stringify( parsed, null, 2 ) );
+					const tSelect = document.getElementById( 'acfjp-template-group-select' );
+					if ( tSelect ) tSelect.value = '__new__';
+					preview();
+				} catch ( err ) {}
+			} );
+			actions.appendChild( convertBtn );
+			box.appendChild( actions );
 		}
 
 		target.appendChild( box );
@@ -537,10 +589,11 @@
 	}
 
 	async function buildPrompt() {
-		const group = ( document.getElementById( 'acfjp-prompt-group' ) || {} ).value || '';
+		const groupSelect = document.getElementById( 'acfjp-prompt-group' );
+		const groupVal = ( groupSelect && groupSelect.value ) ? groupSelect.value : '';
 		const intent = ( document.getElementById( 'acfjp-prompt-intent' ) || {} ).value || '';
 
-		const query = '/prompt?group_key=' + encodeURIComponent( group ) + '&intent=' + encodeURIComponent( intent );
+		const query = '/prompt?group_key=' + encodeURIComponent( groupVal ) + '&intent=' + encodeURIComponent( intent );
 		const response = await api( query, { method: 'GET' } );
 
 		if ( ! response.ok ) {
@@ -791,11 +844,29 @@
 
 				// Target group override from user selector
 				const selectedGroup = templateGroupSelect ? templateGroupSelect.value : '';
-				if ( selectedGroup && templatePayload.target && templatePayload.target.field_group !== undefined ) {
-					templatePayload.target.field_group = selectedGroup;
+
+				if ( val === 'create_group' ) {
+					// Add New Field Group template
+					setEditorValue( JSON.stringify( templatePayload, null, 2 ) );
+				} else {
+					let targetName = selectedGroup;
+					if ( ! targetName && templateGroupSelect ) {
+						const opt = templateGroupSelect.querySelector( 'option[data-key]' );
+						if ( opt ) {
+							targetName = opt.value;
+							templateGroupSelect.value = targetName;
+						}
+					}
+
+					if ( targetName ) {
+						if ( templatePayload.target ) {
+							templatePayload.target.field_group = targetName;
+						}
+					}
+
+					setEditorValue( JSON.stringify( templatePayload, null, 2 ) );
 				}
 
-				setEditorValue( JSON.stringify( templatePayload, null, 2 ) );
 				templateSelect.value = '';
 			} );
 		}
@@ -805,18 +876,275 @@
 				const selectedGroup = templateGroupSelect.value;
 				if ( ! selectedGroup ) return;
 
-				// If editor currently has a JSON payload with target.field_group, update it live!
 				const raw = editor ? editor.codemirror.getValue() : ( document.getElementById( 'acfjp-json' ) || {} ).value;
 				if ( raw && raw.trim() ) {
 					try {
 						const parsed = JSON.parse( raw );
-						if ( parsed && parsed.target && parsed.target.field_group !== undefined ) {
+						if ( parsed.target && parsed.target.field_group !== undefined ) {
 							parsed.target.field_group = selectedGroup;
 							setEditorValue( JSON.stringify( parsed, null, 2 ) );
 						}
 					} catch ( err ) {
 						/* ignore unparseable json */
 					}
+				}
+			} );
+		}
+
+		// Option 1: Target Field Group & Inline Creation Handler
+		const promptGroupSelect = document.getElementById( 'acfjp-prompt-group' );
+		const toggleNewGroupBtn = document.getElementById( 'acfjp-btn-toggle-new-group' );
+		const newGroupContainer = document.getElementById( 'acfjp-new-group-container' );
+		const newGroupTitleInput = document.getElementById( 'acfjp-new-group-title' );
+		const createGroupBtn = document.getElementById( 'acfjp-btn-create-group' );
+		const cancelNewGroupBtn = document.getElementById( 'acfjp-btn-cancel-new-group' );
+		const createGroupFeedback = document.getElementById( 'acfjp-create-group-feedback' );
+
+		function setGroupFormOpen( isOpen ) {
+			if ( ! newGroupContainer ) return;
+
+			// If closing, ensure we never hide the form if 0 field groups exist
+			if ( ! isOpen ) {
+				const hasValidGroup = promptGroupSelect && Array.from( promptGroupSelect.options ).some( function ( opt ) {
+					return opt.value && ! opt.disabled;
+				} );
+				if ( ! hasValidGroup ) {
+					newGroupContainer.style.display = 'block';
+					if ( toggleNewGroupBtn ) toggleNewGroupBtn.style.display = 'none';
+					if ( cancelNewGroupBtn ) cancelNewGroupBtn.style.display = 'none';
+					return;
+				}
+			}
+
+			if ( isOpen ) {
+				newGroupContainer.style.display = 'block';
+				if ( toggleNewGroupBtn ) {
+					toggleNewGroupBtn.innerHTML = '<span class="dashicons dashicons-no-alt" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> <span>' + ( s.close || 'Close' ) + '</span>';
+				}
+				if ( newGroupTitleInput ) {
+					newGroupTitleInput.focus();
+				}
+			} else {
+				newGroupContainer.style.display = 'none';
+				if ( toggleNewGroupBtn ) {
+					toggleNewGroupBtn.innerHTML = '<span class="dashicons dashicons-plus-alt2" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> <span>' + ( s.addNewFieldGroup || 'Add New Field Group' ) + '</span>';
+				}
+				if ( newGroupTitleInput ) {
+					newGroupTitleInput.classList.remove( 'acfjp-input-error' );
+				}
+				if ( createGroupFeedback ) {
+					createGroupFeedback.style.display = 'none';
+				}
+			}
+		}
+
+		if ( toggleNewGroupBtn && newGroupContainer ) {
+			toggleNewGroupBtn.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				const isVisible = newGroupContainer.style.display !== 'none';
+				setGroupFormOpen( ! isVisible );
+			} );
+		}
+
+		if ( cancelNewGroupBtn && newGroupContainer ) {
+			cancelNewGroupBtn.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				setGroupFormOpen( false );
+			} );
+		}
+
+		function isGroupLocked() {
+			if ( ! promptGroupSelect ) return false;
+			const val = promptGroupSelect.value;
+			if ( ! val || val === '' || promptGroupSelect.options.length === 0 ) return true;
+			const selectedOpt = promptGroupSelect.options[ promptGroupSelect.selectedIndex ];
+			return selectedOpt ? selectedOpt.disabled : false;
+		}
+
+		function updateGroupLockState() {
+			const locked = isGroupLocked();
+			const gateBanner = document.getElementById( 'acfjp-builder-gate-banner' );
+			const builderBox = document.getElementById( 'acfjp-builder-box' );
+			const quickChips = document.getElementById( 'acfjp-quick-chips' );
+			const quickDropdown = document.getElementById( 'acfjp-quick-dropdown-row' );
+			const buildBtn = document.getElementById( 'acfjp-prompt-build' );
+
+			if ( gateBanner ) gateBanner.style.display = locked ? 'flex' : 'none';
+			if ( builderBox ) builderBox.classList.toggle( 'is-locked', locked );
+			if ( quickChips ) quickChips.classList.toggle( 'is-locked', locked );
+			if ( quickDropdown ) quickDropdown.classList.toggle( 'is-locked', locked );
+			if ( buildBtn && locked ) {
+				buildBtn.classList.remove( 'is-ready' );
+			}
+		}
+
+		function highlightGateNotice() {
+			const gateBanner = document.getElementById( 'acfjp-builder-gate-banner' );
+			const newGroupContainer = document.getElementById( 'acfjp-new-group-container' );
+			const newGroupTitle = document.getElementById( 'acfjp-new-group-title' );
+
+			if ( gateBanner ) {
+				gateBanner.classList.remove( 'acfjp-pulse-alert' );
+				void gateBanner.offsetWidth; // re-flow
+				gateBanner.classList.add( 'acfjp-pulse-alert' );
+				gateBanner.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+			}
+
+			if ( newGroupContainer && newGroupContainer.style.display !== 'none' && newGroupTitle ) {
+				newGroupTitle.classList.add( 'acfjp-input-error' );
+				newGroupTitle.focus();
+			} else if ( promptGroupSelect ) {
+				promptGroupSelect.focus();
+			}
+		}
+
+		if ( promptGroupSelect ) {
+			promptGroupSelect.addEventListener( 'change', function () {
+				updateGroupLockState();
+			} );
+		}
+
+		// Initial gate state check
+		updateGroupLockState();
+
+		if ( newGroupTitleInput ) {
+			newGroupTitleInput.addEventListener( 'input', function () {
+				newGroupTitleInput.classList.remove( 'acfjp-input-error' );
+				if ( createGroupFeedback ) {
+					createGroupFeedback.style.display = 'none';
+				}
+			} );
+		}
+
+		async function handleCreateFieldGroup() {
+			if ( ! newGroupTitleInput || ! createGroupBtn ) return;
+			const title = newGroupTitleInput.value.trim();
+			if ( ! title ) {
+				newGroupTitleInput.classList.add( 'acfjp-input-error' );
+				if ( createGroupFeedback ) {
+					createGroupFeedback.style.display = 'flex';
+					createGroupFeedback.style.alignItems = 'center';
+					createGroupFeedback.style.gap = '4px';
+					createGroupFeedback.style.color = '#d63638';
+					createGroupFeedback.style.fontWeight = '600';
+					createGroupFeedback.innerHTML = '<span class="dashicons dashicons-warning" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> Field group title is required.';
+				}
+				newGroupTitleInput.focus();
+				return;
+			}
+
+			createGroupBtn.disabled = true;
+			const origText = createGroupBtn.textContent;
+			createGroupBtn.textContent = 'Creating...';
+			if ( createGroupFeedback ) {
+				createGroupFeedback.style.display = 'block';
+				createGroupFeedback.style.color = '#50575e';
+				createGroupFeedback.textContent = 'Creating field group in ACF...';
+			}
+
+			try {
+				const params = new URLSearchParams();
+				params.append( 'action', 'fieldpilot_create_field_group' );
+				params.append( 'nonce', ( window.ACFJP && window.ACFJP.ajaxNonce ) || '' );
+				params.append( 'title', title );
+
+				const ajaxUrl = ( window.ACFJP && window.ACFJP.ajaxUrl ) || '/wp-admin/admin-ajax.php';
+				const res = await fetch( ajaxUrl, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: params.toString()
+				} );
+
+				const data = await res.json();
+				if ( ! data.success ) {
+					throw new Error( ( data.data && data.data.message ) || 'Failed to create field group.' );
+				}
+
+				const created = data.data;
+
+				// Append to Tab 1 promptGroupSelect
+				if ( promptGroupSelect ) {
+					const placeholderOpt = promptGroupSelect.querySelector( 'option[disabled]' );
+					if ( placeholderOpt ) {
+						placeholderOpt.remove();
+					}
+					const opt = document.createElement( 'option' );
+					opt.value = created.key;
+					opt.dataset.title = created.title;
+					opt.textContent = created.title + ' (' + created.key + ')';
+					promptGroupSelect.appendChild( opt );
+					promptGroupSelect.value = created.key;
+				}
+
+				// Append to Tab 2 templateGroupSelect
+				const templateGroupSelect = document.getElementById( 'acfjp-template-group-select' );
+				if ( templateGroupSelect ) {
+					const placeholderOpt2 = templateGroupSelect.querySelector( 'option[disabled]' );
+					if ( placeholderOpt2 ) {
+						placeholderOpt2.remove();
+					}
+					const opt2 = document.createElement( 'option' );
+					opt2.value = created.title;
+					opt2.dataset.key = created.key;
+					opt2.textContent = '🎯 ' + created.title;
+					templateGroupSelect.appendChild( opt2 );
+					templateGroupSelect.value = created.title;
+				}
+
+				newGroupTitleInput.value = '';
+				newGroupTitleInput.classList.remove( 'acfjp-input-error' );
+				if ( cancelNewGroupBtn ) {
+					cancelNewGroupBtn.style.display = 'inline-block';
+				}
+				const newGroupLabel = document.getElementById( 'acfjp-new-group-label' );
+				if ( newGroupLabel ) {
+					newGroupLabel.textContent = 'Create New ACF Field Group:';
+				}
+				if ( toggleNewGroupBtn ) {
+					toggleNewGroupBtn.style.display = 'inline-flex';
+				}
+				setGroupFormOpen( false );
+
+				// Unlock builder immediately
+				updateGroupLockState();
+
+				// Show brief success notice next to select
+				const desc = document.getElementById( 'acfjp-prompt-group-desc' );
+				if ( desc ) {
+					desc.innerHTML = '<span style="color: #007017; font-weight: 600;">✓ Field group "' + created.title + '" created and selected.</span>';
+					setTimeout( function () {
+						desc.textContent = 'Select the field group you want to modify, or click "Add New Field Group" to create one.';
+					}, 4000 );
+				}
+
+				const customNameInput = document.getElementById( 'acfjp-custom-name' );
+				if ( customNameInput ) {
+					customNameInput.focus();
+				}
+			} catch ( err ) {
+				if ( createGroupFeedback ) {
+					createGroupFeedback.style.display = 'block';
+					createGroupFeedback.style.color = '#d63638';
+					createGroupFeedback.textContent = err.message || 'Error creating group.';
+				}
+			} finally {
+				createGroupBtn.disabled = false;
+				createGroupBtn.textContent = origText;
+			}
+		}
+
+		if ( createGroupBtn ) {
+			createGroupBtn.addEventListener( 'click', function ( e ) {
+				e.preventDefault();
+				handleCreateFieldGroup();
+			} );
+		}
+
+		if ( newGroupTitleInput ) {
+			newGroupTitleInput.addEventListener( 'keydown', function ( e ) {
+				if ( e.key === 'Enter' ) {
+					e.preventDefault();
+					handleCreateFieldGroup();
 				}
 			} );
 		}
@@ -839,14 +1167,22 @@
 			const genHint = document.getElementById( 'acfjp-gen-hint' );
 			if ( ! buildBtn ) return;
 
+			const hasGroup = ! isGroupLocked();
 			const hasText = intentInput && intentInput.value.trim().length > 0;
-			buildBtn.classList.toggle( 'is-ready', hasText );
+			const isReady = hasGroup && hasText;
+
+			buildBtn.classList.toggle( 'is-ready', isReady );
 			if ( genHint ) {
-				genHint.style.display = hasText ? 'inline-block' : 'none';
+				genHint.style.display = isReady ? 'inline-block' : 'none';
 			}
 		}
 
 		function appendIntent( text ) {
+			if ( isGroupLocked() ) {
+				highlightGateNotice();
+				return;
+			}
+
 			const intentInput = document.getElementById( 'acfjp-prompt-intent' );
 			if ( ! intentInput || ! text ) return;
 
@@ -924,11 +1260,17 @@
 		} );
 
 		function addCustomField() {
+			if ( isGroupLocked() ) {
+				highlightGateNotice();
+				return;
+			}
+
 			const nameInput = document.getElementById( 'acfjp-custom-name' );
 			const typeSelect = document.getElementById( 'acfjp-custom-type' );
 			const widthSelect = document.getElementById( 'acfjp-custom-width' );
 			const reqCheckbox = document.getElementById( 'acfjp-custom-required' );
 			const instInput = document.getElementById( 'acfjp-custom-instructions' );
+			const nameErr = document.getElementById( 'acfjp-custom-name-error' );
 
 			if ( ! nameInput || ! typeSelect ) return;
 
@@ -939,8 +1281,33 @@
 			const instructions = instInput ? instInput.value.trim() : '';
 
 			if ( ! name ) {
+				nameInput.classList.add( 'acfjp-input-error' );
+				if ( nameErr ) {
+					nameErr.style.display = 'flex';
+					nameErr.innerHTML = '<span class="dashicons dashicons-warning" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> Please enter a Field Label or Name (e.g. Price, Subtitle) to append.';
+				}
 				nameInput.focus();
 				return;
+			}
+
+			// Validation: min vs max
+			const minInput = document.getElementById( 'acfjp-b-min' );
+			const maxInput = document.getElementById( 'acfjp-b-max' );
+			if ( minInput && maxInput && minInput.value.trim() !== '' && maxInput.value.trim() !== '' ) {
+				const minVal = parseFloat( minInput.value.trim() );
+				const maxVal = parseFloat( maxInput.value.trim() );
+				if ( ! isNaN( minVal ) && ! isNaN( maxVal ) && minVal > maxVal ) {
+					minInput.classList.add( 'acfjp-input-error' );
+					maxInput.classList.add( 'acfjp-input-error' );
+					if ( nameErr ) {
+						nameErr.style.display = 'flex';
+						nameErr.innerHTML = '<span class="dashicons dashicons-warning" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> Minimum value cannot be greater than Maximum value in Validation settings.';
+					}
+					const valTabBtn = document.querySelector( '.acfjp-builder-tab[data-builder-tab="validation"]' );
+					if ( valTabBtn ) valTabBtn.click();
+					minInput.focus();
+					return;
+				}
 			}
 
 			let spec = '- Add a ' + type + ' field named "' + name + '"';
@@ -996,8 +1363,6 @@
 			// Tab 2: Validation settings
 			if ( isReq ) extras.push( 'required' );
 
-			const minInput = document.getElementById( 'acfjp-b-min' );
-			const maxInput = document.getElementById( 'acfjp-b-max' );
 			const stepInput = document.getElementById( 'acfjp-b-step' );
 			const maxlenInput = document.getElementById( 'acfjp-b-maxlength' );
 			const mimesInput = document.getElementById( 'acfjp-b-mimes' );
@@ -1074,8 +1439,38 @@
 			if ( condField ) condField.value = '';
 			if ( condVal ) condVal.value = '';
 
+			nameInput.classList.remove( 'acfjp-input-error' );
+			if ( nameErr ) nameErr.style.display = 'none';
+			if ( minInput ) minInput.classList.remove( 'acfjp-input-error' );
+			if ( maxInput ) maxInput.classList.remove( 'acfjp-input-error' );
+
 			nameInput.focus();
 		}
+
+		// Real-time error removal on typing
+		const customNameEl = document.getElementById( 'acfjp-custom-name' );
+		if ( customNameEl ) {
+			customNameEl.addEventListener( 'input', function () {
+				customNameEl.classList.remove( 'acfjp-input-error' );
+				const nameErr = document.getElementById( 'acfjp-custom-name-error' );
+				if ( nameErr ) {
+					nameErr.style.display = 'none';
+				}
+			} );
+		}
+
+		const minEl = document.getElementById( 'acfjp-b-min' );
+		const maxEl = document.getElementById( 'acfjp-b-max' );
+		[ minEl, maxEl ].forEach( function ( el ) {
+			if ( el ) {
+				el.addEventListener( 'input', function () {
+					if ( minEl ) minEl.classList.remove( 'acfjp-input-error' );
+					if ( maxEl ) maxEl.classList.remove( 'acfjp-input-error' );
+					const nameErr = document.getElementById( 'acfjp-custom-name-error' );
+					if ( nameErr ) nameErr.style.display = 'none';
+				} );
+			}
+		} );
 
 		// Attach Enter key triggers to all inputs in the builder box
 		document.querySelectorAll( '.acfjp-builder-box input' ).forEach( function ( input ) {
@@ -1108,6 +1503,13 @@
 
 		document.addEventListener( 'click', function ( event ) {
 			const target = event.target;
+
+			// If group is locked and user clicks on builder, chips, or build button
+			if ( isGroupLocked() && ( target.closest( '#acfjp-builder-box' ) || target.closest( '#acfjp-quick-chips' ) || target.closest( '#acfjp-quick-dropdown-row' ) || target.closest( '#acfjp-builder-gate-banner' ) || target.closest( '#acfjp-prompt-build' ) ) ) {
+				event.preventDefault();
+				highlightGateNotice();
+				return;
+			}
 
 			// Custom field builder add (top or bottom button)
 			if ( target.closest( '#acfjp-custom-add' ) || target.closest( '#acfjp-custom-add-main' ) ) {

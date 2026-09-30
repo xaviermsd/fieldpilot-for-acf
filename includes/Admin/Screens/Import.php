@@ -74,21 +74,58 @@ final class Import extends Screen {
 							</div>
 
 							<!-- Target Field Group -->
-							<div class="acfjp-field-row">
-								<label for="acfjp-prompt-group"><strong><?php esc_html_e( 'Target Field Group', 'fieldpilot-for-acf' ); ?></strong></label>
+							<div class="acfjp-field-row" data-tour="target-group">
+								<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+									<label for="acfjp-prompt-group" style="margin: 0;"><strong><?php esc_html_e( 'Target Field Group', 'fieldpilot-for-acf' ); ?></strong></label>
+									<button type="button" class="button button-secondary button-small" id="acfjp-btn-toggle-new-group" style="<?php echo empty( $groups ) ? 'display: none;' : 'display: inline-flex;'; ?> align-items: center; gap: 4px;">
+										<span class="dashicons dashicons-plus-alt2" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>
+										<span class="acfjp-btn-text"><?php esc_html_e( 'Add New Field Group', 'fieldpilot-for-acf' ); ?></span>
+									</button>
+								</div>
 								<select id="acfjp-prompt-group" class="widefat">
-									<option value=""><?php esc_html_e( '- None (new field group or generic schema) -', 'fieldpilot-for-acf' ); ?></option>
-									<?php foreach ( $groups as $group ) : ?>
-										<option value="<?php echo esc_attr( $group->groupKey ); ?>">
-											<?php echo esc_html( $group->groupTitle ); ?> (<?php echo esc_html( $group->groupKey ); ?>)
-										</option>
-									<?php endforeach; ?>
+									<?php if ( empty( $groups ) ) : ?>
+										<option value="" disabled selected><?php esc_html_e( '— No field groups found (create one below) —', 'fieldpilot-for-acf' ); ?></option>
+									<?php else : ?>
+										<?php foreach ( $groups as $i => $group ) : ?>
+											<option value="<?php echo esc_attr( $group->groupKey ); ?>" data-title="<?php echo esc_attr( $group->groupTitle ); ?>" <?php selected( 0 === $i, true ); ?>>
+												<?php echo esc_html( $group->groupTitle ); ?> (<?php echo esc_html( $group->groupKey ); ?>)
+											</option>
+										<?php endforeach; ?>
+									<?php endif; ?>
 								</select>
-								<span class="description"><?php esc_html_e( 'Its current field keys and types will be embedded in the prompt so the AI never hallucinates field names.', 'fieldpilot-for-acf' ); ?></span>
+
+								<div id="acfjp-new-group-container" style="<?php echo empty( $groups ) ? 'margin-top: 10px; display: block;' : 'margin-top: 10px; display: none;'; ?> background: #f6f7f7; border: 1px solid #c3c4c7; border-radius: 4px; padding: 10px 12px;">
+									<label for="acfjp-new-group-title" id="acfjp-new-group-label" style="display:block; font-size: 12px; font-weight: 600; color: #1d2327; margin-bottom: 6px;">
+										<?php echo empty( $groups ) ? esc_html__( 'Create Your First ACF Field Group:', 'fieldpilot-for-acf' ) : esc_html__( 'Create New ACF Field Group:', 'fieldpilot-for-acf' ); ?>
+									</label>
+									<div style="display: flex; gap: 8px; align-items: center;">
+										<input type="text" id="acfjp-new-group-title" class="widefat" placeholder="<?php esc_attr_e( 'e.g. Property Details, Team Settings, Page Hero...', 'fieldpilot-for-acf' ); ?>" style="height: 32px; font-size: 13px;" />
+										<button type="button" id="acfjp-btn-create-group" class="button button-primary" style="white-space: nowrap; height: 32px;">
+											<?php esc_html_e( 'Create & Select', 'fieldpilot-for-acf' ); ?>
+										</button>
+										<button type="button" id="acfjp-btn-cancel-new-group" class="button" style="white-space: nowrap; height: 32px; <?php echo empty( $groups ) ? 'display: none;' : ''; ?>">
+											<?php esc_html_e( 'Cancel', 'fieldpilot-for-acf' ); ?>
+										</button>
+									</div>
+									<div id="acfjp-create-group-feedback" style="display: none; margin-top: 6px; font-size: 12px;"></div>
+								</div>
+
+								<span class="description" id="acfjp-prompt-group-desc" style="display: block; margin-top: 4px;">
+									<?php esc_html_e( 'Select the field group you want to modify, or click "Add New Field Group" to create one.', 'fieldpilot-for-acf' ); ?>
+								</span>
+							</div>
+
+							<!-- Mandatory Step 1 Gate Notice (visible when no group is selected) -->
+							<div id="acfjp-builder-gate-banner" class="acfjp-gate-banner" style="<?php echo empty( $groups ) ? 'display: flex;' : 'display: none;'; ?>">
+								<span class="dashicons dashicons-lock acfjp-gate-banner__icon"></span>
+								<p class="acfjp-gate-banner__text">
+									<strong><?php esc_html_e( 'Target Field Group Required:', 'fieldpilot-for-acf' ); ?></strong>
+									<?php esc_html_e( 'Please select an existing Field Group above or click "Add New Field Group" to unlock the custom field builder and AI prompt generator.', 'fieldpilot-for-acf' ); ?>
+								</p>
 							</div>
 
 							<!-- Custom Field Builder Box (4 Tabs: General, Validation, Presentation, Conditional Logic) -->
-							<div class="acfjp-builder-box" data-tour="builder">
+							<div class="acfjp-builder-box <?php echo empty( $groups ) ? 'is-locked' : ''; ?>" id="acfjp-builder-box" data-tour="builder">
 								<div class="acfjp-builder-header">
 									<div class="acfjp-builder-title">
 										<span class="dashicons dashicons-forms"></span>
@@ -100,7 +137,7 @@ final class Import extends Screen {
 								</div>
 
 								<!-- Top Primary Row -->
-								<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px;">
+								<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 4px;">
 									<input type="text" id="acfjp-custom-name" placeholder="<?php esc_attr_e( 'Field Label / Name (e.g. Director Bio, Hero Banner)...', 'fieldpilot-for-acf' ); ?>" style="flex: 1 1 200px; height: 32px; font-size: 13px;" />
 									<select id="acfjp-custom-type" style="height: 32px; font-size: 13px;">
 										<optgroup label="<?php esc_attr_e( 'Basic & Text', 'fieldpilot-for-acf' ); ?>">
@@ -166,6 +203,7 @@ final class Import extends Screen {
 										<?php esc_html_e( 'Append Field', 'fieldpilot-for-acf' ); ?>
 									</button>
 								</div>
+								<div id="acfjp-custom-name-error" class="acfjp-error-text" style="display: none; margin-bottom: 8px;"></div>
 
 								<!-- 4 ACF Tabs Bar -->
 								<div class="acfjp-builder-subtabs">
@@ -330,7 +368,7 @@ final class Import extends Screen {
 
 							<!-- Quick Ideas & All 36 Types Dropdown -->
 							<div class="acfjp-field-row" style="margin-top: 14px;">
-								<div class="acfjp-quick-chips">
+								<div class="acfjp-quick-chips <?php echo empty( $groups ) ? 'is-locked' : ''; ?>" id="acfjp-quick-chips">
 									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Quick add fields (click to append in bulk):', 'fieldpilot-for-acf' ); ?></span>
 									<button type="button" class="acfjp-chip" data-intent="- Add a repeater called Team Members with name (text), role (text), and photo (image) fields"><?php esc_html_e( '+ Repeater', 'fieldpilot-for-acf' ); ?></button>
 									<button type="button" class="acfjp-chip" data-intent="- Add a text field called Custom Heading and make it required"><?php esc_html_e( '+ Required Text', 'fieldpilot-for-acf' ); ?></button>
@@ -345,7 +383,7 @@ final class Import extends Screen {
 									<button type="button" class="acfjp-chip" data-intent="- Add a group container called Contact Info with phone, email, and address fields"><?php esc_html_e( '+ Group Container', 'fieldpilot-for-acf' ); ?></button>
 								</div>
 
-								<div class="acfjp-quick-dropdown-row" style="margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+								<div class="acfjp-quick-dropdown-row <?php echo empty( $groups ) ? 'is-locked' : ''; ?>" id="acfjp-quick-dropdown-row" style="margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
 									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Or append pre-configured examples:', 'fieldpilot-for-acf' ); ?></span>
 									<select id="acfjp-quick-field-select" class="button" style="max-width: 320px; font-size: 12px; height: 32px; line-height: 30px;">
 										<option value=""><?php esc_html_e( '⚡ Append example specs for all 36 ACF types...', 'fieldpilot-for-acf' ); ?></option>
@@ -515,13 +553,16 @@ final class Import extends Screen {
 									<?php esc_html_e( 'Paste from Clipboard', 'fieldpilot-for-acf' ); ?>
 								</button>
 
-								<select id="acfjp-template-group-select" class="button" title="<?php esc_attr_e( 'Target Field Group for templates', 'fieldpilot-for-acf' ); ?>" style="max-width: 220px; font-size: 12px; height: 30px; line-height: 28px;">
-									<option value=""><?php esc_html_e( '🎯 Target: (Auto / First Group)', 'fieldpilot-for-acf' ); ?></option>
-									<?php foreach ( $groups as $group ) : ?>
-										<option value="<?php echo esc_attr( $group->groupTitle ); ?>" data-key="<?php echo esc_attr( $group->groupKey ); ?>">
-											<?php echo esc_html( $group->groupTitle ); ?>
-										</option>
-									<?php endforeach; ?>
+								<select id="acfjp-template-group-select" class="button" title="<?php esc_attr_e( 'Target Field Group', 'fieldpilot-for-acf' ); ?>" style="max-width: 250px; font-size: 12px; height: 32px; line-height: 30px;">
+									<?php if ( empty( $groups ) ) : ?>
+										<option value="" disabled selected><?php esc_html_e( '— No Groups Found —', 'fieldpilot-for-acf' ); ?></option>
+									<?php else : ?>
+										<?php foreach ( $groups as $index => $group ) : ?>
+											<option value="<?php echo esc_attr( $group->groupTitle ); ?>" data-key="<?php echo esc_attr( $group->groupKey ); ?>" <?php selected( 0 === $index, true ); ?>>
+												🎯 <?php echo esc_html( $group->groupTitle ); ?>
+											</option>
+										<?php endforeach; ?>
+									<?php endif; ?>
 								</select>
 
 								<div class="acfjp-template-picker">

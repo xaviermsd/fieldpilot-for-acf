@@ -30,11 +30,11 @@ final class Settings extends Screen {
 		$settings = wp_parse_args(
 			(array) get_option( self::OPTION, array() ),
 			array(
-				'keep_per_group'  => 50,
-				'keep_days'       => 90,
-				'data_probe'      => 1,
-				'preserve_uninstall' => 0,
-				'read_only'          => 0,
+				'keep_per_group'      => 50,
+				'keep_days'           => 90,
+				'data_probe'          => 1,
+				'delete_on_uninstall' => 0,
+				'read_only'           => 0,
 			)
 		);
 
@@ -96,10 +96,12 @@ final class Settings extends Screen {
 					<th scope="row"><?php esc_html_e( 'On uninstall', 'fieldpilot-for-acf' ); ?></th>
 					<td>
 						<label>
-							<input type="checkbox" name="preserve_uninstall" value="1" <?php checked( (int) $settings['preserve_uninstall'], 1 ); ?> />
-							<?php esc_html_e( 'Keep history and snapshots when the plugin is deleted', 'fieldpilot-for-acf' ); ?>
+							<input type="checkbox" name="delete_on_uninstall" value="1" <?php checked( (int) $settings['delete_on_uninstall'], 1 ); ?> />
+							<?php esc_html_e( 'Delete all FieldPilot data when the plugin is uninstalled.', 'fieldpilot-for-acf' ); ?>
 						</label>
-						<p class="description"><?php esc_html_e( 'Your ACF field groups are never removed by this plugin, whichever way this is set.', 'fieldpilot-for-acf' ); ?></p>
+						<p class="description">
+							<?php esc_html_e( 'If checked, uninstalling (deleting) the plugin permanently removes its settings, history snapshots, and demo data. If unchecked, everything is kept so reinstalling restores your history.', 'fieldpilot-for-acf' ); ?>
+						</p>
 					</td>
 				</tr>
 				<tr>
@@ -119,8 +121,8 @@ final class Settings extends Screen {
 					<th scope="row"><?php esc_html_e( 'Guided Tour', 'fieldpilot-for-acf' ); ?></th>
 					<td>
 						<button type="button" class="button button-secondary acfjp-tour-replay-btn">
-							<span class="dashicons dashicons-controls-play" style="vertical-align: middle; margin-right: 4px;"></span>
-							<?php esc_html_e( 'Replay tour', 'fieldpilot-for-acf' ); ?>
+							<span class="dashicons dashicons-welcome-learn-more"></span>
+							<?php esc_html_e( 'Restart Guided Tour', 'fieldpilot-for-acf' ); ?>
 						</button>
 						<p class="description"><?php esc_html_e( 'Restart the guided visual tour anytime.', 'fieldpilot-for-acf' ); ?></p>
 					</td>
@@ -148,15 +150,15 @@ final class Settings extends Screen {
 		}
 
 		$settings = array(
-			'keep_per_group'     => isset( $_POST['keep_per_group'] ) ? max( 1, min( 1000, absint( wp_unslash( $_POST['keep_per_group'] ) ) ) ) : 50,
-			'keep_days'          => isset( $_POST['keep_days'] ) ? max( 1, min( 3650, absint( wp_unslash( $_POST['keep_days'] ) ) ) ) : 90,
-			'data_probe'         => isset( $_POST['data_probe'] ) ? 1 : 0,
-			'preserve_uninstall' => isset( $_POST['preserve_uninstall'] ) ? 1 : 0,
-			'read_only'          => isset( $_POST['read_only'] ) ? 1 : 0,
+			'keep_per_group'      => isset( $_POST['keep_per_group'] ) ? max( 1, min( 1000, absint( wp_unslash( $_POST['keep_per_group'] ) ) ) ) : 50,
+			'keep_days'           => isset( $_POST['keep_days'] ) ? max( 1, min( 3650, absint( wp_unslash( $_POST['keep_days'] ) ) ) ) : 90,
+			'data_probe'          => isset( $_POST['data_probe'] ) ? 1 : 0,
+			'delete_on_uninstall' => isset( $_POST['delete_on_uninstall'] ) ? 1 : 0,
+			'read_only'           => isset( $_POST['read_only'] ) ? 1 : 0,
 		);
 
 		update_option( self::OPTION, $settings, false );
-		update_option( 'acfjp_preserve_on_uninstall', $settings['preserve_uninstall'], false );
+		update_option( 'fieldpilot_delete_on_uninstall', $settings['delete_on_uninstall'], false );
 
 		$this->notice( esc_html__( 'Settings saved.', 'fieldpilot-for-acf' ), 'success' );
 	}

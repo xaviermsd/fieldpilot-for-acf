@@ -24,6 +24,7 @@ final class Assets {
 
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'wp_ajax_fieldpilot_create_field_group', array( $this, 'ajaxCreateFieldGroup' ) );
 	}
 
 	/**
@@ -899,21 +900,25 @@ final class Assets {
 			true
 		);
 
-		$examples = $this->examplePayloads();
+		$examples   = $this->examplePayloads();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tour step navigation query parameter.
+		$step_param = isset( $_GET['tour_step'] ) ? absint( wp_unslash( $_GET['tour_step'] ) ) : null;
 
 		wp_localize_script(
 			'acfjp-admin',
 			'ACFJP',
 			array(
-				'root'     => esc_url_raw( rest_url( Controller::NAMESPACE ) ),
-				'nonce'    => wp_create_nonce( 'wp_rest' ),
-				'editor'   => false === $editor ? null : $editor,
-				'example'  => $examples['add_field']['payload'] ?? null,
-				'examples' => $examples,
-				'tour'     => array(
+				'root'      => esc_url_raw( rest_url( Controller::NAMESPACE ) ),
+				'nonce'     => wp_create_nonce( 'wp_rest' ),
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'ajaxNonce' => wp_create_nonce( 'fieldpilot_ajax_nonce' ),
+				'editor'    => false === $editor ? null : $editor,
+				'example'   => $examples['add_field']['payload'] ?? null,
+				'examples'  => $examples,
+				'tour'      => array(
 					'active'       => $this->tour->isAcfActive(),
 					'done'         => $this->tour->isTourDone(),
-					'stepParam'    => isset( $_GET['tour_step'] ) ? (int) $_GET['tour_step'] : null,
+					'stepParam'    => $step_param,
 					'dashboardUrl' => admin_url( 'admin.php?page=' . Menu::SLUG ),
 					'importUrl'    => admin_url( 'admin.php?page=' . Menu::SLUG . '-import' ),
 					'historyUrl'   => admin_url( 'admin.php?page=' . Menu::SLUG . '-history' ),
@@ -948,8 +953,52 @@ final class Assets {
 					'ackDestructive'   => __( 'I acknowledge that this operation contains destructive modifications or deletions.', 'fieldpilot-for-acf' ),
 					'scopeIsolated'    => __( 'Target Isolated - Unrelated branches are protected and untouched', 'fieldpilot-for-acf' ),
 					'rootTarget'       => __( 'Group Root', 'fieldpilot-for-acf' ),
+					'addNewFieldGroup' => __( 'Add New Field Group', 'fieldpilot-for-acf' ),
+					'close'            => __( 'Close', 'fieldpilot-for-acf' ),
 				),
 			)
 		);
+	}
+
+	public function ajaxCreateFieldGroup(): void {
+		check_ajax_referer( 'fieldpilot_ajax_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unauthorized.', 'fieldpilot-for-acf' ) ), 403 );
+		}
+
+		$title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
+		if ( '' === $title ) {
+			wp_send_json_error( array( 'message' => __( 'Please enter a field group title.', 'fieldpilot-for-acf' ) ), 400 );
+		}
+
+		if ( ! function_exists( 'acf_import_field_group' ) && ! function_exists( 'acf_update_field_group' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Advanced Custom Fields is not active.', 'fieldpilot-for-acf' ) ), 400 );
+		}
+
+		$key = ( new \ACFJP\Acf\KeyFactory() )->group();
+		$group = array(
+			'key'    => $key,
+			'title'  => $title,
+			'fields' => array(),
+			'active' => true,
+		);
+
+		if ( function_exists( 'acf_import_field_group' ) ) {
+			$created = acf_import_field_group( $group );
+		} else {
+			$created = acf_update_field_group( $group );
+		}
+
+		if ( empty( $created ) ) {
+			wp_send_json_error( array( 'message' => __( 'Could not create field group in ACF.', 'fieldpilot-for-acf' ) ), 500 );
+		}
+
+		$createdKey = is_array( $created ) && ! empty( $created['key'] ) ? (string) $created['key'] : $key;
+
+		wp_send_json_success( array(
+			'key'   => $createdKey,
+			'title' => $title,
+		) );
 	}
 }
