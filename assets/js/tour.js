@@ -35,10 +35,13 @@
 		{
 			step: 2,
 			page: 'dashboard',
-			target: '[data-tour="status-col"], .acfjp-status-col, table.wp-list-table th:nth-child(4), [data-tour="status-table"]',
+			target: '[data-tour="status-table"], table.wp-list-table, [data-tour="status-col"]',
 			headline: 'Know what is safe to edit',
 			body: 'Green EDITABLE groups live in the database and can be changed here. PHP-registered or JSON-file groups are locked - FieldPilot will not touch them.',
-			placement: 'bottom'
+			placement: 'bottom',
+			onEnter: function () {
+				ensureSampleStatusTable();
+			}
 		},
 		{
 			step: 3,
@@ -154,6 +157,51 @@
 		document.querySelectorAll( '.acfjp-tab-content' ).forEach( function ( panel ) {
 			panel.classList.toggle( 'is-active', panel.id === 'acfjp-tab-' + tabName );
 		} );
+	}
+
+	function ensureSampleStatusTable() {
+		const existingTable = document.querySelector( 'table[data-tour="status-table"], table.wp-list-table' );
+		if ( existingTable && existingTable.querySelector( 'tbody tr' ) ) {
+			return;
+		}
+
+		let container = document.querySelector( '[data-tour="status-table"]' );
+		const sampleHtml = [
+			'<div class="notice notice-info inline is-tour-sample-dashboard" style="margin: 0 0 16px 0; padding: 10px 14px; border-left-color: #2271b1;">',
+				'<p><strong>No ACF field groups exist yet.</strong> Below is a sample preview demonstrating how FieldPilot distinguishes between editable database groups and locked PHP/JSON groups.</p>',
+			'</div>',
+			'<table class="wp-list-table widefat fixed striped is-tour-sample-dashboard" data-tour="status-table">',
+				'<thead><tr>',
+					'<th>Field group</th>',
+					'<th>Key</th>',
+					'<th>Source</th>',
+					'<th data-tour="status-col" class="acfjp-status-col">Status</th>',
+				'</tr></thead>',
+				'<tbody>',
+					'<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">',
+						'<td><strong>Hero Section</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">Sample preview</span></td>',
+						'<td><code>group_hero_sample</code></td>',
+						'<td>Database</td>',
+						'<td><span class="acfjp-pill acfjp-pill--ok">Editable</span></td>',
+					'</tr>',
+					'<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">',
+						'<td><strong>Site Settings</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">Sample preview</span></td>',
+						'<td><code>group_site_settings_sample</code></td>',
+						'<td>PHP file</td>',
+						'<td><span class="acfjp-pill acfjp-pill--blocked">Read only</span> Registered in PHP - edit the code that registers it.</td>',
+					'</tr>',
+				'</tbody>',
+			'</table>'
+		].join( '' );
+
+		if ( container && container.tagName === 'DIV' ) {
+			container.outerHTML = sampleHtml;
+		} else {
+			const heading = document.querySelector( 'h2' );
+			if ( heading ) {
+				heading.insertAdjacentHTML( 'afterend', sampleHtml );
+			}
+		}
 	}
 
 	function ensureSampleDiffPreview() {
@@ -274,7 +322,9 @@
 			'.acfjp-history-empty-card p { margin: 0 !important; font-size: 13px !important; color: #50575e !important; line-height: 1.55 !important; }',
 			'.acfjp-history-sample-row { background-color: #fafbfc !important; }',
 			'.acfjp-history-sample-row td { color: #50575e !important; }',
-			'.acfjp-history-sample-row .acfjp-rollback[disabled] { opacity: 0.55 !important; cursor: not-allowed !important; pointer-events: none !important; }'
+			'.acfjp-history-sample-row .acfjp-rollback[disabled] { opacity: 0.55 !important; cursor: not-allowed !important; pointer-events: none !important; }',
+			'.acfjp-dashboard-sample-row { background-color: #fafbfc !important; }',
+			'.acfjp-dashboard-sample-row td { color: #50575e !important; }'
 		].join( '\n' );
 		document.head.appendChild( style );
 	}
@@ -299,6 +349,9 @@
 			const stepParam = config.stepParam;
 			if ( stepParam !== null && stepParam !== undefined && stepParam >= 0 && stepParam <= 10 ) {
 				const numStep = parseInt( stepParam, 10 );
+				if ( getCurrentPage() === 'dashboard' && numStep === 2 ) {
+					ensureSampleStatusTable();
+				}
 				if ( getCurrentPage() === 'import' && numStep >= 5 && numStep <= 8 ) {
 					if ( window.history && window.history.replaceState ) {
 						window.history.replaceState( null, null, '#editor' );
@@ -405,6 +458,17 @@
 				}
 				window.location.href = targetUrl;
 				return;
+			}
+
+			// Clean up sample status table if on dashboard and moving away from step 2
+			if ( currentPage === 'dashboard' && stepIndex !== 2 ) {
+				document.querySelectorAll( '.is-tour-sample-dashboard' ).forEach( function ( el ) {
+					el.remove();
+				} );
+			}
+
+			if ( currentPage === 'dashboard' && stepIndex === 2 ) {
+				ensureSampleStatusTable();
 			}
 
 			// Clean up sample diff preview ONLY if staying on import page and moving away from steps 6-8
@@ -553,6 +617,11 @@
 
 			let targetEl = document.querySelector( step.target );
 			if ( ! targetEl ) {
+				if ( step.page === 'dashboard' && step.step === 2 ) {
+					ensureSampleStatusTable();
+					targetEl = document.querySelector( step.target );
+				}
+
 				if ( step.page === 'import' && step.step >= 6 && step.step <= 8 ) {
 					switchImportTab( 'editor' );
 					ensureSampleDiffPreview();
@@ -739,7 +808,10 @@
 			} );
 			config.done = true;
 
-			// Clean up demonstration diff preview if it was injected
+			// Clean up demonstration preview if injected
+			document.querySelectorAll( '.is-tour-sample-dashboard' ).forEach( function ( el ) {
+				el.remove();
+			} );
 			const samplePanel = document.querySelector( '.is-tour-sample' );
 			if ( samplePanel ) {
 				samplePanel.remove();

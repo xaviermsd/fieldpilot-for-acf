@@ -78,9 +78,51 @@ final class Dashboard extends Screen {
 		echo '<h2>' . esc_html__( 'Field groups', 'fieldpilot-for-acf' ) . '</h2>';
 
 		if ( array() === $reports ) {
-			echo '<div data-tour="status-table">';
-			$this->notice( esc_html__( 'No ACF field groups exist yet. Create one with an "operation": "create" payload on the Import screen.', 'fieldpilot-for-acf' ) );
+			echo '<div class="notice notice-info inline" style="margin: 0 0 16px 0; padding: 10px 14px; border-left-color: #2271b1;">';
+			echo '<p><strong>' . esc_html__( 'No ACF field groups exist yet.', 'fieldpilot-for-acf' ) . '</strong> ' . esc_html__( 'Below is a sample preview demonstrating how FieldPilot distinguishes between editable database groups and locked PHP/JSON groups.', 'fieldpilot-for-acf' ) . '</p>';
 			echo '</div>';
+
+			echo '<table class="wp-list-table widefat fixed striped" data-tour="status-table"><thead><tr>';
+			printf( '<th>%s</th>', esc_html__( 'Field group', 'fieldpilot-for-acf' ) );
+			printf( '<th>%s</th>', esc_html__( 'Key', 'fieldpilot-for-acf' ) );
+			printf( '<th>%s</th>', esc_html__( 'Source', 'fieldpilot-for-acf' ) );
+			printf( '<th data-tour="status-col" class="acfjp-status-col">%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
+			echo '</tr></thead><tbody>';
+
+			// Sample Row 1: Editable database group.
+			echo '<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">';
+			printf(
+				'<td><strong>%s</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">%s</span></td>',
+				esc_html__( 'Hero Section', 'fieldpilot-for-acf' ),
+				esc_html__( 'Sample preview', 'fieldpilot-for-acf' )
+			);
+			printf( '<td><code>%s</code></td>', 'group_hero_sample' );
+			printf( '<td>%s</td>', esc_html__( 'Database', 'fieldpilot-for-acf' ) );
+			echo '<td>';
+			printf(
+				'<span class="acfjp-pill acfjp-pill--ok">%s</span>',
+				esc_html__( 'Editable', 'fieldpilot-for-acf' )
+			);
+			echo '</td></tr>';
+
+			// Sample Row 2: Read-only PHP group.
+			echo '<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">';
+			printf(
+				'<td><strong>%s</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">%s</span></td>',
+				esc_html__( 'Site Settings', 'fieldpilot-for-acf' ),
+				esc_html__( 'Sample preview', 'fieldpilot-for-acf' )
+			);
+			printf( '<td><code>%s</code></td>', 'group_site_settings_sample' );
+			printf( '<td>%s</td>', esc_html__( 'PHP file', 'fieldpilot-for-acf' ) );
+			echo '<td>';
+			printf(
+				'<span class="acfjp-pill acfjp-pill--blocked">%s</span> %s',
+				esc_html__( 'Read only', 'fieldpilot-for-acf' ),
+				esc_html__( 'Registered in PHP - edit the code that registers it.', 'fieldpilot-for-acf' )
+			);
+			echo '</td></tr>';
+
+			echo '</tbody></table>';
 			return;
 		}
 
@@ -88,7 +130,7 @@ final class Dashboard extends Screen {
 		printf( '<th>%s</th>', esc_html__( 'Field group', 'fieldpilot-for-acf' ) );
 		printf( '<th>%s</th>', esc_html__( 'Key', 'fieldpilot-for-acf' ) );
 		printf( '<th>%s</th>', esc_html__( 'Source', 'fieldpilot-for-acf' ) );
-		printf( '<th data-tour="status-col">%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
+		printf( '<th data-tour="status-col" class="acfjp-status-col">%s</th>', esc_html__( 'Status', 'fieldpilot-for-acf' ) );
 		echo '</tr></thead><tbody>';
 
 		foreach ( $reports as $report ) {

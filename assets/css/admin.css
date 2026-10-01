@@ -1281,6 +1281,14 @@
 	pointer-events: none !important;
 }
 
+/* Dashboard Screen Sample Row */
+.acfjp-dashboard-sample-row {
+	background-color: #fafbfc !important;
+}
+.acfjp-dashboard-sample-row td {
+	color: #50575e;
+}
+
 /* Validation States & Mandatory Gate */
 .acfjp-input-error {
 	border-color: #d63638 !important;

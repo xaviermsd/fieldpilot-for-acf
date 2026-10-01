@@ -5,7 +5,7 @@ Tags: acf, advanced custom fields, ai, json, developer
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.29
+Stable tag: 1.0.30
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -155,6 +155,10 @@ AI you already use.
 
 == Changelog ==
 
+= 1.0.30 =
+* Fixed: Guided tour Step 2 on fresh sites with zero field groups now displays sample preview rows and highlights the status table clearly, avoiding collapsed 0px spotlight line.
+* Enhanced: Dashboard screen renders an inline notice and sample preview table demonstrating editable vs locked field groups when no ACF groups exist yet.
+
 = 1.0.29 =
 * Enhanced: Updated Guided Onboarding Tour Step 3 to highlight Target Field Group selection and inline creation gate.
 * Enhanced: Comprehensive documentation updates across README, FAQs, and developer screenshot guides.
@@ -276,6 +280,9 @@ AI you already use.
 * Initial release.
 
 == Upgrade Notice ==
+
+= 1.0.30 =
+Upgrade recommended for refined guided tour step 2 and zero-group dashboard preview handling.
 
 = 1.0.29 =
 Upgrade recommended for refined guided onboarding tour, updated documentation, and Plugin Check security compliance.
