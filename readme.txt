@@ -18,8 +18,9 @@ through a UI, one field at a time. Meanwhile every developer has an AI that writ
 JSON perfectly well. The missing piece was never generation - it was **safe
 application**.
 
-FieldPilot is an AI & JSON Copilot and configuration patch engine for ACF. Paste JSON, see exactly
-what will change, apply only that, and roll back if you were wrong.
+FieldPilot builds and changes ACF field groups from JSON: queue the fields you want, copy a
+prompt that carries your real field names, paste your AI's reply back (or a native ACF export),
+see exactly what will change, apply only that, and roll back if you were wrong.
 
 The rule the whole plugin is built around:
 
@@ -217,6 +218,11 @@ WP-CLI and REST:
 * New: REST endpoint to create a field group (POST /field-groups).
 * Enhanced: CLI commands that write ask for a user (for example --user=admin) instead of failing with a permission error.
 
+Design:
+
+* New: FieldPilot's own look on every screen: the logo in the page title and the admin menu, lime and cyan accents, Sora headings bundled with the plugin (nothing is fetched from a third party), and the logo on the guided tour's welcome card.
+* New: WordPress.org banner, icon and six annotated screenshots that walk the workflow: queue fields, ask your AI, paste JSON back, see the diff, apply, undo.
+
 WordPress.org standards:
 
 * Fixed: On multisite, uninstall now cleans each site that asked for it. It removes only FieldPilot's own data and never deletes field groups.
@@ -352,7 +358,7 @@ WordPress.org standards:
 == Upgrade Notice ==
 
 = 1.1.0 =
-Important safety update: fixes layouts that could land in the wrong field group, lost backslashes, and rollbacks that wiped later changes. Field types now follow your ACF edition.
+The biggest FieldPilot update yet: field types that follow your ACF edition, a new look, create-group and schema commands, and fixes for layouts that could land in the wrong field group, lost backslashes and rollbacks that wiped later changes. Please update.
 
 = 1.0.30 =
 Upgrade recommended for refined guided tour step 2 and zero-group dashboard preview handling.
