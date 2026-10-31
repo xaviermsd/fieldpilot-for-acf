@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: FieldPilot - AI & JSON Copilot for ACF
+ * Plugin Name: FieldPilot: AI & JSON Copilot for ACF
  * Plugin URI: https://github.com/xaviermsd/fieldpilot-for-acf
  * Description: Build, import, update and manage ACF field structures with AI prompts and JSON. A safe, deterministic configuration patch copilot for Advanced Custom Fields.
  * Version: 1.1.0

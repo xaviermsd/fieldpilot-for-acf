@@ -1,4 +1,4 @@
-=== FieldPilot - AI & JSON Copilot for ACF ===
+=== FieldPilot: AI & JSON Copilot for ACF ===
 Contributors: xaviermsd
 Donate link: https://profiles.wordpress.org/xaviermsd/
 Tags: acf, advanced custom fields, ai, json, developer

@@ -1,9 +1,9 @@
 <p align="center">
-  <img src=".wordpress-org/banner-1544x500.jpg" alt="FieldPilot - AI & JSON Copilot for ACF. Build ACF field groups from your AI's JSON." width="100%">
+  <img src=".wordpress-org/banner-1544x500.jpg" alt="FieldPilot: AI & JSON Copilot for ACF. Build ACF field groups from your AI's JSON." width="100%">
 </p>
 
 <h1 align="center">
-  <img src="docs/fieldpilot-logo.gif" alt="" width="56" align="center"> FieldPilot - AI &amp; JSON Copilot for ACF
+  <img src="docs/fieldpilot-logo.gif" alt="" width="56" align="center"> FieldPilot: AI &amp; JSON Copilot for ACF
 </h1>
 
 <p align="center">
