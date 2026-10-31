@@ -15,6 +15,7 @@ declare( strict_types = 1 );
 namespace ACFJP\Core;
 
 use ACFJP\Acf\DataProbe;
+use ACFJP\Acf\FieldTypeCatalog;
 use ACFJP\Acf\GroupLocator;
 use ACFJP\Acf\KeyFactory;
 use ACFJP\Acf\MutabilityClassifier;
@@ -128,13 +129,25 @@ final class Plugin {
 			static function (): DataProbe {
 				$settings = (array) get_option( 'acfjp_settings', array() );
 
-				return new DataProbe( ! isset( $settings['data_probe'] ) || (bool) $settings['data_probe'] );
+				$enabled = ! isset( $settings['data_probe'] ) || (bool) $settings['data_probe'];
+
+				/**
+				 * Whether to scan stored content before risky changes.
+				 *
+				 * @param bool $enabled The "Content scan" setting.
+				 */
+				return new DataProbe( (bool) apply_filters( 'acfjp_data_probe_enabled', $enabled ) );
 			}
 		);
 
 		$c->set(
 			FieldTypeSchemas::class,
 			static fn ( Container $c ): FieldTypeSchemas => new FieldTypeSchemas( $c->get( SchemaValidator::class ) )
+		);
+
+		$c->set(
+			FieldTypeCatalog::class,
+			static fn ( Container $c ): FieldTypeCatalog => new FieldTypeCatalog( $c->get( FieldTypeSchemas::class ) )
 		);
 
 		// -- Pure pipeline -----------------------------------------------------
@@ -222,6 +235,7 @@ final class Plugin {
 				$c->get( SnapshotStore::class ),
 				$c->get( Journal::class ),
 				$c->get( PlanStore::class ),
+				$c->get( DataProbe::class ),
 			)
 		);
 

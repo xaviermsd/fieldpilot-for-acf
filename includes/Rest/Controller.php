@@ -14,6 +14,7 @@ declare( strict_types = 1 );
 
 namespace ACFJP\Rest;
 
+use ACFJP\Acf\FieldTypeCatalog;
 use ACFJP\Acf\GroupLocator;
 use ACFJP\Acf\MutabilityClassifier;
 use ACFJP\Acf\TreeReader;
@@ -75,9 +76,18 @@ final class Controller {
 				'permission_callback' => $auth,
 				'callback'            => array( $this, 'apply' ),
 				'args'                => array(
-					'plan_id'     => array( 'type' => 'string', 'required' => true ),
-					'resolutions' => array( 'type' => 'object', 'default' => array() ),
-					'confirm'     => array( 'type' => 'boolean', 'default' => false ),
+					'plan_id'     => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'resolutions' => array(
+						'type'    => 'object',
+						'default' => array(),
+					),
+					'confirm'     => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
 				),
 			)
 		);
@@ -86,9 +96,23 @@ final class Controller {
 			self::NAMESPACE,
 			'/field-groups',
 			array(
-				'methods'             => \WP_REST_Server::READABLE,
-				'permission_callback' => $auth,
-				'callback'            => array( $this, 'listGroups' ),
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'permission_callback' => $auth,
+					'callback'            => array( $this, 'listGroups' ),
+				),
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'permission_callback' => $auth,
+					'callback'            => array( $this, 'createGroup' ),
+					'args'                => array(
+						'title' => array(
+							'type'              => 'string',
+							'required'          => true,
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+					),
+				),
 			)
 		);
 
@@ -100,8 +124,15 @@ final class Controller {
 				'permission_callback' => $auth,
 				'callback'            => array( $this, 'getGroup' ),
 				'args'                => array(
-					'key'     => array( 'type' => 'string', 'required' => true ),
-					'dialect' => array( 'type' => 'string', 'default' => 'native', 'enum' => array( 'native', 'acfjp' ) ),
+					'key'     => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'dialect' => array(
+						'type'    => 'string',
+						'default' => 'native',
+						'enum'    => array( 'native', 'acfjp' ),
+					),
 				),
 			)
 		);
@@ -115,8 +146,17 @@ final class Controller {
 				'callback'            => array( $this, 'history' ),
 				'args'                => array(
 					'group_key' => array( 'type' => 'string' ),
-					'limit'     => array( 'type' => 'integer', 'default' => 25 ),
-					'offset'    => array( 'type' => 'integer', 'default' => 0 ),
+					'limit'     => array(
+						'type'    => 'integer',
+						'default' => 25,
+						'minimum' => 1,
+						'maximum' => 100,
+					),
+					'offset'    => array(
+						'type'    => 'integer',
+						'default' => 0,
+						'minimum' => 0,
+					),
 				),
 			)
 		);
@@ -128,7 +168,12 @@ final class Controller {
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'permission_callback' => $auth,
 				'callback'            => array( $this, 'rollback' ),
-				'args'                => array( 'id' => array( 'type' => 'integer', 'required' => true ) ),
+				'args'                => array(
+					'id' => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+				),
 			)
 		);
 
@@ -156,12 +201,16 @@ final class Controller {
 			self::NAMESPACE,
 			'/prompt',
 			array(
-				'methods'             => \WP_REST_Server::READABLE,
+				// POST as well as GET: a long builder queue does not fit in a URL.
+				'methods'             => array( \WP_REST_Server::READABLE, \WP_REST_Server::CREATABLE ),
 				'permission_callback' => $auth,
 				'callback'            => array( $this, 'prompt' ),
 				'args'                => array(
 					'group_key' => array( 'type' => 'string' ),
-					'intent'    => array( 'type' => 'string', 'default' => '' ),
+					'intent'    => array(
+						'type'    => 'string',
+						'default' => '',
+					),
 				),
 			)
 		);
@@ -251,6 +300,22 @@ final class Controller {
 		}
 	}
 
+	public function createGroup( \WP_REST_Request $request ): \WP_REST_Response {
+		try {
+			$result = $this->engine->createGroup( (string) $request->get_param( 'title' ), 'rest' );
+
+			return ErrorEnvelope::ok(
+				array(
+					'key'        => $result->write->groupKey,
+					'title'      => $result->changeSet->groupTitle,
+					'journal_id' => $result->journalId,
+				)
+			);
+		} catch ( \Throwable $e ) {
+			return ErrorEnvelope::fromThrowable( $e );
+		}
+	}
+
 	public function listGroups(): \WP_REST_Response {
 		$groups = array();
 
@@ -310,11 +375,17 @@ final class Controller {
 			return ErrorEnvelope::ok(
 				array(
 					'rolled_back' => $entry->jsonSerialize(),
-					'message'     => sprintf(
-						/* translators: %s: field group title */
-						__( '"%s" was restored to its previous state.', 'fieldpilot-for-acf' ),
-						$entry->groupTitle
-					),
+					'message'     => $entry->isCreation()
+						? sprintf(
+							/* translators: %s: field group title */
+							__( '"%s" was moved to the trash. You can restore it under ACF > Field Groups > Trash.', 'fieldpilot-for-acf' ),
+							$entry->groupTitle
+						)
+						: sprintf(
+							/* translators: %s: field group title */
+							__( '"%s" was restored to its previous state.', 'fieldpilot-for-acf' ),
+							$entry->groupTitle
+						),
 				)
 			);
 		} catch ( \Throwable $e ) {
@@ -344,7 +415,7 @@ final class Controller {
 	}
 
 	public function prompt( \WP_REST_Request $request ): \WP_REST_Response {
-		$generator = new PromptGenerator( $this->reader, $this->groups, $this->schemas );
+		$generator = new PromptGenerator( $this->reader, $this->groups, new FieldTypeCatalog( $this->schemas ) );
 
 		$groupKey = $request->get_param( 'group_key' );
 
@@ -396,20 +467,36 @@ final class Controller {
 		return array(
 			'json'            => array( 'type' => 'string' ),
 			'payload'         => array( 'type' => 'object' ),
-			'operation'       => array( 'type' => 'string', 'enum' => Operation::names() ),
-			'skip_data_probe' => array( 'type' => 'boolean', 'default' => false ),
+			'operation'       => array(
+				'type' => 'string',
+				'enum' => Operation::names(),
+			),
+			'skip_data_probe' => array(
+				'type'    => 'boolean',
+				'default' => false,
+			),
 		);
 	}
 
 	public function tourDismiss(): \WP_REST_Response {
 		$this->tour->dismissTour();
 
-		return new \WP_REST_Response( array( 'success' => true, 'tourDone' => true ) );
+		return new \WP_REST_Response(
+			array(
+				'success'  => true,
+				'tourDone' => true,
+			)
+		);
 	}
 
 	public function tourReset(): \WP_REST_Response {
 		$this->tour->resetTour();
 
-		return new \WP_REST_Response( array( 'success' => true, 'tourDone' => false ) );
+		return new \WP_REST_Response(
+			array(
+				'success'  => true,
+				'tourDone' => false,
+			)
+		);
 	}
 }

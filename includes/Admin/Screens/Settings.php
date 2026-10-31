@@ -97,10 +97,10 @@ final class Settings extends Screen {
 					<td>
 						<label>
 							<input type="checkbox" name="delete_on_uninstall" value="1" <?php checked( (int) $settings['delete_on_uninstall'], 1 ); ?> />
-							<?php esc_html_e( 'Delete all FieldPilot data when the plugin is uninstalled.', 'fieldpilot-for-acf' ); ?>
+							<?php esc_html_e( 'Delete all FieldPilot data when the plugin is deleted.', 'fieldpilot-for-acf' ); ?>
 						</label>
 						<p class="description">
-							<?php esc_html_e( 'If checked, uninstalling (deleting) the plugin permanently removes its settings, history snapshots, and demo data. If unchecked, everything is kept so reinstalling restores your history.', 'fieldpilot-for-acf' ); ?>
+							<?php esc_html_e( 'If checked, deleting the plugin from the Plugins screen permanently removes its settings and its change history, snapshots included. Your field groups are never touched. If unchecked, everything is kept, so reinstalling brings your history back.', 'fieldpilot-for-acf' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -120,11 +120,15 @@ final class Settings extends Screen {
 				<tr>
 					<th scope="row"><?php esc_html_e( 'Guided Tour', 'fieldpilot-for-acf' ); ?></th>
 					<td>
-						<button type="button" class="button button-secondary acfjp-tour-replay-btn">
-							<span class="dashicons dashicons-welcome-learn-more"></span>
-							<?php esc_html_e( 'Restart Guided Tour', 'fieldpilot-for-acf' ); ?>
-						</button>
-						<p class="description"><?php esc_html_e( 'Restart the guided visual tour anytime.', 'fieldpilot-for-acf' ); ?></p>
+						<?php if ( $this->container->get( \ACFJP\Admin\Tour::class )->isAcfActive() ) : ?>
+							<button type="button" class="button button-secondary acfjp-tour-replay-btn">
+								<span class="dashicons dashicons-welcome-learn-more"></span>
+								<?php esc_html_e( 'Restart Guided Tour', 'fieldpilot-for-acf' ); ?>
+							</button>
+							<p class="description"><?php esc_html_e( 'Restart the guided visual tour anytime.', 'fieldpilot-for-acf' ); ?></p>
+						<?php else : ?>
+							<p class="description"><?php esc_html_e( 'The guided tour is available once Advanced Custom Fields is active.', 'fieldpilot-for-acf' ); ?></p>
+						<?php endif; ?>
 					</td>
 				</tr>
 			</table>

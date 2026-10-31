@@ -15,29 +15,30 @@
 	const config = window.ACFJP.tour;
 	const restRoot = window.ACFJP.root;
 	const restNonce = window.ACFJP.nonce;
+	const { __, _n, sprintf } = window.wp.i18n;
 
 	const STEPS = [
 		{
 			step: 0,
 			page: 'dashboard',
 			modal: true,
-			headline: 'Welcome to FieldPilot for ACF',
-			body: 'Build, preview, and safely apply ACF field changes with AI help, JSON patches, and one-click rollback. Take the quick 2-minute tour to see how it works.'
+			headline: __( 'Welcome to FieldPilot for ACF', 'fieldpilot-for-acf' ),
+			body: __( 'Build, preview and safely apply ACF field changes with AI help and JSON patches, then roll them back from History if you need to. Take the quick 2-minute tour to see how it works.', 'fieldpilot-for-acf' )
 		},
 		{
 			step: 1,
 			page: 'dashboard',
 			target: '[data-tour="cards"], .acfjp-cards',
-			headline: 'Health at a glance',
-			body: 'Field groups you can edit, field types validated against ACF schemas, and every change recorded so it can be rolled back.',
+			headline: __( 'Health at a glance', 'fieldpilot-for-acf' ),
+			body: __( 'How many field groups you can edit, the field types on this site, and every change recorded so it can be rolled back.', 'fieldpilot-for-acf' ),
 			placement: 'bottom'
 		},
 		{
 			step: 2,
 			page: 'dashboard',
 			target: '[data-tour="status-table"], table.wp-list-table, [data-tour="status-col"]',
-			headline: 'Know what is safe to edit',
-			body: 'Green EDITABLE groups live in the database and can be changed here. PHP-registered or JSON-file groups are locked - FieldPilot will not touch them.',
+			headline: __( 'Know what is safe to edit', 'fieldpilot-for-acf' ),
+			body: __( 'Green EDITABLE groups live in the database and can be changed here. PHP-registered or JSON-file groups are locked - FieldPilot will not touch them.', 'fieldpilot-for-acf' ),
 			placement: 'bottom',
 			onEnter: function () {
 				ensureSampleStatusTable();
@@ -47,8 +48,8 @@
 			step: 3,
 			page: 'import',
 			target: '[data-tour="target-group"], [data-tour="builder"], .acfjp-builder-box',
-			headline: 'Target field group & visual builder',
-			body: 'Select an existing field group (or click "+ Add New Field Group" to create one instantly) to unlock the custom field builder. Then configure your fields across all 4 ACF tabs and append them to your queue.',
+			headline: __( 'Target field group & visual builder', 'fieldpilot-for-acf' ),
+			body: __( 'Select an existing field group, or click "Add New Field Group" to create one, to unlock the custom field builder. Then fill in the settings for each field across the 4 ACF tabs and add it to your queue.', 'fieldpilot-for-acf' ),
 			placement: 'bottom',
 			onEnter: function () {
 				switchImportTab( 'ai' );
@@ -58,8 +59,8 @@
 			step: 4,
 			page: 'import',
 			target: '[data-tour="prompt"], #acfjp-prompt-build',
-			headline: 'Ready AI prompt, no API key needed',
-			body: 'FieldPilot writes a precise prompt from your queued fields. Copy it into any AI (ChatGPT, Claude, Gemini, Cursor), then paste the AI\'s JSON reply back using the button in Step 2B.',
+			headline: __( 'Ready AI prompt, no API key needed', 'fieldpilot-for-acf' ),
+			body: __( 'FieldPilot writes a precise prompt from your queued fields. Copy it into any AI (ChatGPT, Claude, Gemini, Cursor), then paste the AI\'s JSON reply back using the button in Step 2B.', 'fieldpilot-for-acf' ),
 			placement: 'top',
 			onEnter: function () {
 				switchImportTab( 'ai' );
@@ -69,8 +70,8 @@
 			step: 5,
 			page: 'import',
 			target: '[data-tour="editor"], .acfjp-import__editor',
-			headline: 'Your patch, previewed before anything writes',
-			body: 'Paste a FieldPilot patch or a native ACF export JSON - or pick a starting point from Insert Template - then hit Preview Changes to see the exact diff first.',
+			headline: __( 'Your patch, previewed before anything writes', 'fieldpilot-for-acf' ),
+			body: __( 'Paste a FieldPilot patch or a native ACF export, or pick a starting point from "Insert a template...", then click Preview Changes to see the exact diff first.', 'fieldpilot-for-acf' ),
 			placement: 'right',
 			onEnter: function () {
 				switchImportTab( 'editor' );
@@ -80,8 +81,8 @@
 			step: 6,
 			page: 'import',
 			target: '.acfjp-scope-box, .is-tour-sample, #acfjp-result, [data-tour="diff-preview"]',
-			headline: 'Nothing else touched',
-			body: 'The Target Isolated box proves sibling fields and branches stay protected. Green [+ ADDED] and [~ MODIFIED] badges show exactly what will change.',
+			headline: __( 'Nothing else touched', 'fieldpilot-for-acf' ),
+			body: __( 'The Target Isolated box shows the change stays inside its target, so sibling fields and branches are left alone. Every change is marked + added, ~ changed or - removed, and each setting is shown old to new.', 'fieldpilot-for-acf' ),
 			placement: 'left',
 			onEnter: function () {
 				switchImportTab( 'editor' );
@@ -92,8 +93,8 @@
 			step: 7,
 			page: 'import',
 			target: '.acfjp-safety-box, [data-tour="safety-checklist"], .acfjp-safety-checklist',
-			headline: 'Safety checklist, always',
-			body: 'Before anything writes to the database, confirm you reviewed the target scope and the diff. FieldPilot never applies a change silently.',
+			headline: __( 'Safety checklist, always', 'fieldpilot-for-acf' ),
+			body: __( 'Before anything writes to the database, confirm you reviewed the target scope and the diff. FieldPilot never applies a change silently.', 'fieldpilot-for-acf' ),
 			placement: 'left',
 			onEnter: function () {
 				switchImportTab( 'editor' );
@@ -104,8 +105,8 @@
 			step: 8,
 			page: 'import',
 			target: '.acfjp-conflict, [data-tour="conflict-box"]',
-			headline: 'Risky changes stop and ask first',
-			body: 'If a patch is risky - for example changing a field\'s type - FieldPilot flags it before applying and lets you choose: keep the existing type, change the type, or add it as a new field.',
+			headline: __( 'Risky changes stop and ask first', 'fieldpilot-for-acf' ),
+			body: __( 'If a patch is risky - for example changing a field\'s type - FieldPilot flags it before applying and lets you choose: keep the existing type, change the type, or add it as a new field.', 'fieldpilot-for-acf' ),
 			placement: 'left',
 			onEnter: function () {
 				switchImportTab( 'editor' );
@@ -116,34 +117,29 @@
 			step: 9,
 			page: 'history',
 			target: '[data-tour="history-table"], table.acfjp-history, .acfjp-history',
-			headline: 'Every change logged, one-click undo',
-			body: 'Each applied patch is recorded with date, field group, and actor. Hit Roll back on any row to restore that snapshot instantly.',
+			headline: __( 'Every change logged, ready to undo', 'fieldpilot-for-acf' ),
+			body: __( 'Each applied change is recorded with when it happened, the field group and who made it. Roll back the newest change to restore the snapshot taken before it, then the next one to go further back.', 'fieldpilot-for-acf' ),
 			placement: 'bottom'
 		},
 		{
 			step: 10,
 			page: 'any',
 			modal: true,
-			headline: "You're all set!",
-			body: 'You now know how FieldPilot works. Jump over to the Import screen anytime to build fields visually, generate AI prompts, and safely preview JSON patches before applying.'
+			headline: __( 'You\'re all set!', 'fieldpilot-for-acf' ),
+			body: __( 'You now know how FieldPilot works. Jump over to the Import screen anytime to build fields visually, generate AI prompts, and safely preview JSON patches before applying.', 'fieldpilot-for-acf' )
 		}
 	];
 
+	const PAGE_MAP = {
+		'fieldpilot-for-acf': 'dashboard',
+		'fieldpilot-for-acf-import': 'import',
+		'fieldpilot-for-acf-history': 'history',
+		'fieldpilot-for-acf-settings': 'settings'
+	};
+
 	function getCurrentPage() {
-		const href = window.location.href;
-		if ( href.indexOf( 'page=fieldpilot-for-acf-import' ) !== -1 ) {
-			return 'import';
-		}
-		if ( href.indexOf( 'page=fieldpilot-for-acf-history' ) !== -1 ) {
-			return 'history';
-		}
-		if ( href.indexOf( 'page=fieldpilot-for-acf-settings' ) !== -1 ) {
-			return 'settings';
-		}
-		if ( href.indexOf( 'page=fieldpilot-for-acf' ) !== -1 ) {
-			return 'dashboard';
-		}
-		return 'other';
+		const page = new URLSearchParams( window.location.search ).get( 'page' ) || '';
+		return Object.prototype.hasOwnProperty.call( PAGE_MAP, page ) ? PAGE_MAP[ page ] : 'other';
 	}
 
 	function switchImportTab( tabName ) {
@@ -166,29 +162,30 @@
 		}
 
 		let container = document.querySelector( '[data-tour="status-table"]' );
+		const samplePill = '<span class="acfjp-pill acfjp-pill--sample">' + escapeHtml( __( 'Sample preview', 'fieldpilot-for-acf' ) ) + '</span>';
 		const sampleHtml = [
-			'<div class="notice notice-info inline is-tour-sample-dashboard" style="margin: 0 0 16px 0; padding: 10px 14px; border-left-color: #2271b1;">',
-				'<p><strong>No ACF field groups exist yet.</strong> Below is a sample preview demonstrating how FieldPilot distinguishes between editable database groups and locked PHP/JSON groups.</p>',
+			'<div class="notice notice-info inline acfjp-sample-notice is-tour-sample-dashboard">',
+				'<p><strong>' + escapeHtml( __( 'No ACF field groups exist yet.', 'fieldpilot-for-acf' ) ) + '</strong> ' + escapeHtml( __( 'Below is a sample preview demonstrating how FieldPilot distinguishes between editable database groups and locked PHP/JSON groups.', 'fieldpilot-for-acf' ) ) + '</p>',
 			'</div>',
 			'<table class="wp-list-table widefat fixed striped is-tour-sample-dashboard" data-tour="status-table">',
 				'<thead><tr>',
-					'<th>Field group</th>',
-					'<th>Key</th>',
-					'<th>Source</th>',
-					'<th data-tour="status-col" class="acfjp-status-col">Status</th>',
+					'<th>' + escapeHtml( __( 'Field group', 'fieldpilot-for-acf' ) ) + '</th>',
+					'<th>' + escapeHtml( __( 'Key', 'fieldpilot-for-acf' ) ) + '</th>',
+					'<th>' + escapeHtml( __( 'Source', 'fieldpilot-for-acf' ) ) + '</th>',
+					'<th data-tour="status-col" class="acfjp-status-col">' + escapeHtml( __( 'Status', 'fieldpilot-for-acf' ) ) + '</th>',
 				'</tr></thead>',
 				'<tbody>',
-					'<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">',
-						'<td><strong>Hero Section</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">Sample preview</span></td>',
+					'<tr class="acfjp-dashboard-sample-row">',
+						'<td><strong>' + escapeHtml( __( 'Hero Section', 'fieldpilot-for-acf' ) ) + '</strong> ' + samplePill + '</td>',
 						'<td><code>group_hero_sample</code></td>',
-						'<td>Database</td>',
-						'<td><span class="acfjp-pill acfjp-pill--ok">Editable</span></td>',
+						'<td>' + escapeHtml( __( 'Database', 'fieldpilot-for-acf' ) ) + '</td>',
+						'<td><span class="acfjp-pill acfjp-pill--ok">' + escapeHtml( __( 'Editable', 'fieldpilot-for-acf' ) ) + '</span></td>',
 					'</tr>',
-					'<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">',
-						'<td><strong>Site Settings</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">Sample preview</span></td>',
+					'<tr class="acfjp-dashboard-sample-row">',
+						'<td><strong>' + escapeHtml( __( 'Site Settings', 'fieldpilot-for-acf' ) ) + '</strong> ' + samplePill + '</td>',
 						'<td><code>group_site_settings_sample</code></td>',
-						'<td>PHP file</td>',
-						'<td><span class="acfjp-pill acfjp-pill--blocked">Read only</span> Registered in PHP - edit the code that registers it.</td>',
+						'<td>' + escapeHtml( __( 'PHP file', 'fieldpilot-for-acf' ) ) + '</td>',
+						'<td><span class="acfjp-pill acfjp-pill--blocked">' + escapeHtml( __( 'Read only', 'fieldpilot-for-acf' ) ) + '</span> ' + escapeHtml( __( 'Registered in PHP - edit the code that registers it.', 'fieldpilot-for-acf' ) ) + '</td>',
 					'</tr>',
 				'</tbody>',
 			'</table>'
@@ -222,111 +219,76 @@
 		}
 
 		// Inject realistic demonstration diff plan with native styling.
+		const hero = escapeHtml( __( 'Hero Section', 'fieldpilot-for-acf' ) );
+		const typeText = escapeHtml( __( 'Text', 'fieldpilot-for-acf' ) );
+		const typeTextarea = escapeHtml( __( 'Textarea', 'fieldpilot-for-acf' ) );
+		/* translators: %s: field group title. */
+		const targetLabel = escapeHtml( sprintf( __( 'Target: %s', 'fieldpilot-for-acf' ), __( 'Hero Section', 'fieldpilot-for-acf' ) ) );
+		/* translators: %d: number of modified fields. */
+		const modifiedChip = escapeHtml( sprintf( _n( '%d modified', '%d modified', 1, 'fieldpilot-for-acf' ), 1 ) );
+		/* translators: %d: number of added fields. */
+		const addedChip = escapeHtml( sprintf( _n( '%d added', '%d added', 1, 'fieldpilot-for-acf' ), 1 ) );
+		/* translators: %s: suggested new field name. */
+		const renameHint = escapeHtml( sprintf( __( 'Keep existing and create %s', 'fieldpilot-for-acf' ), 'hero_title_new' ) );
+
 		resultContainer.innerHTML = [
 			'<div class="acfjp-panel acfjp-panel--plan is-tour-sample">',
 				'<div class="acfjp-scope-box" style="margin-bottom: 16px;">',
 					'<div class="acfjp-scope-box__top">',
 						'<div class="acfjp-target-breadcrumb">',
 							'<span class="dashicons dashicons-shield"></span>',
-							'<span>Target: Hero Section</span>',
+							'<span>' + targetLabel + '</span>',
 							'<span class="acfjp-crumb-sep">&rarr;</span>',
 							'<span>hero_title</span>',
 						'</div>',
 						'<span class="acfjp-scope-isolated">',
 							'<span class="dashicons dashicons-yes-alt" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span>',
-							'Target Isolated - Unrelated branches are untouched',
+							escapeHtml( __( 'Target Isolated - Unrelated branches are untouched', 'fieldpilot-for-acf' ) ),
 						'</span>',
 					'</div>',
 					'<div class="acfjp-stats-chips" style="margin-top: 8px;">',
-						'<span class="acfjp-stat-chip acfjp-stat-chip--modify">~ 1 Modified</span>',
-						'<span class="acfjp-stat-chip acfjp-stat-chip--add">+ 1 Added</span>',
-						'<span class="acfjp-stat-chip acfjp-stat-chip--protected">🛡️ Sibling branches protected</span>',
+						'<span class="acfjp-stat-chip acfjp-stat-chip--modify">~ ' + modifiedChip + '</span>',
+						'<span class="acfjp-stat-chip acfjp-stat-chip--add">+ ' + addedChip + '</span>',
+						'<span class="acfjp-stat-chip acfjp-stat-chip--protected">' + escapeHtml( __( 'Sibling branches protected', 'fieldpilot-for-acf' ) ) + '</span>',
 					'</div>',
 				'</div>',
 				'<div class="acfjp-changes" style="margin: 16px 0;">',
 					'<div class="acfjp-change acfjp-change--update acfjp-change--risk-caution">',
 						'<div class="acfjp-change__head">',
-							'<span class="acfjp-diff-tag acfjp-diff-tag--caution">! CONFLICT</span>',
+							'<span class="acfjp-diff-tag acfjp-diff-tag--caution">! ' + escapeHtml( __( 'Conflict', 'fieldpilot-for-acf' ) ) + '</span>',
 							'<strong class="acfjp-change__label">hero_title</strong>',
-							'<span class="acfjp-change__summary">(Text &rarr; Textarea)</span>',
+							'<span class="acfjp-change__summary">(' + typeText + ' &rarr; ' + typeTextarea + ')</span>',
 						'</div>',
-						'<div class="acfjp-change__path">Hero Section &gt; hero_title</div>',
+						'<div class="acfjp-change__path">' + hero + ' &gt; hero_title</div>',
 						'<div class="acfjp-conflict" data-tour="conflict-box" style="margin-top: 10px;">',
-							'<h4>Field-type change detected</h4>',
-							'<p>Changing type from text to textarea may alter data rendering on existing posts.</p>',
+							'<h4>' + escapeHtml( __( 'Field-type change detected', 'fieldpilot-for-acf' ) ) + '</h4>',
+							'<p>' + escapeHtml( __( 'Changing type from text to textarea may alter data rendering on existing posts.', 'fieldpilot-for-acf' ) ) + '</p>',
 							'<div class="acfjp-conflict__options">',
-								'<label class="acfjp-conflict__option"><input type="radio" name="tour_conflict_hero" value="keep" checked /> <strong>Keep existing type</strong> <span>Leave field as Text</span></label>',
-								'<label class="acfjp-conflict__option is-destructive"><input type="radio" name="tour_conflict_hero" value="replace" /> <strong>Change type</strong> <span>Convert field to Textarea</span></label>',
-								'<label class="acfjp-conflict__option"><input type="radio" name="tour_conflict_hero" value="rename" /> <strong>Add as new field</strong> <span>Keep existing and create hero_title_new</span></label>',
+								'<label class="acfjp-conflict__option"><input type="radio" name="tour_conflict_hero" value="keep" checked /> <strong>' + escapeHtml( __( 'Keep existing type', 'fieldpilot-for-acf' ) ) + '</strong> <span>' + escapeHtml( __( 'Leave field as Text', 'fieldpilot-for-acf' ) ) + '</span></label>',
+								'<label class="acfjp-conflict__option is-destructive"><input type="radio" name="tour_conflict_hero" value="replace" /> <strong>' + escapeHtml( __( 'Change type', 'fieldpilot-for-acf' ) ) + '</strong> <span>' + escapeHtml( __( 'Convert field to Textarea', 'fieldpilot-for-acf' ) ) + '</span></label>',
+								'<label class="acfjp-conflict__option"><input type="radio" name="tour_conflict_hero" value="rename" /> <strong>' + escapeHtml( __( 'Add as new field', 'fieldpilot-for-acf' ) ) + '</strong> <span>' + renameHint + '</span></label>',
 							'</div>',
 						'</div>',
 					'</div>',
 					'<div class="acfjp-change acfjp-change--add acfjp-change--risk-safe">',
 						'<div class="acfjp-change__head">',
-							'<span class="acfjp-diff-tag acfjp-diff-tag--add">+ ADDED</span>',
+							'<span class="acfjp-diff-tag acfjp-diff-tag--add">+ ' + escapeHtml( __( 'Added', 'fieldpilot-for-acf' ) ) + '</span>',
 							'<strong class="acfjp-change__label">hero_subtitle</strong>',
-							'<span class="acfjp-change__summary">(Text, Subtitle Field)</span>',
+							'<span class="acfjp-change__summary">(' + escapeHtml( __( 'Text, Subtitle Field', 'fieldpilot-for-acf' ) ) + ')</span>',
 						'</div>',
-						'<div class="acfjp-change__path">Hero Section &gt; hero_subtitle</div>',
+						'<div class="acfjp-change__path">' + hero + ' &gt; hero_subtitle</div>',
 					'</div>',
 				'</div>',
 				'<div class="acfjp-safety-box" data-tour="safety-checklist" style="margin-top: 20px;">',
-					'<h3>🛡️ Pre-Apply Safety Checklist</h3>',
+					'<h3>' + escapeHtml( __( 'Pre-Apply Safety Checklist', 'fieldpilot-for-acf' ) ) + '</h3>',
 					'<div class="acfjp-safety-checklist">',
-						'<label class="acfjp-safety-item"><input type="checkbox" id="tour-ack-review" checked /> <span>I have reviewed the target scope and diff above.</span></label>',
-						'<label class="acfjp-safety-item"><input type="checkbox" id="tour-ack-modify" checked /> <span>I understand this operation will write changes to the ACF database.</span></label>',
+						'<label class="acfjp-safety-item"><input type="checkbox" id="tour-ack-review" checked /> <span>' + escapeHtml( __( 'I have reviewed the target scope and diff above.', 'fieldpilot-for-acf' ) ) + '</span></label>',
+						'<label class="acfjp-safety-item"><input type="checkbox" id="tour-ack-modify" checked /> <span>' + escapeHtml( __( 'I understand this operation will write changes to the ACF database.', 'fieldpilot-for-acf' ) ) + '</span></label>',
 					'</div>',
-					'<button type="button" class="button button-primary button-hero acfjp-apply-btn is-pulsing" style="margin-top: 14px; width: 100%; justify-content: center; pointer-events: none;">Apply Changes to Database ➔</button>',
+					'<button type="button" class="button button-primary button-hero acfjp-apply-btn is-pulsing" style="margin-top: 14px; width: 100%; justify-content: center; pointer-events: none;">' + escapeHtml( __( 'Apply Changes to Database', 'fieldpilot-for-acf' ) ) + '</button>',
 				'</div>',
 			'</div>'
 		].join( '' );
-	}
-
-	function injectTourStyles() {
-		if ( document.getElementById( 'acfjp-tour-injected-css' ) ) {
-			return;
-		}
-		const style = document.createElement( 'style' );
-		style.id = 'acfjp-tour-injected-css';
-		style.textContent = [
-			'#acfjp-tour-overlay { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; pointer-events: auto !important; z-index: 999998 !important; transition: opacity 0.25s ease !important; }',
-			'.acfjp-tour-svg-mask { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; pointer-events: none !important; }',
-			'#acfjp-tour-spotlight-border { position: fixed !important; border: 2px solid #2271b1 !important; border-radius: 8px !important; box-shadow: 0 0 0 4px rgba(34, 113, 177, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25) !important; pointer-events: none !important; z-index: 999998 !important; box-sizing: border-box !important; }',
-			'#acfjp-tour-tooltip { position: fixed !important; z-index: 999999 !important; width: 380px !important; max-width: calc(100vw - 32px) !important; background: #ffffff !important; border-radius: 8px !important; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25), 0 2px 6px rgba(15, 23, 42, 0.1) !important; border: 1px solid #c3c4c7 !important; padding: 20px !important; box-sizing: border-box !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; }',
-			'.acfjp-tour-header { display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 10px !important; }',
-			'.acfjp-tour-badge { display: inline-block !important; background: #f0f6fc !important; color: #005a9c !important; font-size: 11px !important; font-weight: 700 !important; padding: 2px 8px !important; border-radius: 12px !important; text-transform: uppercase !important; letter-spacing: 0.04em !important; border: 1px solid #c2e0ff !important; }',
-			'.acfjp-tour-close { background: none !important; border: none !important; cursor: pointer !important; color: #8c8f94 !important; font-size: 20px !important; line-height: 1 !important; padding: 2px 4px !important; }',
-			'.acfjp-tour-title { margin: 0 0 8px 0 !important; font-size: 16px !important; font-weight: 700 !important; color: #1d2327 !important; line-height: 1.3 !important; }',
-			'.acfjp-tour-body { margin: 0 0 16px 0 !important; font-size: 13px !important; color: #50575e !important; line-height: 1.5 !important; }',
-			'.acfjp-tour-footer { display: flex !important; justify-content: space-between !important; align-items: center !important; margin-top: 16px !important; padding-top: 12px !important; border-top: 1px solid #f0f0f1 !important; }',
-			'.acfjp-tour-nav { display: flex !important; gap: 8px !important; }',
-			'.acfjp-tour-btn-skip { color: #646970 !important; text-decoration: none !important; font-size: 12px !important; cursor: pointer !important; padding: 0 !important; }',
-			'#acfjp-tour-modal-backdrop { position: fixed; inset: 0; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }',
-			'.acfjp-tour-modal-card { background: #ffffff !important; border-radius: 12px !important; max-width: 520px !important; width: 100% !important; padding: 36px 32px 32px 32px !important; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35) !important; text-align: center !important; box-sizing: border-box !important; position: relative !important; border: 1px solid #dcdcde !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; }',
-			'.acfjp-tour-modal-close { position: absolute !important; top: 12px !important; right: 12px !important; width: 32px !important; height: 32px !important; background: transparent !important; border: none !important; box-shadow: none !important; outline: none !important; font-size: 24px !important; line-height: 28px !important; text-align: center !important; color: #8c8f94 !important; cursor: pointer !important; padding: 0 !important; border-radius: 4px !important; transition: color 0.15s ease, background 0.15s ease !important; }',
-			'.acfjp-tour-modal-close:hover { color: #d63638 !important; background: #f0f0f1 !important; }',
-			'.acfjp-tour-modal-icon { font-size: 48px !important; width: 48px !important; height: 48px !important; line-height: 48px !important; color: #2271b1 !important; margin: 0 auto 16px auto !important; display: block !important; }',
-			'.acfjp-tour-modal-card h2 { margin: 0 0 12px 0 !important; font-size: 22px !important; font-weight: 700 !important; color: #1d2327 !important; }',
-			'.acfjp-tour-modal-card p { font-size: 14px !important; line-height: 1.55 !important; color: #50575e !important; margin: 0 0 24px 0 !important; }',
-			'.acfjp-tour-modal-actions { display: flex !important; align-items: center !important; justify-content: center !important; gap: 12px !important; flex-wrap: wrap !important; margin-top: 24px !important; }',
-			'.acfjp-tour-modal-actions .button-hero { height: 44px !important; line-height: 42px !important; padding: 0 20px !important; font-size: 14px !important; border-radius: 4px !important; box-sizing: border-box !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }',
-			'.acfjp-tour-skip-btn { background: transparent !important; border: none !important; box-shadow: none !important; outline: none !important; color: #646970 !important; font-size: 14px !important; cursor: pointer !important; padding: 8px 12px !important; text-decoration: underline !important; line-height: normal !important; height: auto !important; align-self: center !important; transition: color 0.15s ease !important; }',
-			'.acfjp-tour-skip-btn:hover { color: #d63638 !important; text-decoration: none !important; }',
-			'.acfjp-diff-tag { display: inline-flex !important; align-items: center !important; gap: 4px !important; padding: 2px 7px !important; border-radius: 4px !important; font-size: 11px !important; font-weight: 700 !important; line-height: 1.3 !important; letter-spacing: 0.03em !important; text-transform: uppercase !important; box-sizing: border-box !important; width: auto !important; height: auto !important; }',
-			'.acfjp-diff-tag--add { background: #edfaef !important; color: #007017 !important; border: 1px solid #c2edc8 !important; }',
-			'.acfjp-diff-tag--modify { background: #f0f6fc !important; color: #005a9c !important; border: 1px solid #c2e0ff !important; }',
-			'.acfjp-diff-tag--caution { background: #fff8e5 !important; color: #996800 !important; border: 1px solid #ffe899 !important; }',
-			'.acfjp-history-empty-card { background: #ffffff !important; border: 1px solid #c3c4c7 !important; border-radius: 8px !important; padding: 32px 28px !important; margin: 20px 0 !important; max-width: 640px !important; text-align: center !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important; box-sizing: border-box !important; }',
-			'.acfjp-history-empty-icon .dashicons { font-size: 40px !important; width: 40px !important; height: 40px !important; line-height: 40px !important; color: #2271b1 !important; margin-bottom: 12px !important; display: inline-block !important; }',
-			'.acfjp-history-empty-card h3 { margin: 0 0 8px 0 !important; font-size: 16px !important; font-weight: 600 !important; color: #1d2327 !important; }',
-			'.acfjp-history-empty-card p { margin: 0 !important; font-size: 13px !important; color: #50575e !important; line-height: 1.55 !important; }',
-			'.acfjp-history-sample-row { background-color: #fafbfc !important; }',
-			'.acfjp-history-sample-row td { color: #50575e !important; }',
-			'.acfjp-history-sample-row .acfjp-rollback[disabled] { opacity: 0.55 !important; cursor: not-allowed !important; pointer-events: none !important; }',
-			'.acfjp-dashboard-sample-row { background-color: #fafbfc !important; }',
-			'.acfjp-dashboard-sample-row td { color: #50575e !important; }'
-		].join( '\n' );
-		document.head.appendChild( style );
 	}
 
 	class TourManager {
@@ -343,7 +305,6 @@
 		}
 
 		init() {
-			injectTourStyles();
 			this.bindTriggers();
 
 			const stepParam = config.stepParam;
@@ -524,20 +485,20 @@
 
 			if ( step.step === 0 ) {
 				actionButtons = [
-					'<button type="button" class="button button-primary button-hero acfjp-tour-take-btn">Take the tour</button>',
-					'<button type="button" class="acfjp-tour-skip-btn">Skip</button>'
+					'<button type="button" class="button button-primary button-hero acfjp-tour-take-btn">' + escapeHtml( __( 'Take the tour', 'fieldpilot-for-acf' ) ) + '</button>',
+					'<button type="button" class="acfjp-tour-skip-btn">' + escapeHtml( __( 'Skip', 'fieldpilot-for-acf' ) ) + '</button>'
 				].join( '' );
 			} else {
 				// Step 10 (Final Step)
 				actionButtons = [
-					'<button type="button" class="button button-primary button-hero acfjp-tour-finish-btn">Finish tour</button>',
-					'<button type="button" class="button button-secondary button-hero acfjp-tour-modal-back-btn">Back</button>'
+					'<button type="button" class="button button-primary button-hero acfjp-tour-finish-btn">' + escapeHtml( __( 'Finish tour', 'fieldpilot-for-acf' ) ) + '</button>',
+					'<button type="button" class="button button-secondary button-hero acfjp-tour-modal-back-btn">' + escapeHtml( __( 'Back', 'fieldpilot-for-acf' ) ) + '</button>'
 				].join( '' );
 			}
 
 			this.modalBackdrop.innerHTML = [
 				'<div class="acfjp-tour-modal-card">',
-					'<button type="button" class="acfjp-tour-modal-close" aria-label="Close modal">&times;</button>',
+					'<button type="button" class="acfjp-tour-modal-close" aria-label="' + escapeHtml( __( 'Close', 'fieldpilot-for-acf' ) ) + '">&times;</button>',
 					'<span class="dashicons dashicons-superhero-alt acfjp-tour-modal-icon"></span>',
 					'<h2>' + escapeHtml( step.headline ) + '</h2>',
 					'<p>' + escapeHtml( step.body ) + '</p>',
@@ -681,19 +642,21 @@
 		renderTooltip( step, targetEl ) {
 			const self = this;
 			const totalSteps = 10;
+			/* translators: 1: current step number, 2: total number of steps. */
+			const stepLabel = sprintf( __( 'Step %1$d of %2$d', 'fieldpilot-for-acf' ), step.step, totalSteps );
 
 			this.tooltip.innerHTML = [
 				'<div class="acfjp-tour-header">',
-					'<span class="acfjp-tour-badge">Step ' + step.step + ' of ' + totalSteps + '</span>',
-					'<button type="button" class="acfjp-tour-close" aria-label="Skip tour">&times;</button>',
+					'<span class="acfjp-tour-badge">' + escapeHtml( stepLabel ) + '</span>',
+					'<button type="button" class="acfjp-tour-close" aria-label="' + escapeHtml( __( 'Skip tour', 'fieldpilot-for-acf' ) ) + '">&times;</button>',
 				'</div>',
 				'<h3 class="acfjp-tour-title">' + escapeHtml( step.headline ) + '</h3>',
 				'<p class="acfjp-tour-body">' + escapeHtml( step.body ) + '</p>',
 				'<div class="acfjp-tour-footer">',
-					'<button type="button" class="button-link acfjp-tour-btn-skip">Skip</button>',
+					'<button type="button" class="button-link acfjp-tour-btn-skip">' + escapeHtml( __( 'Skip', 'fieldpilot-for-acf' ) ) + '</button>',
 					'<div class="acfjp-tour-nav">',
-						( step.step > 1 ? '<button type="button" class="button acfjp-tour-btn-back">Back</button>' : '' ),
-						'<button type="button" class="button button-primary acfjp-tour-btn-next">Next</button>',
+						( step.step > 1 ? '<button type="button" class="button acfjp-tour-btn-back">' + escapeHtml( __( 'Back', 'fieldpilot-for-acf' ) ) + '</button>' : '' ),
+						'<button type="button" class="button button-primary acfjp-tour-btn-next">' + escapeHtml( __( 'Next', 'fieldpilot-for-acf' ) ) + '</button>',
 					'</div>',
 				'</div>'
 			].join( '' );

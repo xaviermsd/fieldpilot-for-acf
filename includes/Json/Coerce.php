@@ -43,7 +43,10 @@ final class Coerce {
 	);
 
 	/** Settings ACF persists as integers. */
-	private const INT_SETTINGS = array( 'min', 'max', 'maxlength', 'rows', 'rows_per_page', 'step', 'menu_order' );
+	private const INT_SETTINGS = array( 'maxlength', 'rows', 'rows_per_page', 'menu_order' );
+
+	/** Numeric settings that may legitimately be fractional (number and range fields). */
+	private const NUMBER_SETTINGS = array( 'min', 'max', 'step' );
 
 	/**
 	 * Normalise a whole settings array for one field.
@@ -62,6 +65,11 @@ final class Coerce {
 
 			if ( in_array( $key, self::INT_SETTINGS, true ) && '' !== $value && null !== $value ) {
 				$settings[ $key ] = is_numeric( $value ) ? (int) $value : $value;
+				continue;
+			}
+
+			if ( in_array( $key, self::NUMBER_SETTINGS, true ) && '' !== $value && null !== $value ) {
+				$settings[ $key ] = is_numeric( $value ) ? 0 + $value : $value;
 				continue;
 			}
 
@@ -113,7 +121,8 @@ final class Coerce {
 	 */
 	public static function choices( mixed $value ): array {
 		if ( is_string( $value ) ) {
-			$value = preg_split( '/\R/', $value, -1, PREG_SPLIT_NO_EMPTY ) ?: array();
+			$lines = preg_split( '/\R/', $value, -1, PREG_SPLIT_NO_EMPTY );
+			$value = false !== $lines ? $lines : array();
 		}
 
 		if ( ! is_array( $value ) ) {
@@ -181,20 +190,25 @@ final class Coerce {
 	}
 
 	/**
-	 * @return array{width:string,class:string,id:string}
+	 * @return array{width?:string,class?:string,id?:string}
 	 */
 	public static function wrapper( mixed $value ): array {
-		$defaults = array( 'width' => '', 'class' => '', 'id' => '' );
-
 		if ( ! is_array( $value ) ) {
-			return $defaults;
+			return array();
 		}
 
-		return array(
-			'width' => isset( $value['width'] ) ? (string) $value['width'] : '',
-			'class' => isset( $value['class'] ) ? (string) $value['class'] : '',
-			'id'    => isset( $value['id'] ) ? (string) $value['id'] : '',
-		);
+		// Only the keys the payload named. A partial wrapper update must not
+		// blank the class or id it did not mention; SettingsDiff merges these
+		// over the stored wrapper and the Writer fills defaults for new fields.
+		$out = array();
+
+		foreach ( array( 'width', 'class', 'id' ) as $key ) {
+			if ( isset( $value[ $key ] ) ) {
+				$out[ $key ] = (string) $value[ $key ];
+			}
+		}
+
+		return $out;
 	}
 
 	private function __construct() {}

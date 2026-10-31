@@ -13,6 +13,7 @@ declare( strict_types = 1 );
 
 namespace ACFJP\Admin\Screens;
 
+use ACFJP\Acf\FieldTypeCatalog;
 use ACFJP\Acf\MutabilityClassifier;
 use ACFJP\Apply\Guard;
 use ACFJP\Json\Parser;
@@ -31,7 +32,10 @@ final class Import extends Screen {
 	protected function body(): void {
 		$prefill = $this->handleUpload();
 
-		$groups = $this->container->get( MutabilityClassifier::class )->classifyAll();
+		$allGroups = $this->container->get( MutabilityClassifier::class )->classifyAll();
+		// The target pickers offer only groups FieldPilot can change. Groups registered
+		// in PHP or waiting in acf-json are still listed further down, with the reason.
+		$groups = array_values( array_filter( $allGroups, static fn ( $group ): bool => $group->isPatchable() ) );
 
 		?>
 		<div class="acfjp-wrap">
@@ -84,7 +88,7 @@ final class Import extends Screen {
 								</div>
 								<select id="acfjp-prompt-group" class="widefat">
 									<?php if ( empty( $groups ) ) : ?>
-										<option value="" disabled selected><?php esc_html_e( '— No field groups found (create one below) —', 'fieldpilot-for-acf' ); ?></option>
+										<option value="" disabled selected><?php esc_html_e( 'No field groups found (create one below)', 'fieldpilot-for-acf' ); ?></option>
 									<?php else : ?>
 										<?php foreach ( $groups as $i => $group ) : ?>
 											<option value="<?php echo esc_attr( $group->groupKey ); ?>" data-title="<?php echo esc_attr( $group->groupTitle ); ?>" <?php selected( 0 === $i, true ); ?>>
@@ -140,54 +144,7 @@ final class Import extends Screen {
 								<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 4px;">
 									<input type="text" id="acfjp-custom-name" placeholder="<?php esc_attr_e( 'Field Label / Name (e.g. Director Bio, Hero Banner)...', 'fieldpilot-for-acf' ); ?>" style="flex: 1 1 200px; height: 32px; font-size: 13px;" />
 									<select id="acfjp-custom-type" style="height: 32px; font-size: 13px;">
-										<optgroup label="<?php esc_attr_e( 'Basic & Text', 'fieldpilot-for-acf' ); ?>">
-											<option value="text"><?php esc_html_e( 'Text', 'fieldpilot-for-acf' ); ?></option>
-											<option value="textarea"><?php esc_html_e( 'Textarea', 'fieldpilot-for-acf' ); ?></option>
-											<option value="number"><?php esc_html_e( 'Number', 'fieldpilot-for-acf' ); ?></option>
-											<option value="range"><?php esc_html_e( 'Range', 'fieldpilot-for-acf' ); ?></option>
-											<option value="email"><?php esc_html_e( 'Email', 'fieldpilot-for-acf' ); ?></option>
-											<option value="url"><?php esc_html_e( 'URL', 'fieldpilot-for-acf' ); ?></option>
-											<option value="password"><?php esc_html_e( 'Password', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Content & Media', 'fieldpilot-for-acf' ); ?>">
-											<option value="wysiwyg"><?php esc_html_e( 'WYSIWYG Editor', 'fieldpilot-for-acf' ); ?></option>
-											<option value="image"><?php esc_html_e( 'Image', 'fieldpilot-for-acf' ); ?></option>
-											<option value="file"><?php esc_html_e( 'File', 'fieldpilot-for-acf' ); ?></option>
-											<option value="gallery"><?php esc_html_e( 'Gallery', 'fieldpilot-for-acf' ); ?></option>
-											<option value="oembed"><?php esc_html_e( 'oEmbed', 'fieldpilot-for-acf' ); ?></option>
-											<option value="icon_picker"><?php esc_html_e( 'Icon Picker', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Choices', 'fieldpilot-for-acf' ); ?>">
-											<option value="select"><?php esc_html_e( 'Select Dropdown', 'fieldpilot-for-acf' ); ?></option>
-											<option value="checkbox"><?php esc_html_e( 'Checkbox', 'fieldpilot-for-acf' ); ?></option>
-											<option value="radio"><?php esc_html_e( 'Radio', 'fieldpilot-for-acf' ); ?></option>
-											<option value="button_group"><?php esc_html_e( 'Button Group', 'fieldpilot-for-acf' ); ?></option>
-											<option value="true_false"><?php esc_html_e( 'True / False', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Relational & Objects', 'fieldpilot-for-acf' ); ?>">
-											<option value="link"><?php esc_html_e( 'Link', 'fieldpilot-for-acf' ); ?></option>
-											<option value="post_object"><?php esc_html_e( 'Post Object', 'fieldpilot-for-acf' ); ?></option>
-											<option value="page_link"><?php esc_html_e( 'Page Link', 'fieldpilot-for-acf' ); ?></option>
-											<option value="relationship"><?php esc_html_e( 'Relationship', 'fieldpilot-for-acf' ); ?></option>
-											<option value="taxonomy"><?php esc_html_e( 'Taxonomy', 'fieldpilot-for-acf' ); ?></option>
-											<option value="user"><?php esc_html_e( 'User', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Layout & Structure', 'fieldpilot-for-acf' ); ?>">
-											<option value="repeater"><?php esc_html_e( 'Repeater', 'fieldpilot-for-acf' ); ?></option>
-											<option value="group"><?php esc_html_e( 'Group Container', 'fieldpilot-for-acf' ); ?></option>
-											<option value="flexible_content"><?php esc_html_e( 'Flexible Content', 'fieldpilot-for-acf' ); ?></option>
-											<option value="accordion"><?php esc_html_e( 'Accordion', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tab"><?php esc_html_e( 'Tab', 'fieldpilot-for-acf' ); ?></option>
-											<option value="message"><?php esc_html_e( 'Message', 'fieldpilot-for-acf' ); ?></option>
-											<option value="clone"><?php esc_html_e( 'Clone', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'jQuery & Pickers', 'fieldpilot-for-acf' ); ?>">
-											<option value="google_map"><?php esc_html_e( 'Google Map', 'fieldpilot-for-acf' ); ?></option>
-											<option value="date_picker"><?php esc_html_e( 'Date Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="date_time_picker"><?php esc_html_e( 'Date Time Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="time_picker"><?php esc_html_e( 'Time Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="color_picker"><?php esc_html_e( 'Color Picker', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
+										<?php $this->typeOptions( 'type' ); ?>
 									</select>
 									<select id="acfjp-custom-width" style="height: 32px; font-size: 12px;">
 										<option value=""><?php esc_html_e( 'Width: 100%', 'fieldpilot-for-acf' ); ?></option>
@@ -208,16 +165,20 @@ final class Import extends Screen {
 								<!-- 4 ACF Tabs Bar -->
 								<div class="acfjp-builder-subtabs">
 									<button type="button" class="acfjp-builder-tab is-active" data-builder-tab="general">
-										<?php esc_html_e( '⚙️ General', 'fieldpilot-for-acf' ); ?>
+										<span class="dashicons dashicons-admin-generic" aria-hidden="true"></span>
+										<?php esc_html_e( 'General', 'fieldpilot-for-acf' ); ?>
 									</button>
 									<button type="button" class="acfjp-builder-tab" data-builder-tab="validation">
-										<?php esc_html_e( '🛡️ Validation', 'fieldpilot-for-acf' ); ?>
+										<span class="dashicons dashicons-shield" aria-hidden="true"></span>
+										<?php esc_html_e( 'Validation', 'fieldpilot-for-acf' ); ?>
 									</button>
 									<button type="button" class="acfjp-builder-tab" data-builder-tab="presentation">
-										<?php esc_html_e( '🎨 Presentation', 'fieldpilot-for-acf' ); ?>
+										<span class="dashicons dashicons-art" aria-hidden="true"></span>
+										<?php esc_html_e( 'Presentation', 'fieldpilot-for-acf' ); ?>
 									</button>
 									<button type="button" class="acfjp-builder-tab" data-builder-tab="logic">
-										<?php esc_html_e( '🔀 Conditional Logic', 'fieldpilot-for-acf' ); ?>
+										<span class="dashicons dashicons-randomize" aria-hidden="true"></span>
+										<?php esc_html_e( 'Conditional Logic', 'fieldpilot-for-acf' ); ?>
 									</button>
 								</div>
 
@@ -355,10 +316,11 @@ final class Import extends Screen {
 								<div class="acfjp-builder-actions">
 									<button type="button" class="button button-primary button-large acfjp-custom-add-btn" id="acfjp-custom-add-main">
 										<span class="dashicons dashicons-plus-alt2"></span>
-										<?php esc_html_e( 'Append Field to Queue ➔', 'fieldpilot-for-acf' ); ?>
+										<?php esc_html_e( 'Append Field to Queue', 'fieldpilot-for-acf' ); ?>
 									</button>
 									<span class="acfjp-builder-hint">
-										<?php esc_html_e( '💡 Press Enter or click above to append this field specification to your queue below.', 'fieldpilot-for-acf' ); ?>
+										<span class="dashicons dashicons-lightbulb acfjp-tip-icon" aria-hidden="true"></span>
+										<?php esc_html_e( 'Press Enter or click above to append this field specification to your queue below.', 'fieldpilot-for-acf' ); ?>
 									</span>
 									<span class="acfjp-added-indicator" id="acfjp-added-indicator" style="display: none;">
 										<span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Appended to Queue!', 'fieldpilot-for-acf' ); ?>
@@ -370,71 +332,14 @@ final class Import extends Screen {
 							<div class="acfjp-field-row" style="margin-top: 14px;">
 								<div class="acfjp-quick-chips <?php echo empty( $groups ) ? 'is-locked' : ''; ?>" id="acfjp-quick-chips">
 									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Quick add fields (click to append in bulk):', 'fieldpilot-for-acf' ); ?></span>
-									<button type="button" class="acfjp-chip" data-intent="- Add a repeater called Team Members with name (text), role (text), and photo (image) fields"><?php esc_html_e( '+ Repeater', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a text field called Custom Heading and make it required"><?php esc_html_e( '+ Required Text', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a wysiwyg editor field called Main Content"><?php esc_html_e( '+ WYSIWYG', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add an image field called Hero Banner with return format array"><?php esc_html_e( '+ Image', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a gallery field called Photo Gallery"><?php esc_html_e( '+ Gallery', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a select field called Status with choices: Draft, Review, Published"><?php esc_html_e( '+ Select Dropdown', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a true_false switch field called Is Featured with default false"><?php esc_html_e( '+ True/False', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a relationship field called Related Posts with max 3"><?php esc_html_e( '+ Relationship', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a flexible_content field called Page Builder with Hero and Features layouts"><?php esc_html_e( '+ Flexible Content', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a date_picker field called Event Date with format Y-m-d"><?php esc_html_e( '+ Date Picker', 'fieldpilot-for-acf' ); ?></button>
-									<button type="button" class="acfjp-chip" data-intent="- Add a group container called Contact Info with phone, email, and address fields"><?php esc_html_e( '+ Group Container', 'fieldpilot-for-acf' ); ?></button>
+									<?php $this->chips(); ?>
 								</div>
 
 								<div class="acfjp-quick-dropdown-row <?php echo empty( $groups ) ? 'is-locked' : ''; ?>" id="acfjp-quick-dropdown-row" style="margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
 									<span class="acfjp-quick-chips__label"><?php esc_html_e( 'Or append pre-configured examples:', 'fieldpilot-for-acf' ); ?></span>
 									<select id="acfjp-quick-field-select" class="button" style="max-width: 320px; font-size: 12px; height: 32px; line-height: 30px;">
-										<option value=""><?php esc_html_e( '⚡ Append example specs for all 36 ACF types...', 'fieldpilot-for-acf' ); ?></option>
-										<optgroup label="<?php esc_attr_e( 'Basic & Text', 'fieldpilot-for-acf' ); ?>">
-											<option value="- Add a text field named Custom Title and make it required"><?php esc_html_e( 'Text', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a textarea field named Description with 4 rows"><?php esc_html_e( 'Textarea', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a number field named Price with min 0 and step 0.01"><?php esc_html_e( 'Number', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a range field named Rating from 1 to 10"><?php esc_html_e( 'Range', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add an email field named Contact Email"><?php esc_html_e( 'Email', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a url field named External Link"><?php esc_html_e( 'URL', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a password field named Secret Key"><?php esc_html_e( 'Password', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Content & Media', 'fieldpilot-for-acf' ); ?>">
-											<option value="- Add an image field named Hero Image with return format array and min width 1200"><?php esc_html_e( 'Image', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a file field named Brochure PDF with mime types pdf and max size 5MB"><?php esc_html_e( 'File', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a gallery field named Photo Gallery with min 3 images"><?php esc_html_e( 'Gallery (PRO)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a wysiwyg field named Article Body with full toolbar"><?php esc_html_e( 'WYSIWYG Editor', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add an oembed field named Featured Video"><?php esc_html_e( 'oEmbed Video', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add an icon_picker field named Social Icon"><?php esc_html_e( 'Icon Picker', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Choices', 'fieldpilot-for-acf' ); ?>">
-											<option value="- Add a select field named Publishing Status with choices: draft: Draft, review: Review, live: Live"><?php esc_html_e( 'Select Dropdown', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a checkbox field named Features with choices: wifi: WiFi, pool: Swimming Pool, gym: Gym"><?php esc_html_e( 'Checkbox', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a radio field named Layout Style with choices: grid: Grid, list: List and default grid"><?php esc_html_e( 'Radio', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a button_group field named Text Alignment with choices: left: Left, center: Center, right: Right"><?php esc_html_e( 'Button Group', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a true_false field named Is Featured with default false and ui enabled"><?php esc_html_e( 'True / False', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Relational & Objects', 'fieldpilot-for-acf' ); ?>">
-											<option value="- Add a post_object field named Featured Article for post type post with return format object"><?php esc_html_e( 'Post Object', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a relationship field named Related Case Studies for post type case_study with max 4"><?php esc_html_e( 'Relationship (PRO)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a taxonomy field named Department for taxonomy category with return format id"><?php esc_html_e( 'Taxonomy', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a user field named Author Profile with role author"><?php esc_html_e( 'User', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a page_link field named Landing Page Link"><?php esc_html_e( 'Page Link', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a link field named Documentation Link"><?php esc_html_e( 'Link', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'Layout & Structure', 'fieldpilot-for-acf' ); ?>">
-											<option value="- Add a repeater field named Team Members with subfields name (text) and role (text)"><?php esc_html_e( 'Repeater (PRO)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a group field named Address Info with subfields street (text), city (text), and zip (text)"><?php esc_html_e( 'Group Container', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a flexible_content field named Page Builder with Hero and Text layouts"><?php esc_html_e( 'Flexible Content (PRO)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add an accordion field named Specifications"><?php esc_html_e( 'Accordion', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a tab field named Advanced Options"><?php esc_html_e( 'Tab Divider', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a message field named Important Note with message Please fill out all required items"><?php esc_html_e( 'Message', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a clone field named Reused Banner"><?php esc_html_e( 'Clone', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( 'jQuery & Pickers', 'fieldpilot-for-acf' ); ?>">
-											<option value="- Add a google_map field named Headquarters Location with zoom 14"><?php esc_html_e( 'Google Map', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a date_picker field named Release Date with return format Y-m-d"><?php esc_html_e( 'Date Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a date_time_picker field named Event Start with format Y-m-d H:i:s"><?php esc_html_e( 'Date Time Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a time_picker field named Opening Hours with format H:i:s"><?php esc_html_e( 'Time Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="- Add a color_picker field named Brand Primary Color with default #2271b1"><?php esc_html_e( 'Color Picker', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
+										<option value=""><?php esc_html_e( 'Append an example for any field type...', 'fieldpilot-for-acf' ); ?></option>
+										<?php $this->typeOptions( 'example' ); ?>
 									</select>
 								</div>
 							</div>
@@ -448,13 +353,14 @@ final class Import extends Screen {
 											<?php esc_html_e( 'Queued Field Specifications & Intent', 'fieldpilot-for-acf' ); ?>
 										</label>
 										<button type="button" class="button-link acfjp-intent-clear" id="acfjp-intent-clear" style="font-size: 11px; color: #b32d2e; text-decoration: none; cursor: pointer;">
-											<?php esc_html_e( '✕ Clear all', 'fieldpilot-for-acf' ); ?>
+											<?php esc_html_e( 'Clear all', 'fieldpilot-for-acf' ); ?>
 										</button>
 									</div>
 									<textarea id="acfjp-prompt-intent" class="widefat" rows="5"
 										placeholder="<?php esc_attr_e( 'All fields added from above appear here line-by-line. You can also type custom instructions directly.', 'fieldpilot-for-acf' ); ?>"></textarea>
 									<span class="description" style="font-size: 11px; color: #646970; margin-top: 6px; display: block;">
-										<?php esc_html_e( '💡 Each field will be automatically compiled into your final AI prompt.', 'fieldpilot-for-acf' ); ?>
+										<span class="dashicons dashicons-lightbulb acfjp-tip-icon" aria-hidden="true"></span>
+										<?php esc_html_e( 'Each field will be automatically compiled into your final AI prompt.', 'fieldpilot-for-acf' ); ?>
 									</span>
 								</div>
 							</div>
@@ -463,10 +369,10 @@ final class Import extends Screen {
 							<div style="margin-top: 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;" data-tour="prompt">
 								<button type="button" class="button button-primary button-hero acfjp-btn-generate" id="acfjp-prompt-build">
 									<span class="dashicons dashicons-update"></span>
-									<?php esc_html_e( 'Generate AI Prompt ➔', 'fieldpilot-for-acf' ); ?>
+									<?php esc_html_e( 'Generate AI Prompt', 'fieldpilot-for-acf' ); ?>
 								</button>
 								<span class="acfjp-step-next-hint" id="acfjp-gen-hint" style="font-size: 12px; color: #005a9c; font-weight: 600; display: none;">
-									<?php esc_html_e( '✨ Fields queued! Click above to generate your prompt.', 'fieldpilot-for-acf' ); ?>
+									<?php esc_html_e( 'Fields queued. Click above to generate your prompt.', 'fieldpilot-for-acf' ); ?>
 								</span>
 							</div>
 						</div>
@@ -522,7 +428,7 @@ final class Import extends Screen {
 								<p style="margin: 0;">
 									<button type="button" class="button button-primary button-hero acfjp-pulse-btn" id="acfjp-paste-and-preview">
 										<span class="dashicons dashicons-clipboard"></span>
-										<?php esc_html_e( '2. Paste AI Response & Switch to Editor ➔', 'fieldpilot-for-acf' ); ?>
+										<?php esc_html_e( '2. Paste AI Response & Switch to Editor', 'fieldpilot-for-acf' ); ?>
 									</button>
 								</p>
 							</div>
@@ -555,11 +461,11 @@ final class Import extends Screen {
 
 								<select id="acfjp-template-group-select" class="button" title="<?php esc_attr_e( 'Target Field Group', 'fieldpilot-for-acf' ); ?>" style="max-width: 250px; font-size: 12px; height: 32px; line-height: 30px;">
 									<?php if ( empty( $groups ) ) : ?>
-										<option value="" disabled selected><?php esc_html_e( '— No Groups Found —', 'fieldpilot-for-acf' ); ?></option>
+										<option value="" disabled selected><?php esc_html_e( 'No field groups found', 'fieldpilot-for-acf' ); ?></option>
 									<?php else : ?>
 										<?php foreach ( $groups as $index => $group ) : ?>
 											<option value="<?php echo esc_attr( $group->groupTitle ); ?>" data-key="<?php echo esc_attr( $group->groupKey ); ?>" <?php selected( 0 === $index, true ); ?>>
-												🎯 <?php echo esc_html( $group->groupTitle ); ?>
+												<?php echo esc_html( $group->groupTitle ); ?>
 											</option>
 										<?php endforeach; ?>
 									<?php endif; ?>
@@ -567,60 +473,13 @@ final class Import extends Screen {
 
 								<div class="acfjp-template-picker">
 									<select id="acfjp-template-select" class="button" style="max-width: 260px; font-size: 12px; height: 30px; line-height: 28px;">
-										<option value=""><?php esc_html_e( '✨ Insert Template (All 36 Types)...', 'fieldpilot-for-acf' ); ?></option>
+										<option value=""><?php esc_html_e( 'Insert a template...', 'fieldpilot-for-acf' ); ?></option>
 										<optgroup label="<?php esc_attr_e( 'Common Operations', 'fieldpilot-for-acf' ); ?>">
 											<option value="add_field"><?php esc_html_e( 'Add New Field', 'fieldpilot-for-acf' ); ?></option>
 											<option value="update_field"><?php esc_html_e( 'Update Existing Field', 'fieldpilot-for-acf' ); ?></option>
 											<option value="create_group"><?php esc_html_e( 'Create New Field Group', 'fieldpilot-for-acf' ); ?></option>
 										</optgroup>
-										<optgroup label="<?php esc_attr_e( '1. Basic & Text (7 Types)', 'fieldpilot-for-acf' ); ?>">
-											<option value="tpl_text"><?php esc_html_e( 'Text Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_textarea"><?php esc_html_e( 'Textarea Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_number"><?php esc_html_e( 'Number Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_range"><?php esc_html_e( 'Range Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_email"><?php esc_html_e( 'Email Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_url"><?php esc_html_e( 'URL Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_password"><?php esc_html_e( 'Password Field', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( '2. Content & Media (6 Types)', 'fieldpilot-for-acf' ); ?>">
-											<option value="tpl_wysiwyg"><?php esc_html_e( 'WYSIWYG Editor', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_image"><?php esc_html_e( 'Image Field (Array)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_file"><?php esc_html_e( 'File Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_gallery"><?php esc_html_e( 'Gallery Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_oembed"><?php esc_html_e( 'oEmbed Video', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_icon_picker"><?php esc_html_e( 'Icon Picker', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( '3. Choice Fields (5 Types)', 'fieldpilot-for-acf' ); ?>">
-											<option value="tpl_select"><?php esc_html_e( 'Select Dropdown', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_checkbox"><?php esc_html_e( 'Checkbox Group', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_radio"><?php esc_html_e( 'Radio Buttons', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_button_group"><?php esc_html_e( 'Button Group', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_true_false"><?php esc_html_e( 'True / False Switch', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( '4. Relational & Objects (6 Types)', 'fieldpilot-for-acf' ); ?>">
-											<option value="tpl_link"><?php esc_html_e( 'Link (URL & Title)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_post_object"><?php esc_html_e( 'Post Object', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_page_link"><?php esc_html_e( 'Page Link', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_relationship"><?php esc_html_e( 'Relationship Field', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_taxonomy"><?php esc_html_e( 'Taxonomy Terms', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_user"><?php esc_html_e( 'User Selector', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( '5. Layout & Structure (7 Types)', 'fieldpilot-for-acf' ); ?>">
-											<option value="tpl_repeater"><?php esc_html_e( 'Repeater with Subfields', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_group"><?php esc_html_e( 'Group Container', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_flexible_content"><?php esc_html_e( 'Flexible Content (Layouts)', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_accordion"><?php esc_html_e( 'Accordion Section', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_tab"><?php esc_html_e( 'Tab Divider', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_message"><?php esc_html_e( 'Instructional Message', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_clone"><?php esc_html_e( 'Clone Field', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
-										<optgroup label="<?php esc_attr_e( '6. jQuery & Pickers (5 Types)', 'fieldpilot-for-acf' ); ?>">
-											<option value="tpl_google_map"><?php esc_html_e( 'Google Map', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_date_picker"><?php esc_html_e( 'Date Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_date_time_picker"><?php esc_html_e( 'Date Time Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_time_picker"><?php esc_html_e( 'Time Picker', 'fieldpilot-for-acf' ); ?></option>
-											<option value="tpl_color_picker"><?php esc_html_e( 'Color Picker', 'fieldpilot-for-acf' ); ?></option>
-										</optgroup>
+										<?php $this->typeOptions( 'template' ); ?>
 									</select>
 								</div>
 							</div>
@@ -644,7 +503,7 @@ final class Import extends Screen {
 							<div class="acfjp-primary-actions">
 								<button type="button" class="button button-primary button-hero acfjp-preview-btn" id="acfjp-preview">
 									<span class="dashicons dashicons-visibility"></span>
-									<?php esc_html_e( 'Preview Changes & Review Diff ➔', 'fieldpilot-for-acf' ); ?>
+									<?php esc_html_e( 'Preview Changes & Review Diff', 'fieldpilot-for-acf' ); ?>
 								</button>
 								<button type="button" class="button button-secondary" id="acfjp-validate">
 									<span class="dashicons dashicons-yes-alt"></span>
@@ -719,11 +578,11 @@ final class Import extends Screen {
 								<span class="description"><?php esc_html_e( 'Optional. Only required for plain ACF exports which declare no operation.', 'fieldpilot-for-acf' ); ?></span>
 							</div>
 
-							<?php if ( array() !== $groups ) : ?>
+							<?php if ( array() !== $allGroups ) : ?>
 								<details class="acfjp-groups" open>
-									<summary><strong><?php esc_html_e( 'Field groups on this site', 'fieldpilot-for-acf' ); ?> (<?php echo count( $groups ); ?>)</strong></summary>
+									<summary><strong><?php esc_html_e( 'Field groups on this site', 'fieldpilot-for-acf' ); ?> (<?php echo count( $allGroups ); ?>)</strong></summary>
 									<ul>
-										<?php foreach ( $groups as $group ) : ?>
+										<?php foreach ( $allGroups as $group ) : ?>
 											<li>
 												<div class="acfjp-group-item">
 													<strong><?php echo esc_html( $group->groupTitle ); ?></strong>
@@ -795,7 +654,7 @@ final class Import extends Screen {
 
 							<div class="acfjp-op-card">
 								<h3><code>sync</code> <span class="acfjp-pill acfjp-pill--caution">Caution</span></h3>
-								<p><?php esc_html_e( 'Brings the field group into 100% exact parity with the JSON payload, adding new fields, updating changed ones, and removing missing ones.', 'fieldpilot-for-acf' ); ?></p>
+								<p><?php esc_html_e( 'Makes the field group match the JSON payload: adds new fields, updates changed ones and removes the ones the payload leaves out.', 'fieldpilot-for-acf' ); ?></p>
 							</div>
 
 							<div class="acfjp-op-card">
@@ -817,7 +676,7 @@ final class Import extends Screen {
 							<?php esc_html_e( '2. Target Scope & Sub-Tree Resolution Guide', 'fieldpilot-for-acf' ); ?>
 						</h3>
 						<p class="description">
-							<?php esc_html_e( 'The "target" object tells the engine exactly where to apply mutations. Unrelated sibling fields and groups are guaranteed to stay protected.', 'fieldpilot-for-acf' ); ?>
+							<?php esc_html_e( 'The "target" object tells the engine exactly where to apply mutations. Fields outside the target are left alone, and FieldPilot checks that after every write.', 'fieldpilot-for-acf' ); ?>
 						</p>
 
 						<div class="acfjp-target-grid">
@@ -825,7 +684,7 @@ final class Import extends Screen {
 								<h4><span class="dashicons dashicons-admin-home"></span> <?php esc_html_e( 'Root Field Group Target', 'fieldpilot-for-acf' ); ?></h4>
 								<p><?php esc_html_e( 'Target an entire field group by its title, key, or post name.', 'fieldpilot-for-acf' ); ?></p>
 								<pre><code>"target": {
-  "field_group": "Company Profile"
+	"field_group": "Company Profile"
 }</code></pre>
 							</div>
 
@@ -833,8 +692,8 @@ final class Import extends Screen {
 								<h4><span class="dashicons dashicons-category"></span> <?php esc_html_e( 'Nested Sub-Field Path Target', 'fieldpilot-for-acf' ); ?></h4>
 								<p><?php esc_html_e( 'Target a sub-field deep inside a Repeater, Group, or Flexible Layout.', 'fieldpilot-for-acf' ); ?></p>
 								<pre><code>"target": {
-  "field_group": "Company Profile",
-  "path": "team_members.social_links"
+	"field_group": "Company Profile",
+	"path": "team_members.social_links"
 }</code></pre>
 							</div>
 
@@ -842,7 +701,7 @@ final class Import extends Screen {
 								<h4><span class="dashicons dashicons-key"></span> <?php esc_html_e( 'Exact Canonical Key Target', 'fieldpilot-for-acf' ); ?></h4>
 								<p><?php esc_html_e( 'Target a specific field directly by its unique ACF field key.', 'fieldpilot-for-acf' ); ?></p>
 								<pre><code>"target": {
-  "field_key": "field_65a123bc45678"
+	"field_key": "field_65a123bc45678"
 }</code></pre>
 							</div>
 						</div>
@@ -850,8 +709,8 @@ final class Import extends Screen {
 						<div class="acfjp-isolation-banner">
 							<span class="dashicons dashicons-shield"></span>
 							<div>
-								<strong><?php esc_html_e( 'Target Isolation Guarantee:', 'fieldpilot-for-acf' ); ?></strong>
-								<?php esc_html_e( 'All sibling fields outside your specified target scope remain 100% untouched and byte-identical. Existing field keys are preserved to protect your postmeta relationships.', 'fieldpilot-for-acf' ); ?>
+								<strong><?php esc_html_e( 'Target isolation:', 'fieldpilot-for-acf' ); ?></strong>
+								<?php esc_html_e( 'Fields outside your target are not changed, and the check after every write confirms it. Existing field keys are kept, so the content stored against them stays connected.', 'fieldpilot-for-acf' ); ?>
 							</div>
 						</div>
 					</div>
@@ -917,100 +776,29 @@ final class Import extends Screen {
 									<li><code>value</code> <em>(string)</em>: <?php esc_html_e( 'Comparison target value', 'fieldpilot-for-acf' ); ?></li>
 								</ul>
 								<pre><code>"conditional_logic": [
-  [
-    {
-      "field": "enable_feature",
-      "operator": "==",
-      "value": "1"
-    }
-  ]
+	[
+	{
+		"field": "enable_feature",
+		"operator": "==",
+		"value": "1"
+	}
+	]
 ]</code></pre>
 							</div>
 						</div>
 					</div>
 
-					<!-- Section 4: All 36 ACF Field Types Overview -->
+					<!-- Section 4: ACF Field Types Overview -->
 					<div class="acfjp-guide-section">
 						<h3 class="acfjp-guide-section__title">
 							<span class="dashicons dashicons-screenoptions"></span>
-							<?php esc_html_e( '4. Complete 36 ACF Field Types Reference', 'fieldpilot-for-acf' ); ?>
+							<?php esc_html_e( '4. ACF Field Types Reference', 'fieldpilot-for-acf' ); ?>
 						</h3>
 						<p class="description">
-							<?php esc_html_e( 'All 36 ACF field types across 6 official categories are supported in patch payloads and templates:', 'fieldpilot-for-acf' ); ?>
+							<?php $this->typeGuideIntro(); ?>
 						</p>
 
-						<div class="acfjp-fieldtypes-grid">
-							<div class="acfjp-ft-category">
-								<h4><?php esc_html_e( '1. Basic & Text (7 Types)', 'fieldpilot-for-acf' ); ?></h4>
-								<div class="acfjp-ft-tags">
-									<span><code>text</code> Text</span>
-									<span><code>textarea</code> Text Area</span>
-									<span><code>number</code> Number</span>
-									<span><code>range</code> Range Slider</span>
-									<span><code>email</code> Email</span>
-									<span><code>url</code> URL</span>
-									<span><code>password</code> Password</span>
-								</div>
-							</div>
-
-							<div class="acfjp-ft-category">
-								<h4><?php esc_html_e( '2. Content & Media (5 Types)', 'fieldpilot-for-acf' ); ?></h4>
-								<div class="acfjp-ft-tags">
-									<span><code>image</code> Image</span>
-									<span><code>file</code> File</span>
-									<span><code>wysiwyg</code> WYSIWYG Editor</span>
-									<span><code>oembed</code> oEmbed</span>
-									<span><code>gallery</code> Gallery (PRO)</span>
-								</div>
-							</div>
-
-							<div class="acfjp-ft-category">
-								<h4><?php esc_html_e( '3. Choice Fields (5 Types)', 'fieldpilot-for-acf' ); ?></h4>
-								<div class="acfjp-ft-tags">
-									<span><code>select</code> Select Dropdown</span>
-									<span><code>checkbox</code> Checkbox</span>
-									<span><code>radio</code> Radio Buttons</span>
-									<span><code>button_group</code> Button Group</span>
-									<span><code>true_false</code> True / False</span>
-								</div>
-							</div>
-
-							<div class="acfjp-ft-category">
-								<h4><?php esc_html_e( '4. Relational & Objects (6 Types)', 'fieldpilot-for-acf' ); ?></h4>
-								<div class="acfjp-ft-tags">
-									<span><code>post_object</code> Post Object</span>
-									<span><code>relationship</code> Relationship (PRO)</span>
-									<span><code>taxonomy</code> Taxonomy</span>
-									<span><code>user</code> User</span>
-									<span><code>page_link</code> Page Link</span>
-									<span><code>link</code> Link</span>
-								</div>
-							</div>
-
-							<div class="acfjp-ft-category">
-								<h4><?php esc_html_e( '5. Layout & Structure (7 Types)', 'fieldpilot-for-acf' ); ?></h4>
-								<div class="acfjp-ft-tags">
-									<span><code>group</code> Group</span>
-									<span><code>repeater</code> Repeater (PRO)</span>
-									<span><code>flexible_content</code> Flexible Content (PRO)</span>
-									<span><code>clone</code> Clone (PRO)</span>
-									<span><code>tab</code> Tab Divider</span>
-									<span><code>accordion</code> Accordion</span>
-									<span><code>message</code> Message</span>
-								</div>
-							</div>
-
-							<div class="acfjp-ft-category">
-								<h4><?php esc_html_e( '6. jQuery & Pickers (5 Types)', 'fieldpilot-for-acf' ); ?></h4>
-								<div class="acfjp-ft-tags">
-									<span><code>google_map</code> Google Map</span>
-									<span><code>date_picker</code> Date Picker</span>
-									<span><code>date_time_picker</code> Date Time Picker</span>
-									<span><code>time_picker</code> Time Picker</span>
-									<span><code>color_picker</code> Color Picker</span>
-								</div>
-							</div>
-						</div>
+						<?php $this->typeGuide(); ?>
 					</div>
 
 					<!-- Section 5: Interactive Example JSON Templates -->
@@ -1030,7 +818,7 @@ final class Import extends Screen {
 									<strong><?php esc_html_e( 'Example 1: Add New Fields (Text & Image with 50% width)', 'fieldpilot-for-acf' ); ?></strong>
 									<div class="acfjp-example-card__actions">
 										<button type="button" class="button button-small button-primary acfjp-guide-load" data-example-target="acfjp-code-ex1">
-											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor ➔', 'fieldpilot-for-acf' ); ?>
+											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor', 'fieldpilot-for-acf' ); ?>
 										</button>
 										<button type="button" class="button button-small acfjp-guide-copy" data-example-target="acfjp-code-ex1">
 											<span class="dashicons dashicons-clipboard"></span> <?php esc_html_e( 'Copy', 'fieldpilot-for-acf' ); ?>
@@ -1038,29 +826,29 @@ final class Import extends Screen {
 									</div>
 								</div>
 								<pre><code id="acfjp-code-ex1">{
-  "version": "1.0",
-  "operation": "add",
-  "target": {
-    "field_group": "Company Profile"
-  },
-  "add": [
-    {
-      "name": "director_name",
-      "label": "Director Name",
-      "type": "text",
-      "required": 1,
-      "instructions": "Enter director full name.",
-      "wrapper": { "width": "50" }
-    },
-    {
-      "name": "director_photo",
-      "label": "Director Photo",
-      "type": "image",
-      "return_format": "array",
-      "instructions": "Upload high resolution portrait.",
-      "wrapper": { "width": "50" }
-    }
-  ]
+	"version": "1.0",
+	"operation": "add",
+	"target": {
+	"field_group": "Company Profile"
+	},
+	"add": [
+	{
+		"name": "director_name",
+		"label": "Director Name",
+		"type": "text",
+		"required": 1,
+		"instructions": "Enter director full name.",
+		"wrapper": { "width": "50" }
+	},
+	{
+		"name": "director_photo",
+		"label": "Director Photo",
+		"type": "image",
+		"return_format": "array",
+		"instructions": "Upload high resolution portrait.",
+		"wrapper": { "width": "50" }
+	}
+	]
 }</code></pre>
 							</div>
 
@@ -1070,7 +858,7 @@ final class Import extends Screen {
 									<strong><?php esc_html_e( 'Example 2: Partial Field Update (Safe - Only touches named settings)', 'fieldpilot-for-acf' ); ?></strong>
 									<div class="acfjp-example-card__actions">
 										<button type="button" class="button button-small button-primary acfjp-guide-load" data-example-target="acfjp-code-ex2">
-											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor ➔', 'fieldpilot-for-acf' ); ?>
+											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor', 'fieldpilot-for-acf' ); ?>
 										</button>
 										<button type="button" class="button button-small acfjp-guide-copy" data-example-target="acfjp-code-ex2">
 											<span class="dashicons dashicons-clipboard"></span> <?php esc_html_e( 'Copy', 'fieldpilot-for-acf' ); ?>
@@ -1078,17 +866,17 @@ final class Import extends Screen {
 									</div>
 								</div>
 								<pre><code id="acfjp-code-ex2">{
-  "version": "1.0",
-  "operation": "update",
-  "target": {
-    "field_group": "Company Profile",
-    "path": "director_name"
-  },
-  "changes": {
-    "required": 1,
-    "instructions": "Official legal name of the executive director.",
-    "placeholder": "e.g. Jane Doe"
-  }
+	"version": "1.0",
+	"operation": "update",
+	"target": {
+	"field_group": "Company Profile",
+	"path": "director_name"
+	},
+	"changes": {
+	"required": 1,
+	"instructions": "Official legal name of the executive director.",
+	"placeholder": "e.g. Jane Doe"
+	}
 }</code></pre>
 							</div>
 
@@ -1098,7 +886,7 @@ final class Import extends Screen {
 									<strong><?php esc_html_e( 'Example 3: Add Repeater with Nested Sub-Fields', 'fieldpilot-for-acf' ); ?></strong>
 									<div class="acfjp-example-card__actions">
 										<button type="button" class="button button-small button-primary acfjp-guide-load" data-example-target="acfjp-code-ex3">
-											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor ➔', 'fieldpilot-for-acf' ); ?>
+											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor', 'fieldpilot-for-acf' ); ?>
 										</button>
 										<button type="button" class="button button-small acfjp-guide-copy" data-example-target="acfjp-code-ex3">
 											<span class="dashicons dashicons-clipboard"></span> <?php esc_html_e( 'Copy', 'fieldpilot-for-acf' ); ?>
@@ -1106,42 +894,42 @@ final class Import extends Screen {
 									</div>
 								</div>
 								<pre><code id="acfjp-code-ex3">{
-  "version": "1.0",
-  "operation": "add",
-  "target": {
-    "field_group": "Company Profile"
-  },
-  "add": [
-    {
-      "name": "timeline_events",
-      "label": "Company Milestones",
-      "type": "repeater",
-      "button_label": "Add Milestone",
-      "sub_fields": [
-        {
-          "name": "year",
-          "label": "Year",
-          "type": "number",
-          "required": 1,
-          "wrapper": { "width": "25" }
-        },
-        {
-          "name": "title",
-          "label": "Milestone Title",
-          "type": "text",
-          "required": 1,
-          "wrapper": { "width": "75" }
-        },
-        {
-          "name": "details",
-          "label": "Details",
-          "type": "textarea",
-          "rows": 3,
-          "wrapper": { "width": "100" }
-        }
-      ]
-    }
-  ]
+	"version": "1.0",
+	"operation": "add",
+	"target": {
+	"field_group": "Company Profile"
+	},
+	"add": [
+	{
+		"name": "timeline_events",
+		"label": "Company Milestones",
+		"type": "repeater",
+		"button_label": "Add Milestone",
+		"sub_fields": [
+		{
+			"name": "year",
+			"label": "Year",
+			"type": "number",
+			"required": 1,
+			"wrapper": { "width": "25" }
+		},
+		{
+			"name": "title",
+			"label": "Milestone Title",
+			"type": "text",
+			"required": 1,
+			"wrapper": { "width": "75" }
+		},
+		{
+			"name": "details",
+			"label": "Details",
+			"type": "textarea",
+			"rows": 3,
+			"wrapper": { "width": "100" }
+		}
+		]
+	}
+	]
 }</code></pre>
 							</div>
 
@@ -1151,7 +939,7 @@ final class Import extends Screen {
 									<strong><?php esc_html_e( 'Example 4: Create Brand New Field Group with Location Rules', 'fieldpilot-for-acf' ); ?></strong>
 									<div class="acfjp-example-card__actions">
 										<button type="button" class="button button-small button-primary acfjp-guide-load" data-example-target="acfjp-code-ex4">
-											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor ➔', 'fieldpilot-for-acf' ); ?>
+											<span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Load into Editor', 'fieldpilot-for-acf' ); ?>
 										</button>
 										<button type="button" class="button button-small acfjp-guide-copy" data-example-target="acfjp-code-ex4">
 											<span class="dashicons dashicons-clipboard"></span> <?php esc_html_e( 'Copy', 'fieldpilot-for-acf' ); ?>
@@ -1159,40 +947,40 @@ final class Import extends Screen {
 									</div>
 								</div>
 								<pre><code id="acfjp-code-ex4">{
-  "version": "1.0",
-  "operation": "create",
-  "group_changes": {
-    "title": "Case Studies Settings",
-    "location": [
-      [
-        {
-          "param": "post_type",
-          "operator": "==",
-          "value": "post"
-        }
-      ]
-    ]
-  },
-  "add": [
-    {
-      "name": "client_name",
-      "label": "Client Organization",
-      "type": "text",
-      "required": 1,
-      "wrapper": { "width": "50" }
-    },
-    {
-      "name": "project_industry",
-      "label": "Industry Sector",
-      "type": "select",
-      "choices": {
-        "fintech": "FinTech & Banking",
-        "healthcare": "Healthcare & MedTech",
-        "ecommerce": "E-Commerce & Retail"
-      },
-      "wrapper": { "width": "50" }
-    }
-  ]
+	"version": "1.0",
+	"operation": "create",
+	"group_changes": {
+	"title": "Case Studies Settings",
+	"location": [
+		[
+		{
+			"param": "post_type",
+			"operator": "==",
+			"value": "post"
+		}
+		]
+	]
+	},
+	"add": [
+	{
+		"name": "client_name",
+		"label": "Client Organization",
+		"type": "text",
+		"required": 1,
+		"wrapper": { "width": "50" }
+	},
+	{
+		"name": "project_industry",
+		"label": "Industry Sector",
+		"type": "select",
+		"choices": {
+		"fintech": "FinTech & Banking",
+		"healthcare": "Healthcare & MedTech",
+		"ecommerce": "E-Commerce & Retail"
+		},
+		"wrapper": { "width": "50" }
+	}
+	]
 }</code></pre>
 							</div>
 						</div>
@@ -1200,8 +988,9 @@ final class Import extends Screen {
 
 					<div class="acfjp-guide-footer">
 						<p>
-							<strong><?php esc_html_e( '💡 Need instant rollback?', 'fieldpilot-for-acf' ); ?></strong>
-							<?php esc_html_e( 'Every applied change generates a snapshot. You can undo any change anytime from the History tab.', 'fieldpilot-for-acf' ); ?>
+							<span class="dashicons dashicons-lightbulb acfjp-tip-icon" aria-hidden="true"></span>
+							<strong><?php esc_html_e( 'Need to undo a change?', 'fieldpilot-for-acf' ); ?></strong>
+							<?php esc_html_e( 'Every applied change saves a snapshot first. Roll changes back from the History screen, newest first.', 'fieldpilot-for-acf' ); ?>
 						</p>
 					</div>
 				</div>
@@ -1209,6 +998,151 @@ final class Import extends Screen {
 
 		</div>
 		<?php
+	}
+
+	private function catalog(): FieldTypeCatalog {
+		return $this->container->get( FieldTypeCatalog::class );
+	}
+
+	/**
+	 * Option groups for the 36 field types. Types this site's ACF lacks stay in
+	 * the list, disabled and labelled with the reason, so they can be seen but
+	 * not picked.
+	 *
+	 * @param string $value "type" for the builder, "example" for the prompt queue,
+	 *                      "template" for the JSON template picker.
+	 */
+	private function typeOptions( string $value ): void {
+		$catalog = $this->catalog();
+
+		foreach ( $catalog->groups() as $group ) {
+			printf( '<optgroup label="%s">', esc_attr( $group['label'] ) );
+
+			foreach ( $group['types'] as $type => $data ) {
+				$available = $catalog->isAvailable( $type );
+				$label     = 'template' === $value ? $data['template'] : $data['label'];
+
+				if ( ! $available ) {
+					$label = sprintf(
+						/* translators: 1: field type, 2: why it cannot be used, such as "Requires ACF PRO" */
+						__( '%1$s - %2$s', 'fieldpilot-for-acf' ),
+						$label,
+						$catalog->unavailableReason( $type )
+					);
+				}
+
+				$optionValue = match ( $value ) {
+					'example'  => $data['example'],
+					'template' => 'tpl_' . $type,
+					default    => $type,
+				};
+
+				printf(
+					'<option value="%1$s"%2$s>%3$s</option>',
+					esc_attr( $optionValue ),
+					disabled( ! $available, true, false ),
+					esc_html( $label )
+				);
+			}
+
+			echo '</optgroup>';
+		}
+	}
+
+	/**
+	 * One-click requests for the prompt queue. A chip for a type this site
+	 * cannot use is shown disabled, with the reason as its tooltip.
+	 */
+	private function chips(): void {
+		$catalog = $this->catalog();
+
+		$chips = array(
+			array( 'repeater', '- Add a repeater called Team Members with name (text), role (text), and photo (image) fields', __( '+ Repeater', 'fieldpilot-for-acf' ) ),
+			array( 'text', '- Add a text field called Custom Heading and make it required', __( '+ Required Text', 'fieldpilot-for-acf' ) ),
+			array( 'wysiwyg', '- Add a wysiwyg editor field called Main Content', __( '+ WYSIWYG', 'fieldpilot-for-acf' ) ),
+			array( 'image', '- Add an image field called Hero Banner with return format array', __( '+ Image', 'fieldpilot-for-acf' ) ),
+			array( 'gallery', '- Add a gallery field called Photo Gallery', __( '+ Gallery', 'fieldpilot-for-acf' ) ),
+			array( 'select', '- Add a select field called Status with choices: Draft, Review, Published', __( '+ Select Dropdown', 'fieldpilot-for-acf' ) ),
+			array( 'true_false', '- Add a true_false switch field called Is Featured with default false', __( '+ True/False', 'fieldpilot-for-acf' ) ),
+			array( 'relationship', '- Add a relationship field called Related Posts with max 3', __( '+ Relationship', 'fieldpilot-for-acf' ) ),
+			array( 'flexible_content', '- Add a flexible_content field called Page Builder with Hero and Features layouts', __( '+ Flexible Content', 'fieldpilot-for-acf' ) ),
+			array( 'date_picker', '- Add a date_picker field called Event Date with format Y-m-d', __( '+ Date Picker', 'fieldpilot-for-acf' ) ),
+			array( 'group', '- Add a group container called Contact Info with phone, email, and address fields', __( '+ Group Container', 'fieldpilot-for-acf' ) ),
+		);
+
+		foreach ( $chips as [ $type, $intent, $label ] ) {
+			$available = $catalog->isAvailable( $type );
+
+			printf(
+				'<button type="button" class="acfjp-chip" data-intent="%1$s"%2$s%3$s>%4$s</button>',
+				esc_attr( $intent ),
+				disabled( ! $available, true, false ),
+				$available ? '' : ' title="' . esc_attr( $catalog->unavailableReason( $type ) ) . '"',
+				esc_html( $label )
+			);
+		}
+	}
+
+	private function typeGuideIntro(): void {
+		$catalog   = $this->catalog();
+		$available = $catalog->availableCount();
+
+		if ( FieldTypeCatalog::TOTAL === $available ) {
+			esc_html_e( 'All 36 ACF field types are available on this site and can be used in payloads and templates.', 'fieldpilot-for-acf' );
+
+			return;
+		}
+
+		echo esc_html(
+			sprintf(
+				/* translators: 1: number of field types this site can use, 2: total number of field types */
+				__( '%1$d of %2$d ACF field types are available on this site. The others are shown with what they need, and FieldPilot will not add them here.', 'fieldpilot-for-acf' ),
+				$available,
+				FieldTypeCatalog::TOTAL
+			)
+		);
+	}
+
+	private function typeGuide(): void {
+		$catalog = $this->catalog();
+		$number  = 0;
+
+		echo '<div class="acfjp-fieldtypes-grid">';
+
+		foreach ( $catalog->groups() as $group ) {
+			++$number;
+
+			echo '<div class="acfjp-ft-category">';
+			printf(
+				'<h4>%s</h4>',
+				esc_html(
+					sprintf(
+						/* translators: 1: group number, 2: group name, 3: number of types in the group */
+						_n( '%1$d. %2$s (%3$d type)', '%1$d. %2$s (%3$d types)', count( $group['types'] ), 'fieldpilot-for-acf' ),
+						$number,
+						$group['label'],
+						count( $group['types'] )
+					)
+				)
+			);
+			echo '<div class="acfjp-ft-tags">';
+
+			foreach ( $group['types'] as $type => $data ) {
+				$available = $catalog->isAvailable( $type );
+
+				printf(
+					'<span class="%1$s"><code>%2$s</code> %3$s%4$s</span>',
+					$available ? 'acfjp-ft-tag' : 'acfjp-ft-tag is-unavailable',
+					esc_html( $type ),
+					esc_html( $data['label'] ),
+					$available ? '' : ' <em>' . esc_html( $catalog->unavailableReason( $type ) ) . '</em>'
+				);
+			}
+
+			echo '</div></div>';
+		}
+
+		echo '</div>';
 	}
 
 	private function describeOperation( Operation $operation ): string {
@@ -1265,7 +1199,10 @@ final class Import extends Screen {
 		$file = array(
 			'name'     => isset( $rawFile['name'] ) ? sanitize_file_name( wp_unslash( (string) $rawFile['name'] ) ) : '',
 			'type'     => isset( $rawFile['type'] ) ? sanitize_mime_type( wp_unslash( (string) $rawFile['type'] ) ) : '',
-			'tmp_name' => isset( $rawFile['tmp_name'] ) ? sanitize_text_field( wp_unslash( (string) $rawFile['tmp_name'] ) ) : '',
+			// WordPress does not slash $_FILES, so no wp_unslash() here: it would strip
+			// the backslashes from a Windows temp path. Parser::parseUpload() only
+			// reads it after is_uploaded_file() has vouched for it.
+			'tmp_name' => isset( $rawFile['tmp_name'] ) && is_string( $rawFile['tmp_name'] ) ? $rawFile['tmp_name'] : '', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			'error'    => $errorCode,
 			'size'     => isset( $rawFile['size'] ) ? absint( $rawFile['size'] ) : 0,
 		);

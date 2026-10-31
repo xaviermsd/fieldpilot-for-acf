@@ -150,7 +150,10 @@ final class FieldTypeSchemas {
 		$scored = array();
 
 		foreach ( $this->installedTypes() as $type ) {
-			$scored[] = array( 'type' => $type, 'score' => levenshtein( strtolower( $needle ), $type ) );
+			$scored[] = array(
+				'type'  => $type,
+				'score' => levenshtein( strtolower( $needle ), $type ),
+			);
 		}
 
 		usort( $scored, static fn( array $a, array $b ): int => $a['score'] <=> $b['score'] );

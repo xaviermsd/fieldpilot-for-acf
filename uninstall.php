@@ -2,8 +2,10 @@
 /**
  * Uninstall routine for FieldPilot.
  *
- * Runs only when the plugin is deleted from the WordPress Plugins page.
- * Respects the site owner choice to wipe or keep FieldPilot data.
+ * Runs only when the plugin is deleted from the Plugins screen, and removes data
+ * only where Settings > "On uninstall" is checked (it is off by default). On
+ * multisite each site's own setting decides for that site. Field groups and
+ * fields belong to ACF and are never touched.
  *
  * @package FieldPilot
  */
@@ -16,156 +18,83 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
 
-// 2. Read the setting. If unchecked: do nothing and exit. All data stays.
-$fieldpilot_delete_data = false;
-$fieldpilot_option_flag = get_option( 'fieldpilot_delete_on_uninstall', null );
+/**
+ * Whether the current site asked for its FieldPilot data to be removed.
+ */
+$fieldpilot_wants_cleanup = static function (): bool {
+	$flag = get_option( 'fieldpilot_delete_on_uninstall', null );
 
-if ( null !== $fieldpilot_option_flag ) {
-	$fieldpilot_delete_data = (bool) $fieldpilot_option_flag;
-} else {
-	$fieldpilot_settings = get_option( 'acfjp_settings', array() );
-	if ( is_array( $fieldpilot_settings ) && ! empty( $fieldpilot_settings['delete_on_uninstall'] ) ) {
-		$fieldpilot_delete_data = true;
+	if ( null !== $flag ) {
+		return (bool) $flag;
 	}
-}
 
-if ( ! $fieldpilot_delete_data ) {
-	return;
-}
+	$settings = get_option( 'acfjp_settings', array() );
 
-global $wpdb;
+	return is_array( $settings ) && ! empty( $settings['delete_on_uninstall'] );
+};
 
-// 3. If checked, remove in this order:
+/**
+ * Removes the current site's options, saved previews, history tables and cron event.
+ */
+$fieldpilot_clean_site = static function (): void {
+	global $wpdb;
 
-// (a) Plugin options (settings) via delete_option for each FieldPilot option.
-$fieldpilot_options = array(
-	'fieldpilot_delete_on_uninstall',
-	'fieldpilot_settings',
-	'fieldpilot_db_version',
-	'acfjp_settings',
-	'acfjp_db_version',
-	'acfjp_preserve_on_uninstall',
-);
+	$options = array(
+		'acfjp_settings',
+		'acfjp_db_version',
+		'acfjp_apply_lock',
+		'fieldpilot_delete_on_uninstall',
+		// Written by versions before 1.0.29.
+		'acfjp_preserve_on_uninstall',
+	);
 
-foreach ( $fieldpilot_options as $fieldpilot_option_name ) {
-	delete_option( $fieldpilot_option_name );
-}
+	foreach ( $options as $option ) {
+		delete_option( $option );
+	}
 
-// Clean up plan transients owned by FieldPilot.
-$wpdb->query(
-	"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_acfjp_plan_%' OR option_name LIKE '_transient_timeout_acfjp_plan_%' OR option_name LIKE '_transient_fieldpilot_plan_%' OR option_name LIKE '_transient_timeout_fieldpilot_plan_%'"
-);
+	// Saved previews are transients; remove them and their timeouts.
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+			$wpdb->esc_like( '_transient_acfjp_plan_' ) . '%',
+			$wpdb->esc_like( '_transient_timeout_acfjp_plan_' ) . '%'
+		)
+	);
 
-// (b) History/snapshot storage: drop or empty the FieldPilot history table (use $wpdb->prefix properly, never hardcode wp_).
-$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}acfjp_journal`" );
-$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}acfjp_snapshots`" );
-$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}fieldpilot_journal`" );
-$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}fieldpilot_snapshots`" );
+	$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}acfjp_journal`" );
+	$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}acfjp_snapshots`" );
 
-// (c) User meta flags (e.g. the onboarding tour done flag) for all users.
-delete_metadata( 'user', 0, 'fieldpilot_tour_done', '', true );
-delete_metadata( 'user', 0, 'acfjp_tour_done', '', true );
+	wp_clear_scheduled_hook( 'acfjp_retention_sweep' );
+};
 
-$wpdb->query(
-	$wpdb->prepare(
-		"DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE %s OR meta_key LIKE %s",
-		'fieldpilot_%',
-		'acfjp_%'
-	)
-);
+$fieldpilot_cleaned = false;
 
-// (d) The "FieldPilot Demo" group, but ONLY if it still carries the demo marker. Never delete a group the marker check fails on.
-if ( ! function_exists( 'fieldpilot_uninstall_cleanup_demo_group' ) ) {
-	/**
-	 * Deletes the FieldPilot Demo group only if it carries the demo marker.
-	 */
-	function fieldpilot_uninstall_cleanup_demo_group(): void {
-		global $wpdb;
+if ( is_multisite() ) {
+	$fieldpilot_sites = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
 
-		$fieldpilot_groups = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT ID, post_title, post_name, post_excerpt FROM {$wpdb->posts} WHERE post_type = %s AND (post_title = %s OR post_name LIKE %s OR post_excerpt LIKE %s)",
-				'acf-field-group',
-				'FieldPilot Demo',
-				'%fieldpilot_demo%',
-				'%fieldpilot_demo%'
-			)
-		);
+	foreach ( $fieldpilot_sites as $fieldpilot_site_id ) {
+		switch_to_blog( (int) $fieldpilot_site_id );
 
-		if ( empty( $fieldpilot_groups ) ) {
-			return;
+		if ( $fieldpilot_wants_cleanup() ) {
+			$fieldpilot_clean_site();
+			$fieldpilot_cleaned = true;
 		}
 
-		foreach ( $fieldpilot_groups as $fieldpilot_group ) {
-			$fieldpilot_post_id    = (int) $fieldpilot_group->ID;
-			$fieldpilot_has_marker = false;
-
-			// Check post meta markers.
-			if (
-				get_post_meta( $fieldpilot_post_id, '_fieldpilot_demo', true )
-				|| get_post_meta( $fieldpilot_post_id, 'fieldpilot_demo', true )
-				|| get_post_meta( $fieldpilot_post_id, '_acfjp_demo', true )
-			) {
-				$fieldpilot_has_marker = true;
-			}
-
-			// Check group key or slug in post_name or post_excerpt.
-			if (
-				str_contains( (string) $fieldpilot_group->post_name, 'fieldpilot_demo' )
-				|| str_contains( (string) $fieldpilot_group->post_excerpt, 'fieldpilot_demo' )
-				|| str_contains( (string) $fieldpilot_group->post_name, '_acfjp_demo' )
-				|| str_contains( (string) $fieldpilot_group->post_excerpt, '_acfjp_demo' )
-			) {
-				$fieldpilot_has_marker = true;
-			}
-
-			// Check ACF raw field group configuration if ACF is loaded.
-			if ( ! $fieldpilot_has_marker && function_exists( 'acf_get_raw_field_group' ) ) {
-				$fieldpilot_raw = acf_get_raw_field_group( $fieldpilot_post_id );
-				if ( is_array( $fieldpilot_raw ) ) {
-					if (
-						! empty( $fieldpilot_raw['_fieldpilot_demo'] )
-						|| ! empty( $fieldpilot_raw['fieldpilot_demo'] )
-						|| ( isset( $fieldpilot_raw['key'] ) && str_contains( (string) $fieldpilot_raw['key'], 'fieldpilot_demo' ) )
-					) {
-						$fieldpilot_has_marker = true;
-					}
-				}
-			}
-
-			// Never delete a group the marker check fails on.
-			if ( ! $fieldpilot_has_marker ) {
-				continue;
-			}
-
-			// Delete verified demo group and its child fields.
-			if ( function_exists( 'acf_delete_field_group' ) ) {
-				acf_delete_field_group( $fieldpilot_post_id );
-			} else {
-				$fieldpilot_field_ids = $wpdb->get_col(
-					$wpdb->prepare(
-						"SELECT ID FROM {$wpdb->posts} WHERE post_parent = %d AND post_type = %s",
-						$fieldpilot_post_id,
-						'acf-field'
-					)
-				);
-
-				if ( ! empty( $fieldpilot_field_ids ) ) {
-					foreach ( $fieldpilot_field_ids as $fieldpilot_fid ) {
-						wp_delete_post( (int) $fieldpilot_fid, true );
-					}
-				}
-
-				wp_delete_post( $fieldpilot_post_id, true );
-			}
-		}
+		restore_current_blog();
 	}
+} elseif ( $fieldpilot_wants_cleanup() ) {
+	$fieldpilot_clean_site();
+	$fieldpilot_cleaned = true;
 }
 
-fieldpilot_uninstall_cleanup_demo_group();
-
-// (e) Any scheduled cron hooks via wp_clear_scheduled_hook.
-wp_clear_scheduled_hook( 'acfjp_retention_sweep' );
-wp_clear_scheduled_hook( 'fieldpilot_retention_sweep' );
+// User meta is shared by every site on a network: the guided tour's "done" flag.
+if ( $fieldpilot_cleaned ) {
+	delete_metadata( 'user', 0, 'fieldpilot_tour_done', '', true );
+}
 
 // phpcs:enable

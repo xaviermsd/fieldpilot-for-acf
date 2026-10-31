@@ -3,7 +3,7 @@
  * Plugin Name: FieldPilot - AI & JSON Copilot for ACF
  * Plugin URI: https://github.com/xaviermsd/fieldpilot-for-acf
  * Description: Build, import, update and manage ACF field structures with AI prompts and JSON. A safe, deterministic configuration patch copilot for Advanced Custom Fields.
- * Version: 1.0.30
+ * Version: 1.1.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Author: Harsh Prajapati
@@ -27,11 +27,11 @@ defined( 'ABSPATH' ) || exit;
  * docs/ARCHITECTURE-REVIEW.md B.7 - "Requirements::assert() must not assert".
  */
 
-const ACFJP_VERSION     = '1.0.30';
-const ACFJP_MIN_PHP     = '8.1';
-const ACFJP_MIN_WP      = '6.5';
-const ACFJP_MIN_ACF     = '6.2';
-const ACFJP_DB_VERSION  = 1;
+const ACFJP_VERSION    = '1.1.0';
+const ACFJP_MIN_PHP    = '8.1';
+const ACFJP_MIN_WP     = '6.5';
+const ACFJP_MIN_ACF    = '6.2';
+const ACFJP_DB_VERSION = 1;
 
 define( 'ACFJP_FILE', __FILE__ );
 define( 'ACFJP_DIR', plugin_dir_path( __FILE__ ) );

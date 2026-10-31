@@ -61,8 +61,17 @@ final class SettingsDiff {
 				default => $current->settings[ $setting ] ?? null,
 			};
 
+			// The wrapper is one stored array; a payload naming only `width` must
+			// leave `class` and `id` as they are.
+			if ( 'wrapper' === $setting && is_array( $to ) ) {
+				$to = array_merge( is_array( $from ) ? $from : array(), $to );
+			}
+
 			if ( ! $this->equivalent( $from, $to ) ) {
-				$diffs[ $setting ] = array( 'from' => $from, 'to' => $to );
+				$diffs[ $setting ] = array(
+					'from' => $from,
+					'to'   => $to,
+				);
 			}
 		}
 
@@ -81,6 +90,12 @@ final class SettingsDiff {
 		$declared['label'] = $incoming->label;
 		$declared['name']  = $incoming->name;
 		$declared['type']  = $incoming->type;
+
+		// Identity the Normalizer filled in (a default `text` type, a label made
+		// from the name) was never asked for, so it must not become a change.
+		foreach ( $incoming->implicit as $filled ) {
+			unset( $declared[ $filled ] );
+		}
 
 		return $this->forSettings( $current, $declared );
 	}

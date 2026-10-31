@@ -20,14 +20,14 @@ defined( 'ABSPATH' ) || exit;
 
 final class Change implements \JsonSerializable {
 
-	public const ADD          = 'add';
-	public const UPDATE       = 'update';
-	public const DELETE       = 'delete';
-	public const MOVE         = 'move';
-	public const REORDER      = 'reorder';
-	public const GROUP_UPDATE = 'group_update';
-	public const CREATE_GROUP = 'create_group';
-	public const ADD_LAYOUT   = 'add_layout';
+	public const ADD           = 'add';
+	public const UPDATE        = 'update';
+	public const DELETE        = 'delete';
+	public const MOVE          = 'move';
+	public const REORDER       = 'reorder';
+	public const GROUP_UPDATE  = 'group_update';
+	public const CREATE_GROUP  = 'create_group';
+	public const ADD_LAYOUT    = 'add_layout';
 	public const DELETE_LAYOUT = 'delete_layout';
 
 	/**

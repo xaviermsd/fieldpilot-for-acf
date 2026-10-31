@@ -6,6 +6,7 @@
  * script and a human click produce identical journal entries and identical safety
  * behaviour. `apply` refuses destructive batches without --confirm, deliberately:
  * an unattended script is exactly where an accidental delete does most damage.
+ * Plugin settings stay on the Settings screen and are not exposed here.
  *
  * @package ACFJP
  */
@@ -130,6 +131,8 @@ final class Command {
 	 * @param array<string,string> $assoc
 	 */
 	public function apply( array $args, array $assoc ): void {
+		$this->requireUser( 'apply' );
+
 		try {
 			$result = $this->engine->run(
 				$this->input( $args ),
@@ -154,6 +157,51 @@ final class Command {
 
 			\WP_CLI::error( $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Create an empty field group. Journaled like any other change, so
+	 * `wp acfjp rollback <id>` moves it to the trash again.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <title>
+	 * : Title of the new field group.
+	 *
+	 * @subcommand create-group
+	 *
+	 * @param list<string> $args Positional arguments.
+	 */
+	public function create_group( array $args ): void {
+		$this->requireUser( 'create-group' );
+
+		try {
+			$result = $this->engine->createGroup( (string) ( $args[0] ?? '' ), 'cli' );
+
+			\WP_CLI::success(
+				sprintf(
+					'Created "%s" (%s). Undo with: wp acfjp rollback %d',
+					$result->changeSet->groupTitle,
+					(string) $result->write->groupKey,
+					$result->journalId
+				)
+			);
+		} catch ( AcfjpException $e ) {
+			\WP_CLI::error( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Print the JSON Schema that payloads are written against.
+	 */
+	public function schema(): void {
+		$path = ACFJP_DIR . 'schemas/fieldpilot-for-acf-v1.json';
+
+		if ( ! file_exists( $path ) ) {
+			\WP_CLI::error( 'The schema file is missing from this install.' );
+		}
+
+		\WP_CLI::line( (string) file_get_contents( $path ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 	}
 
 	/**
@@ -258,8 +306,16 @@ final class Command {
 	 * @param list<string> $args Positional arguments.
 	 */
 	public function rollback( array $args ): void {
+		$this->requireUser( 'rollback' );
+
 		try {
 			$entry = $this->engine->rollback( (int) ( $args[0] ?? 0 ), 'cli' );
+
+			if ( $entry->isCreation() ) {
+				\WP_CLI::success( sprintf( '"%s" was moved to the trash. Restore it under ACF > Field Groups > Trash.', $entry->groupTitle ) );
+
+				return;
+			}
 
 			\WP_CLI::success( sprintf( '"%s" restored to its state before change #%d.', $entry->groupTitle, $entry->id ) );
 		} catch ( AcfjpException $e ) {
@@ -285,7 +341,7 @@ final class Command {
 		$generator = new \ACFJP\Rest\PromptGenerator(
 			$this->container->get( \ACFJP\Acf\TreeReader::class ),
 			$this->container->get( \ACFJP\Acf\GroupLocator::class ),
-			$this->container->get( \ACFJP\Json\FieldTypeSchemas::class ),
+			$this->container->get( \ACFJP\Acf\FieldTypeCatalog::class ),
 		);
 
 		\WP_CLI::line( $generator->generate( $assoc['group'] ?? null, (string) ( $assoc['intent'] ?? '' ) ) );
@@ -309,6 +365,8 @@ final class Command {
 	 * @param array<string,string> $assoc
 	 */
 	public function self_test( array $args, array $assoc ): void {
+		$this->requireUser( 'self-test' );
+
 		$result = $this->container->get( SelfTest::class )->run();
 
 		if ( 'json' === ( $assoc['format'] ?? 'table' ) ) {
@@ -364,6 +422,18 @@ final class Command {
 	}
 
 	// ---- Helpers -------------------------------------------------------------
+
+	/**
+	 * Changes are checked against the acfjp_capability filter and recorded in
+	 * History under the user who made them, so WP-CLI needs to know who that is.
+	 */
+	private function requireUser( string $subcommand ): void {
+		if ( 0 !== get_current_user_id() ) {
+			return;
+		}
+
+		\WP_CLI::error( sprintf( 'Run this as an administrator so the change is checked and recorded under a user, for example: wp acfjp %s ... --user=admin', $subcommand ) );
+	}
 
 	private function renderPlan( \ACFJP\Apply\Plan $plan ): void {
 		$changeSet = $plan->changeSet;

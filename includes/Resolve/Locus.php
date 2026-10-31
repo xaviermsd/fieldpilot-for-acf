@@ -21,7 +21,7 @@ final class Locus implements \JsonSerializable {
 	 * @param string      $display   Human path, for messages and the preview header.
 	 */
 	public function __construct(
-		public readonly ?Field $parent,
+		public readonly ?Field $parent, // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.parentFound -- Public property read across the engine.
 		public readonly ?string $layoutKey = null,
 		public readonly string $display = '',
 	) {}

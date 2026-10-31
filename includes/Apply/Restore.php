@@ -69,7 +69,9 @@ final class Restore {
 			$snapshot['ID'] = (int) $existing['ID'];
 		}
 
-		$restored = acf_import_field_group( $snapshot );
+		// acf_import_field_group() unslashes what it is given; the snapshot is plain
+		// data, so add the layer it removes or every backslash is lost.
+		$restored = acf_import_field_group( wp_slash( $snapshot ) );
 
 		if ( ! is_array( $restored ) || empty( $restored['ID'] ) ) {
 			$e = new ApplyException(
@@ -91,6 +93,8 @@ final class Restore {
 			acf_get_store( 'field-groups' )?->reset();
 		}
 
+		$this->assertRestored( $groupKey, $snapshot );
+
 		/**
 		 * Fires after a field group has been restored from a snapshot.
 		 *
@@ -98,5 +102,71 @@ final class Restore {
 		 * @param array<string,mixed> $snapshot
 		 */
 		do_action( 'acfjp_restored', $groupKey, $snapshot );
+	}
+
+	/**
+	 * After a restore, every field the snapshot holds must exist again and no
+	 * other field may remain. Skipped for snapshots containing a Clone field:
+	 * snapshots taken before 1.1.0 came from acf_get_fields(), which can splice in
+	 * fields that belong to other groups.
+	 *
+	 * @param array<string,mixed> $snapshot
+	 * @throws ApplyException
+	 */
+	private function assertRestored( string $groupKey, array $snapshot ): void {
+		$expected = array();
+		$hasClone = false;
+
+		$collect = static function ( array $fields ) use ( &$collect, &$expected, &$hasClone ): void {
+			foreach ( $fields as $field ) {
+				if ( ! is_array( $field ) ) {
+					continue;
+				}
+
+				if ( ! empty( $field['key'] ) ) {
+					$expected[] = (string) $field['key'];
+				}
+
+				if ( 'clone' === ( $field['type'] ?? '' ) ) {
+					$hasClone = true;
+				}
+
+				$collect( is_array( $field['sub_fields'] ?? null ) ? $field['sub_fields'] : array() );
+
+				foreach ( is_array( $field['layouts'] ?? null ) ? $field['layouts'] : array() as $layout ) {
+					$collect( is_array( $layout['sub_fields'] ?? null ) ? $layout['sub_fields'] : array() );
+				}
+			}
+		};
+
+		$collect( is_array( $snapshot['fields'] ?? null ) ? $snapshot['fields'] : array() );
+
+		if ( $hasClone ) {
+			return;
+		}
+
+		$actual  = array_map( 'strval', array_keys( $this->reader->readRaw( $groupKey, true )->all() ) );
+		$missing = array_diff( $expected, $actual );
+		$extra   = array_diff( $actual, $expected );
+
+		if ( array() === $missing && array() === $extra ) {
+			return;
+		}
+
+		$e = new ApplyException(
+			ErrorCodes::RESTORE_FAILED,
+			sprintf(
+				/* translators: 1: number of missing fields, 2: number of unexpected fields */
+				__( 'The field group was restored, but it does not match the snapshot. Missing fields: %1$d. Unexpected fields: %2$d.', 'fieldpilot-for-acf' ),
+				count( $missing ),
+				count( $extra )
+			),
+			array(
+				'group_key' => $groupKey,
+				'missing'   => array_values( $missing ),
+				'extra'     => array_values( $extra ),
+			)
+		);
+		throw $e;
 	}
 }

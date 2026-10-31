@@ -40,8 +40,8 @@ final class Export extends Screen {
 				return;
 			}
 
-			$selected = isset( $_POST['group'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['group'] ) ) : '';
-			$dialect  = isset( $_POST['dialect'] ) ? sanitize_key( (string) $_POST['dialect'] ) : 'native';
+			$selected = isset( $_POST['group'] ) && is_string( $_POST['group'] ) ? sanitize_text_field( wp_unslash( $_POST['group'] ) ) : '';
+			$dialect  = isset( $_POST['dialect'] ) && is_string( $_POST['dialect'] ) ? sanitize_key( wp_unslash( $_POST['dialect'] ) ) : 'native';
 
 			if ( ! in_array( $dialect, array( 'native', 'acfjp' ), true ) ) {
 				$dialect = 'native';

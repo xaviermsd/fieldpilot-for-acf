@@ -18,11 +18,11 @@ defined( 'ABSPATH' ) || exit;
 final class ErrorCodes {
 
 	// ---- Parse (1xx) ---------------------------------------------------------
-	public const INVALID_JSON        = 'INVALID_JSON';
-	public const EMPTY_PAYLOAD       = 'EMPTY_PAYLOAD';
-	public const PAYLOAD_TOO_LARGE   = 'PAYLOAD_TOO_LARGE';
-	public const BAD_ENCODING        = 'BAD_ENCODING';
-	public const NOT_AN_OBJECT       = 'NOT_AN_OBJECT';
+	public const INVALID_JSON      = 'INVALID_JSON';
+	public const EMPTY_PAYLOAD     = 'EMPTY_PAYLOAD';
+	public const PAYLOAD_TOO_LARGE = 'PAYLOAD_TOO_LARGE';
+	public const BAD_ENCODING      = 'BAD_ENCODING';
+	public const NOT_AN_OBJECT     = 'NOT_AN_OBJECT';
 
 	// ---- Schema / semantics (2xx) --------------------------------------------
 	public const MISSING_VERSION     = 'MISSING_VERSION';
@@ -43,12 +43,12 @@ final class ErrorCodes {
 	public const NOT_A_CONTAINER     = 'NOT_A_CONTAINER';
 
 	// ---- Resolution (3xx) ----------------------------------------------------
-	public const GROUP_NOT_FOUND     = 'GROUP_NOT_FOUND';
-	public const FIELD_NOT_FOUND     = 'FIELD_NOT_FOUND';
-	public const PATH_NOT_FOUND      = 'PATH_NOT_FOUND';
-	public const AMBIGUOUS_TARGET    = 'AMBIGUOUS_TARGET';
-	public const LAYOUT_NOT_FOUND    = 'LAYOUT_NOT_FOUND';
-	public const TRAVERSES_CLONE     = 'TRAVERSES_CLONE';
+	public const GROUP_NOT_FOUND  = 'GROUP_NOT_FOUND';
+	public const FIELD_NOT_FOUND  = 'FIELD_NOT_FOUND';
+	public const PATH_NOT_FOUND   = 'PATH_NOT_FOUND';
+	public const AMBIGUOUS_TARGET = 'AMBIGUOUS_TARGET';
+	public const LAYOUT_NOT_FOUND = 'LAYOUT_NOT_FOUND';
+	public const TRAVERSES_CLONE  = 'TRAVERSES_CLONE';
 
 	// ---- Guard (4xx) ---------------------------------------------------------
 	public const GROUP_NOT_PATCHABLE     = 'GROUP_NOT_PATCHABLE';
@@ -56,7 +56,7 @@ final class ErrorCodes {
 	public const GROUP_NOT_SYNCED        = 'GROUP_NOT_SYNCED';
 	public const FIELD_TYPE_REQUIRES_PRO = 'FIELD_TYPE_REQUIRES_PRO';
 	public const INSUFFICIENT_CAPABILITY = 'INSUFFICIENT_CAPABILITY';
-	public const READ_ONLY_MODE         = 'READ_ONLY_MODE';
+	public const READ_ONLY_MODE          = 'READ_ONLY_MODE';
 	public const CONFIRMATION_REQUIRED   = 'CONFIRMATION_REQUIRED';
 	public const UNRESOLVED_CONFLICTS    = 'UNRESOLVED_CONFLICTS';
 

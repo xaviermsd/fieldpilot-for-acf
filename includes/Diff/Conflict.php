@@ -24,9 +24,10 @@ final class Conflict implements \JsonSerializable {
 	public const NAME_COLLISION   = 'name_collision';
 	public const KEY_IN_USE       = 'key_in_use';
 	public const CONTAINER_CHANGE = 'container_change';
+	public const MOVE_WITH_DATA   = 'move_with_data';
 
 	// Resolution option ids.
-	public const KEEP_EXISTING = 'keep_existing';
+	public const KEEP_EXISTING  = 'keep_existing';
 	public const APPLY_INCOMING = 'apply_incoming';
 	public const CREATE_NEW     = 'create_new';
 	public const LABEL_ONLY     = 'label_only';
@@ -140,7 +141,11 @@ final class Conflict implements \JsonSerializable {
 				),
 			),
 			suggested: $hasContent ? self::KEEP_EXISTING : self::APPLY_INCOMING,
-			context: $context + array( 'from' => $from, 'to' => $to, 'has_content' => $hasContent ),
+			context: $context + array(
+				'from'        => $from,
+				'to'          => $to,
+				'has_content' => $hasContent,
+			),
 		);
 	}
 
@@ -188,7 +193,53 @@ final class Conflict implements \JsonSerializable {
 				),
 			),
 			suggested: self::LABEL_ONLY,
-			context: $context + array( 'from' => $from, 'to' => $to ),
+			context: $context + array(
+				'from' => $from,
+				'to'   => $to,
+			),
+		);
+	}
+
+	/**
+	 * Moving a field that holds content into a different container changes the
+	 * meta key ACF reads its values from.
+	 *
+	 * @param array<string,mixed> $context
+	 */
+	public static function moveWithData( string $id, string $label, string $from, string $to, array $context = array() ): self {
+		return new self(
+			id: $id,
+			kind: self::MOVE_WITH_DATA,
+			title: sprintf(
+				/* translators: %s: field label */
+				__( 'Move affects stored content: %s', 'fieldpilot-for-acf' ),
+				$label
+			),
+			message: sprintf(
+				/* translators: 1: current location, 2: destination */
+				__( 'Content is stored for this field at %1$s. Moving it into %2$s changes where ACF looks for that content, so existing values will no longer show in the field.', 'fieldpilot-for-acf' ),
+				$from,
+				$to
+			),
+			options: array(
+				array(
+					'id'          => self::SKIP,
+					'label'       => __( 'Keep it where it is', 'fieldpilot-for-acf' ),
+					'description' => __( 'Skip this move. The field and its content stay exactly as they are.', 'fieldpilot-for-acf' ),
+					'destructive' => false,
+				),
+				array(
+					'id'          => self::APPLY_INCOMING,
+					'label'       => __( 'Move it anyway', 'fieldpilot-for-acf' ),
+					'description' => __( 'The field moves and starts empty in its new place. Existing values stay in the database under the old location.', 'fieldpilot-for-acf' ),
+					'destructive' => true,
+				),
+			),
+			suggested: self::SKIP,
+			context: $context + array(
+				'from' => $from,
+				'to'   => $to,
+			),
 		);
 	}
 
@@ -240,7 +291,7 @@ final class Conflict implements \JsonSerializable {
 	/**
 	 * @param array<string,mixed> $context
 	 */
-	public static function nameCollision( string $id, string $name, string $parentLabel, array $context = array() ): self {
+	public static function nameCollision( string $id, string $name, string $parentLabel, array $context = array(), bool $canMerge = true ): self {
 		return new self(
 			id: $id,
 			kind: self::NAME_COLLISION,
@@ -262,11 +313,18 @@ final class Conflict implements \JsonSerializable {
 					'description' => __( 'Keep the existing field and do not add this one.', 'fieldpilot-for-acf' ),
 					'destructive' => false,
 				),
-				array(
-					'id'          => self::APPLY_INCOMING,
-					'label'       => __( 'Update the existing field instead', 'fieldpilot-for-acf' ),
-					'description' => __( 'Treat this as a change to the field that is already there.', 'fieldpilot-for-acf' ),
-					'destructive' => false,
+				// Merging is offered only between fields of the same type, so it can
+				// never retype a field that holds content.
+				...( $canMerge
+					? array(
+						array(
+							'id'          => self::APPLY_INCOMING,
+							'label'       => __( 'Update the existing field instead', 'fieldpilot-for-acf' ),
+							'description' => __( 'Apply this definition\'s settings and label to the field that is already there. Its key and content stay as they are.', 'fieldpilot-for-acf' ),
+							'destructive' => false,
+						),
+					)
+					: array()
 				),
 				array(
 					'id'          => self::CREATE_NEW,
@@ -275,7 +333,7 @@ final class Conflict implements \JsonSerializable {
 					'destructive' => false,
 				),
 			),
-			suggested: self::APPLY_INCOMING,
+			suggested: $canMerge ? self::APPLY_INCOMING : self::CREATE_NEW,
 			context: $context + array( 'name' => $name ),
 		);
 	}
@@ -316,7 +374,10 @@ final class Conflict implements \JsonSerializable {
 				),
 			),
 			suggested: self::KEEP_EXISTING,
-			context: $context + array( 'from' => $from, 'to' => $to ),
+			context: $context + array(
+				'from' => $from,
+				'to'   => $to,
+			),
 		);
 	}
 }

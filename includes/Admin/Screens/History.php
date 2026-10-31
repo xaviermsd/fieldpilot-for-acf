@@ -26,12 +26,17 @@ final class History extends Screen {
 		$page    = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification
 		$perPage = 25;
 
-		$entries = $journal->find( array( 'limit' => $perPage, 'offset' => ( $page - 1 ) * $perPage ) );
+		$entries = $journal->find(
+			array(
+				'limit'  => $perPage,
+				'offset' => ( $page - 1 ) * $perPage,
+			)
+		);
 		$total   = $journal->countAll();
 
 		if ( array() === $entries ) {
-			echo '<div class="notice notice-info inline" style="margin: 0 0 16px 0; padding: 10px 14px; border-left-color: #2271b1;">';
-			echo '<p><strong>' . esc_html__( 'No history recorded yet.', 'fieldpilot-for-acf' ) . '</strong> ' . esc_html__( 'Below is a sample record demonstrating how your applied configuration patches and one-click rollback points will appear.', 'fieldpilot-for-acf' ) . '</p>';
+			echo '<div class="notice notice-info inline acfjp-history-sample-notice">';
+			echo '<p><strong>' . esc_html__( 'No history recorded yet.', 'fieldpilot-for-acf' ) . '</strong> ' . esc_html__( 'Below is a sample record showing how applied changes and their rollback buttons will appear.', 'fieldpilot-for-acf' ) . '</p>';
 			echo '</div>';
 
 			echo '<table class="wp-list-table widefat fixed striped acfjp-history" data-tour="history-table"><thead><tr>';
@@ -44,9 +49,9 @@ final class History extends Screen {
 			echo '</tr></thead><tbody>';
 
 			$currentUser = wp_get_current_user();
-			$userName    = ! empty( $currentUser->display_name ) ? $currentUser->display_name : 'administrator';
+			$userName    = ! empty( $currentUser->display_name ) ? $currentUser->display_name : __( 'Administrator', 'fieldpilot-for-acf' );
 
-			echo '<tr class="acfjp-history-sample-row" style="background-color: #fafbfc;">';
+			echo '<tr class="acfjp-history-sample-row">';
 			printf(
 				'<td>%s<br /><span class="description">%s</span></td>',
 				esc_html( mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), current_time( 'mysql' ) ) ),
@@ -55,9 +60,9 @@ final class History extends Screen {
 			printf(
 				'<td><strong>%s</strong><br /><code>%s</code></td>',
 				esc_html__( 'Hero Section', 'fieldpilot-for-acf' ),
-				'group_hero_sample'
+				esc_html( 'group_hero_sample' )
 			);
-			printf( '<td>%s</td>', 'update' );
+			printf( '<td>%s</td>', esc_html( 'update' ) );
 			echo '<td><strong>2</strong>';
 			echo '<details open><summary>' . esc_html__( 'details', 'fieldpilot-for-acf' ) . '</summary><ul class="acfjp-history__changes">';
 			echo '<li><span class="acfjp-marker acfjp-marker--add">+</span> hero_subtitle - ' . esc_html__( 'Add Subtitle Field', 'fieldpilot-for-acf' ) . '</li>';
@@ -65,9 +70,9 @@ final class History extends Screen {
 			echo '</ul></details></td>';
 			printf( '<td>%s</td>', esc_html( $userName ) );
 			echo '<td>';
-			echo '<button type="button" class="button button-secondary acfjp-rollback is-disabled" disabled style="opacity: 0.55; cursor: not-allowed; pointer-events: none;" title="' . esc_attr__( 'Sample preview - not reversible', 'fieldpilot-for-acf' ) . '">' . esc_html__( 'Roll back', 'fieldpilot-for-acf' ) . '</button>';
-			echo '<span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">' . esc_html__( 'Sample', 'fieldpilot-for-acf' ) . '</span>';
-			echo '<p class="description" style="margin-top: 4px; font-size: 11px;">' . esc_html__( 'Non-revocable preview', 'fieldpilot-for-acf' ) . '</p>';
+			echo '<button type="button" class="button button-secondary is-disabled" disabled title="' . esc_attr__( 'Sample preview - not reversible', 'fieldpilot-for-acf' ) . '">' . esc_html__( 'Roll back', 'fieldpilot-for-acf' ) . '</button>';
+			echo '<span class="acfjp-pill acfjp-pill--sample">' . esc_html__( 'Sample', 'fieldpilot-for-acf' ) . '</span>';
+			echo '<p class="description acfjp-history-sample-note">' . esc_html__( 'Preview only', 'fieldpilot-for-acf' ) . '</p>';
 			echo '</td>';
 			echo '</tr>';
 
@@ -155,14 +160,24 @@ final class History extends Screen {
 
 		echo '<td>';
 
+		printf(
+			'<span class="acfjp-pill acfjp-pill--%s">%s</span>',
+			esc_attr( $entry->status ),
+			esc_html( $this->statusLabel( $entry->status ) )
+		);
+
 		if ( $entry->isRollbackable() ) {
+			$prompt = $this->rollbackPrompt( $entry );
+
 			printf(
-				'<button type="button" class="button acfjp-rollback" data-id="%d">%s</button>',
+				' <button type="button" class="button acfjp-rollback" data-id="%d" data-confirm="%s" title="%s">%s</button>',
 				(int) $entry->id,
-				esc_html__( 'Roll back', 'fieldpilot-for-acf' )
+				esc_attr( $prompt['confirm'] ),
+				esc_attr( $prompt['hint'] ),
+				Entry::STATUS_INCOMPLETE === $entry->status
+					? esc_html__( 'Restore snapshot', 'fieldpilot-for-acf' )
+					: esc_html__( 'Roll back', 'fieldpilot-for-acf' )
 			);
-		} else {
-			printf( '<span class="acfjp-pill">%s</span>', esc_html( $this->statusLabel( $entry->status ) ) );
 		}
 
 		if ( null !== $entry->message ) {
@@ -175,10 +190,35 @@ final class History extends Screen {
 	private function statusLabel( string $status ): string {
 		return match ( $status ) {
 			Entry::STATUS_APPLIED     => __( 'Applied', 'fieldpilot-for-acf' ),
-			Entry::STATUS_FAILED      => __( 'Failed - rolled back', 'fieldpilot-for-acf' ),
+			Entry::STATUS_FAILED      => __( 'Failed - undone', 'fieldpilot-for-acf' ),
+			Entry::STATUS_INCOMPLETE  => __( 'Failed - needs restore', 'fieldpilot-for-acf' ),
 			Entry::STATUS_ROLLED_BACK => __( 'Rolled back', 'fieldpilot-for-acf' ),
 			Entry::STATUS_REVERTED    => __( 'Rollback', 'fieldpilot-for-acf' ),
 			default                   => $status,
 		};
+	}
+
+	/**
+	 * @return array{hint:string,confirm:string}
+	 */
+	private function rollbackPrompt( Entry $entry ): array {
+		if ( Entry::STATUS_INCOMPLETE === $entry->status ) {
+			return array(
+				'hint'    => __( 'Put the field group back to how it was before this change started.', 'fieldpilot-for-acf' ),
+				'confirm' => __( 'Put this field group back to how it was before this change started?', 'fieldpilot-for-acf' ),
+			);
+		}
+
+		if ( $entry->isCreation() ) {
+			return array(
+				'hint'    => __( 'Move this new field group to the trash.', 'fieldpilot-for-acf' ),
+				'confirm' => __( 'Move this new field group to the trash? You can restore it from ACF > Field Groups > Trash.', 'fieldpilot-for-acf' ),
+			);
+		}
+
+		return array(
+			'hint'    => __( 'Put the field group back to how it was before this change.', 'fieldpilot-for-acf' ),
+			'confirm' => __( 'Put this field group back to how it was before this change?', 'fieldpilot-for-acf' ),
+		);
 	}
 }

@@ -69,16 +69,19 @@ final class Dashboard extends Screen {
 			esc_html__( 'Import JSON', 'fieldpilot-for-acf' )
 		);
 
-		echo '<button type="button" class="button button-secondary acfjp-dashboard-btn acfjp-tour-replay-btn">';
-		echo '<span class="dashicons dashicons-welcome-learn-more"></span>';
-		esc_html_e( 'Restart Guided Tour', 'fieldpilot-for-acf' );
-		echo '</button>';
+		// The tour needs ACF; without it the restart button would do nothing.
+		if ( $this->container->get( \ACFJP\Admin\Tour::class )->isAcfActive() ) {
+			echo '<button type="button" class="button button-secondary acfjp-dashboard-btn acfjp-tour-replay-btn">';
+			echo '<span class="dashicons dashicons-welcome-learn-more"></span>';
+			esc_html_e( 'Restart Guided Tour', 'fieldpilot-for-acf' );
+			echo '</button>';
+		}
 		echo '</div>';
 
 		echo '<h2>' . esc_html__( 'Field groups', 'fieldpilot-for-acf' ) . '</h2>';
 
 		if ( array() === $reports ) {
-			echo '<div class="notice notice-info inline" style="margin: 0 0 16px 0; padding: 10px 14px; border-left-color: #2271b1;">';
+			echo '<div class="notice notice-info inline acfjp-sample-notice">';
 			echo '<p><strong>' . esc_html__( 'No ACF field groups exist yet.', 'fieldpilot-for-acf' ) . '</strong> ' . esc_html__( 'Below is a sample preview demonstrating how FieldPilot distinguishes between editable database groups and locked PHP/JSON groups.', 'fieldpilot-for-acf' ) . '</p>';
 			echo '</div>';
 
@@ -90,9 +93,9 @@ final class Dashboard extends Screen {
 			echo '</tr></thead><tbody>';
 
 			// Sample Row 1: Editable database group.
-			echo '<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">';
+			echo '<tr class="acfjp-dashboard-sample-row">';
 			printf(
-				'<td><strong>%s</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">%s</span></td>',
+				'<td><strong>%s</strong> <span class="acfjp-pill acfjp-pill--sample">%s</span></td>',
 				esc_html__( 'Hero Section', 'fieldpilot-for-acf' ),
 				esc_html__( 'Sample preview', 'fieldpilot-for-acf' )
 			);
@@ -106,9 +109,9 @@ final class Dashboard extends Screen {
 			echo '</td></tr>';
 
 			// Sample Row 2: Read-only PHP group.
-			echo '<tr class="acfjp-dashboard-sample-row" style="background-color: #fafbfc;">';
+			echo '<tr class="acfjp-dashboard-sample-row">';
 			printf(
-				'<td><strong>%s</strong> <span class="acfjp-pill" style="margin-left: 6px; background: #e0f0ff; color: #005a9c; border-color: #c2e0ff;">%s</span></td>',
+				'<td><strong>%s</strong> <span class="acfjp-pill acfjp-pill--sample">%s</span></td>',
 				esc_html__( 'Site Settings', 'fieldpilot-for-acf' ),
 				esc_html__( 'Sample preview', 'fieldpilot-for-acf' )
 			);

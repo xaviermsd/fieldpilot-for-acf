@@ -82,7 +82,10 @@ final class GroupLocator {
 					count( $exact ),
 					$reference
 				),
-				array( 'reference' => $reference, 'matches' => array_column( $exact, 'key' ) ),
+				array(
+					'reference' => $reference,
+					'matches'   => array_column( $exact, 'key' ),
+				),
 				array_map(
 					static fn( array $g ): string => sprintf( '%s (%s)', $g['title'], $g['key'] ),
 					$exact

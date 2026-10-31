@@ -9,14 +9,58 @@
 	'use strict';
 
 	const cfg = window.ACFJP || {};
-	const s = cfg.strings || {};
+	const { __, _n, sprintf } = window.wp.i18n;
 
 	let editor = null;
 	let currentPlan = null;
 
-	/** REST helper. Always resolves to { ok, ...data } or { ok:false, error }. */
+	/**
+	 * Build a REST URL that works with both pretty permalinks
+	 * (".../wp-json/ns/v1") and plain permalinks (".../index.php?rest_route=/ns/v1").
+	 * With plain permalinks the root already carries a "?", so query args must be
+	 * joined with "&" or WordPress answers rest_no_route.
+	 *
+	 * @param {string} path  Route path, e.g. "/prompt". May contain its own "?query".
+	 * @param {Object} query Optional map of query args.
+	 */
+	function restUrl( path, query ) {
+		let route = path || '';
+		const params = new URLSearchParams();
+
+		const qIndex = route.indexOf( '?' );
+		if ( -1 !== qIndex ) {
+			new URLSearchParams( route.slice( qIndex + 1 ) ).forEach( function ( value, key ) {
+				params.append( key, value );
+			} );
+			route = route.slice( 0, qIndex );
+		}
+
+		Object.keys( query || {} ).forEach( function ( key ) {
+			const value = query[ key ];
+			if ( undefined !== value && null !== value ) {
+				params.append( key, String( value ) );
+			}
+		} );
+
+		let url = ( cfg.root || '' ) + route;
+		const qs = params.toString();
+		if ( qs ) {
+			url += ( -1 === url.indexOf( '?' ) ? '?' : '&' ) + qs;
+		}
+
+		return url;
+	}
+
+	/**
+	 * REST helper. Always resolves to { ok, ...data } or { ok:false, error }.
+	 * Pass query args as options.query instead of concatenating them into the path.
+	 */
 	async function api( path, options ) {
-		const response = await fetch( cfg.root + path, Object.assign(
+		const opts = Object.assign( {}, options || {} );
+		const query = opts.query;
+		delete opts.query;
+
+		const response = await fetch( restUrl( path, query ), Object.assign(
 			{
 				headers: {
 					'Content-Type': 'application/json',
@@ -24,13 +68,13 @@
 				},
 				credentials: 'same-origin',
 			},
-			options || {}
+			opts
 		) );
 
 		try {
 			return await response.json();
 		} catch ( e ) {
-			return { ok: false, error: { code: 'BAD_RESPONSE', message: s.genericError } };
+			return { ok: false, error: { code: 'BAD_RESPONSE', message: __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ) } };
 		}
 	}
 
@@ -39,6 +83,33 @@
 		if ( className ) node.className = className;
 		if ( undefined !== text && null !== text ) node.textContent = text;
 		return node;
+	}
+
+	/**
+	 * Replace a node's content with a dashicon followed by plain text.
+	 * Text always goes through textContent, never innerHTML.
+	 *
+	 * @param {Element} node     Target element.
+	 * @param {string}  dashicon Dashicon class, e.g. "dashicons-warning".
+	 * @param {string}  text     Label text.
+	 * @param {boolean} small    Use the compact 14px icon size.
+	 */
+	function setIconText( node, dashicon, text, small ) {
+		const icon = el( 'span', 'dashicons ' + dashicon );
+		if ( small ) {
+			icon.style.fontSize = '14px';
+			icon.style.width = '14px';
+			icon.style.height = '14px';
+			icon.style.lineHeight = '14px';
+		}
+		node.replaceChildren( icon, document.createTextNode( ' ' ), el( 'span', null, text ) );
+	}
+
+	/** Snapshot an element's children so they can be restored later without innerHTML. */
+	function snapshotChildren( node ) {
+		return Array.from( node.childNodes ).map( function ( child ) {
+			return child.cloneNode( true );
+		} );
 	}
 
 	function result() {
@@ -87,7 +158,7 @@
 		target.innerHTML = '';
 
 		const box = el( 'div', 'acfjp-panel acfjp-panel--error' );
-		box.appendChild( el( 'h2', null, error.message || s.genericError ) );
+		box.appendChild( el( 'h2', null, error.message || __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ) ) );
 
 		if ( error.pointer ) {
 			box.appendChild( el( 'p', 'acfjp-pointer', error.pointer ) );
@@ -101,7 +172,8 @@
 				if ( match ) {
 					const groupTitle = match[1].trim();
 					li.appendChild( document.createTextNode( suggestion + ' ' ) );
-					const fixBtn = el( 'button', 'button button-small', 'Use "' + groupTitle + '" as Target' );
+					/* translators: %s: field group title. */
+					const fixBtn = el( 'button', 'button button-small', sprintf( __( 'Use "%s" as Target', 'fieldpilot-for-acf' ), groupTitle ) );
 					fixBtn.style.marginLeft = '8px';
 					fixBtn.type = 'button';
 					fixBtn.addEventListener( 'click', function () {
@@ -127,25 +199,26 @@
 		}
 
 		// If error is about a missing field group, offer to convert to a "create" operation
-		if ( error.message && error.message.toLowerCase().includes( 'not found' ) && error.message.toLowerCase().includes( 'field group' ) ) {
+		// Match on the error code first so this keeps working when the message is translated.
+		const isMissingGroup = 'GROUP_NOT_FOUND' === error.code
+			|| ( error.message && error.message.toLowerCase().includes( 'not found' ) && error.message.toLowerCase().includes( 'field group' ) );
+		if ( isMissingGroup ) {
 			const actions = el( 'div', null );
 			actions.style.marginTop = '12px';
 			actions.style.paddingTop = '12px';
 			actions.style.borderTop = '1px solid #f0b849';
 
-			const convertBtn = el( 'button', 'button button-secondary', '➕ Convert to "create" (Add as New Field Group)' );
+			const convertBtn = el( 'button', 'button button-secondary', __( 'Convert to "create" (Add as New Field Group)', 'fieldpilot-for-acf' ) );
 			convertBtn.type = 'button';
 			convertBtn.addEventListener( 'click', function () {
 				const raw = editor ? editor.codemirror.getValue() : ( document.getElementById( 'acfjp-json' ) || {} ).value;
 				try {
 					const parsed = JSON.parse( raw );
 					parsed.operation = 'create';
-					const currentTarget = ( parsed.target && parsed.target.field_group ) || 'New Field Group';
+					const currentTarget = ( parsed.target && parsed.target.field_group ) || __( 'New Field Group', 'fieldpilot-for-acf' );
 					delete parsed.target;
 					parsed.group_changes = { title: currentTarget };
 					setEditorValue( JSON.stringify( parsed, null, 2 ) );
-					const tSelect = document.getElementById( 'acfjp-template-group-select' );
-					if ( tSelect ) tSelect.value = '__new__';
 					preview();
 				} catch ( err ) {}
 			} );
@@ -224,7 +297,8 @@
 		if ( null === value || undefined === value ) return '-';
 		if ( 'boolean' === typeof value ) return value ? 'true' : 'false';
 		if ( '' === value ) return '""';
-		if ( 'object' === typeof value ) return Array.isArray( value ) ? value.length + ' items' : 'object';
+		/* translators: %d: number of items in a list value. */
+		if ( 'object' === typeof value ) return Array.isArray( value ) ? sprintf( _n( '%d item', '%d items', value.length, 'fieldpilot-for-acf' ), value.length ) : 'object';
 		return String( value );
 	}
 
@@ -258,7 +332,8 @@
 		box.appendChild( options );
 
 		if ( conflict.suggested ) {
-			box.appendChild( el( 'p', 'description', 'Suggested: ' + conflict.suggested ) );
+			/* translators: %s: suggested conflict resolution. */
+			box.appendChild( el( 'p', 'description', sprintf( __( 'Suggested: %s', 'fieldpilot-for-acf' ), conflict.suggested ) ) );
 		}
 
 		return box;
@@ -303,7 +378,7 @@
 		const changeset = plan.changeset || { changes: [] };
 
 		if ( ! changeset.changes.length ) {
-			panel.appendChild( el( 'p', 'acfjp-empty', s.noChanges ) );
+			panel.appendChild( el( 'p', 'acfjp-empty', __( 'No changes detected. The field group already matches this JSON.', 'fieldpilot-for-acf' ) ) );
 			target.appendChild( panel );
 			return;
 		}
@@ -316,7 +391,7 @@
 		const icon = el( 'span', 'dashicons dashicons-location' );
 		breadcrumb.appendChild( icon );
 
-		const groupTitle = changeset.group_title || changeset.group_key || 'Field Group';
+		const groupTitle = changeset.group_title || changeset.group_key || __( 'Field Group', 'fieldpilot-for-acf' );
 		breadcrumb.appendChild( el( 'span', null, groupTitle ) );
 
 		const meta = plan.meta || {};
@@ -331,7 +406,7 @@
 		const isolatedBadge = el( 'span', 'acfjp-scope-isolated' );
 		const checkIcon = el( 'span', 'dashicons dashicons-yes-alt' );
 		isolatedBadge.appendChild( checkIcon );
-		isolatedBadge.appendChild( el( 'span', null, s.scopeIsolated || 'Target Isolated - Unrelated branches protected' ) );
+		isolatedBadge.appendChild( el( 'span', null, __( 'Target Isolated - Unrelated branches are protected and untouched', 'fieldpilot-for-acf' ) ) );
 		scopeTop.appendChild( isolatedBadge );
 
 		scopeBox.appendChild( scopeTop );
@@ -344,21 +419,29 @@
 		const delCount = ( counts.delete || 0 ) + ( counts.delete_layout || 0 );
 
 		if ( addCount > 0 ) {
-			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--add', '+ ' + addCount + ' added' ) );
+			/* translators: %d: number of added fields. */
+			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--add', '+ ' + sprintf( _n( '%d added', '%d added', addCount, 'fieldpilot-for-acf' ), addCount ) ) );
 		}
 		if ( modCount > 0 ) {
-			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--modify', '~ ' + modCount + ' modified' ) );
+			/* translators: %d: number of modified fields. */
+			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--modify', '~ ' + sprintf( _n( '%d modified', '%d modified', modCount, 'fieldpilot-for-acf' ), modCount ) ) );
 		}
 		if ( delCount > 0 ) {
-			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--delete', '- ' + delCount + ' deleted' ) );
+			/* translators: %d: number of deleted fields. */
+			statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--delete', '- ' + sprintf( _n( '%d deleted', '%d deleted', delCount, 'fieldpilot-for-acf' ), delCount ) ) );
 		}
-		statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--protected', '🛡️ Protected outside target: 0 touched' ) );
+		statsChips.appendChild( el( 'span', 'acfjp-stat-chip acfjp-stat-chip--protected', __( 'Protected outside target: 0 touched', 'fieldpilot-for-acf' ) ) );
 		scopeBox.appendChild( statsChips );
 
 		panel.appendChild( scopeBox );
 
 		panel.appendChild(
-			el( 'h2', null, changeset.group_title + ' - ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) )
+			el( 'h2', null, sprintf(
+				/* translators: 1: field group title, 2: number of changes. */
+				_n( '%1$s - %2$d change', '%1$s - %2$d changes', changeset.count, 'fieldpilot-for-acf' ),
+				changeset.group_title,
+				changeset.count
+			) )
 		);
 
 		const list = el( 'div', 'acfjp-changes' );
@@ -370,7 +453,9 @@
 		// Safety & Confirmation Box
 		const isDestructive = 'destructive' === changeset.risk || delCount > 0;
 		const safetyBox = el( 'div', 'acfjp-safety-box' + ( isDestructive ? ' acfjp-safety-box--destructive' : '' ) );
-		safetyBox.appendChild( el( 'h3', null, isDestructive ? '⚠️ Pre-Apply Safety Checklist (Destructive Changes)' : '🛡️ Pre-Apply Safety Checklist' ) );
+		safetyBox.appendChild( el( 'h3', null, isDestructive
+			? __( 'Pre-Apply Safety Checklist (Destructive Changes)', 'fieldpilot-for-acf' )
+			: __( 'Pre-Apply Safety Checklist', 'fieldpilot-for-acf' ) ) );
 
 		const checklist = el( 'div', 'acfjp-safety-checklist' );
 
@@ -380,7 +465,7 @@
 		reviewInput.type = 'checkbox';
 		reviewInput.id = 'acfjp-ack-review';
 		reviewLabel.appendChild( reviewInput );
-		reviewLabel.appendChild( el( 'span', null, s.ackReview || 'I have reviewed the target scope and diff above.' ) );
+		reviewLabel.appendChild( el( 'span', null, __( 'I have reviewed the target scope and diff above.', 'fieldpilot-for-acf' ) ) );
 		checklist.appendChild( reviewLabel );
 
 		// Checkbox 2: DB write
@@ -389,7 +474,7 @@
 		dbInput.type = 'checkbox';
 		dbInput.id = 'acfjp-ack-modify';
 		dbLabel.appendChild( dbInput );
-		dbLabel.appendChild( el( 'span', null, s.ackModify || 'I understand this operation will write changes to the ACF database.' ) );
+		dbLabel.appendChild( el( 'span', null, __( 'I understand this operation will write changes to the ACF database.', 'fieldpilot-for-acf' ) ) );
 		checklist.appendChild( dbLabel );
 
 		// Checkbox 3: Destructive acknowledgement if applicable
@@ -399,7 +484,7 @@
 			destInput.type = 'checkbox';
 			destInput.id = 'acfjp-confirm';
 			destLabel.appendChild( destInput );
-			destLabel.appendChild( el( 'span', null, s.ackDestructive || s.confirmTitle || 'I acknowledge that this operation contains destructive modifications or deletions.' ) );
+			destLabel.appendChild( el( 'span', null, __( 'I acknowledge that this operation contains destructive modifications or deletions.', 'fieldpilot-for-acf' ) ) );
 			checklist.appendChild( destLabel );
 		}
 
@@ -411,14 +496,15 @@
 		const toolbarRight = el( 'div', 'acfjp-preview-toolbar__right' );
 
 		if ( changeset.group_key ) {
-			const exportBtn = el( 'button', 'button button-secondary', s.exportConfig || 'Export Current Configuration (JSON)' );
+			const exportBtn = el( 'button', 'button button-secondary', __( 'Export Current Configuration (JSON)', 'fieldpilot-for-acf' ) );
 			exportBtn.type = 'button';
 			exportBtn.id = 'acfjp-export-current';
 			exportBtn.dataset.groupKey = changeset.group_key;
 			toolbarLeft.appendChild( exportBtn );
 		}
 
-		const applyButton = el( 'button', 'button button-primary button-large', 'Apply ' + changeset.count + ' change' + ( 1 === changeset.count ? '' : 's' ) );
+		/* translators: %d: number of changes. */
+		const applyButton = el( 'button', 'button button-primary button-large', sprintf( _n( 'Apply %d change', 'Apply %d changes', changeset.count, 'fieldpilot-for-acf' ), changeset.count ) );
 		applyButton.type = 'button';
 		applyButton.id = 'acfjp-apply';
 		applyButton.disabled = true;
@@ -455,16 +541,21 @@
 		target.innerHTML = '';
 
 		const panel = el( 'div', 'acfjp-panel acfjp-panel--success' );
-		panel.appendChild( el( 'h2', null, s.applied ) );
+		panel.appendChild( el( 'h2', null, __( 'Changes applied.', 'fieldpilot-for-acf' ) ) );
 		panel.appendChild(
-			el( 'p', null, data.count + ' change' + ( 1 === data.count ? '' : 's' ) + ' applied to "' + data.group_title + '".' )
+			el( 'p', null, sprintf(
+				/* translators: 1: number of changes, 2: field group title. */
+				_n( '%1$d change applied to "%2$s".', '%1$d changes applied to "%2$s".', data.count, 'fieldpilot-for-acf' ),
+				data.count,
+				data.group_title
+			) )
 		);
 
 		( data.warnings || [] ).forEach( function ( warning ) {
 			panel.appendChild( el( 'p', 'acfjp-issue acfjp-issue--warning', warning ) );
 		} );
 
-		panel.appendChild( el( 'p', 'description', s.rollbackHint ) );
+		panel.appendChild( el( 'p', 'description', __( 'You can roll this back from the History screen.', 'fieldpilot-for-acf' ) ) );
 		target.appendChild( panel );
 
 		currentPlan = null;
@@ -473,7 +564,7 @@
 	// ---- Actions -----------------------------------------------------------
 
 	async function validate() {
-		busy( s.validating );
+		busy( __( 'Validating...', 'fieldpilot-for-acf' ) );
 
 		const response = await api( '/validate', { method: 'POST', body: payload() } );
 
@@ -486,7 +577,7 @@
 		const panel = el( 'div', 'acfjp-panel' );
 
 		if ( response.validation.valid && ! response.validation.warnings.length ) {
-			panel.appendChild( el( 'p', 'acfjp-ok', s.valid ) );
+			panel.appendChild( el( 'p', 'acfjp-ok', __( 'JSON is valid.', 'fieldpilot-for-acf' ) ) );
 		}
 
 		renderIssues( response.validation, panel );
@@ -494,7 +585,7 @@
 	}
 
 	async function preview() {
-		busy( s.planning );
+		busy( __( 'Calculating changes...', 'fieldpilot-for-acf' ) );
 
 		const response = await api( '/plan', { method: 'POST', body: payload() } );
 
@@ -510,18 +601,18 @@
 		if ( ! groupKey ) return;
 		if ( button ) {
 			button.disabled = true;
-			button.textContent = s.exporting || 'Exporting...';
+			button.textContent = __( 'Exporting...', 'fieldpilot-for-acf' );
 		}
 
 		const response = await api( '/field-groups/' + encodeURIComponent( groupKey ), { method: 'GET' } );
 
 		if ( button ) {
 			button.disabled = false;
-			button.textContent = s.exportConfig || 'Export Current Configuration (JSON)';
+			button.textContent = __( 'Export Current Configuration (JSON)', 'fieldpilot-for-acf' );
 		}
 
 		if ( ! response.ok || ! response.field_group ) {
-			window.alert( ( response.error && response.error.message ) || s.genericError );
+			window.alert( ( response.error && response.error.message ) || __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
@@ -542,7 +633,7 @@
 		const resolutions = collectResolutions();
 
 		if ( Object.keys( resolutions ).length < countConflicts() ) {
-			window.alert( s.unresolved );
+			window.alert( __( 'Resolve every conflict before applying.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
@@ -551,11 +642,11 @@
 		const confirmBox = document.getElementById( 'acfjp-confirm' );
 
 		if ( ( reviewBox && ! reviewBox.checked ) || ( dbBox && ! dbBox.checked ) ) {
-			window.alert( 'Please review and check the safety acknowledgements before applying.' );
+			window.alert( __( 'Please review and check the safety acknowledgements before applying.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
-		busy( s.applying );
+		busy( __( 'Applying...', 'fieldpilot-for-acf' ) );
 
 		const response = await api( '/apply', {
 			method: 'POST',
@@ -581,7 +672,7 @@
 
 		if ( ! response.ok ) {
 			button.disabled = false;
-			window.alert( ( response.error && response.error.message ) || s.genericError );
+			window.alert( ( response.error && response.error.message ) || __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
@@ -593,8 +684,10 @@
 		const groupVal = ( groupSelect && groupSelect.value ) ? groupSelect.value : '';
 		const intent = ( document.getElementById( 'acfjp-prompt-intent' ) || {} ).value || '';
 
-		const query = '/prompt?group_key=' + encodeURIComponent( groupVal ) + '&intent=' + encodeURIComponent( intent );
-		const response = await api( query, { method: 'GET' } );
+		const response = await api( '/prompt', {
+			method: 'POST',
+			body: JSON.stringify( { group_key: groupVal, intent: intent } ),
+		} );
 
 		if ( ! response.ok ) {
 			renderError( response.error || {} );
@@ -621,7 +714,7 @@
 		try {
 			document.execCommand( 'copy' );
 			const original = button.textContent;
-			button.textContent = s.copied || 'Copied';
+			button.textContent = __( 'Copied', 'fieldpilot-for-acf' );
 			window.setTimeout( function () { button.textContent = original; }, 1500 );
 		} catch ( e ) { /* clipboard unavailable; the text is selected for manual copy */ }
 	}
@@ -632,10 +725,10 @@
 
 		button.disabled = true;
 		const originalLabel = button.textContent;
-		button.textContent = s.selfTestRunning || 'Running…';
+		button.textContent = __( 'Running the self-test...', 'fieldpilot-for-acf' );
 
 		output.innerHTML = '';
-		output.appendChild( el( 'p', 'acfjp-busy', s.selfTestRunning || 'Running…' ) );
+		output.appendChild( el( 'p', 'acfjp-busy', __( 'Running the self-test...', 'fieldpilot-for-acf' ) ) );
 
 		const response = await api( '/self-test', { method: 'POST' } );
 
@@ -653,7 +746,7 @@
 
 	function renderErrorInto( target, error ) {
 		const box = el( 'div', 'acfjp-panel acfjp-panel--error' );
-		box.appendChild( el( 'h2', null, error.message || s.genericError ) );
+		box.appendChild( el( 'h2', null, error.message || __( 'Something went wrong. Nothing was changed.', 'fieldpilot-for-acf' ) ) );
 		( error.suggestions || [] ).forEach( function ( suggestion ) {
 			box.appendChild( el( 'p', 'acfjp-suggestion', '→ ' + suggestion ) );
 		} );
@@ -670,18 +763,26 @@
 
 		headline.appendChild(
 			el( 'h2', null, data.ok
-				? ( s.selfTestPass || 'All checks passed.' )
-				: ( data.failed + ' check' + ( 1 === data.failed ? '' : 's' ) + ' failed.' ) )
+				? __( 'All checks passed.', 'fieldpilot-for-acf' )
+				/* translators: %d: number of failed checks. */
+				: sprintf( _n( '%d check failed.', '%d checks failed.', data.failed, 'fieldpilot-for-acf' ), data.failed ) )
 		);
 
 		headline.appendChild(
-			el( 'p', null, data.passed + ' passed · ' + data.failed + ' failed · ' + data.skipped + ' skipped · ' + data.duration + 'ms' )
+			el( 'p', null, sprintf(
+				/* translators: 1: passed checks, 2: failed checks, 3: skipped checks, 4: duration in milliseconds. */
+				__( '%1$d passed - %2$d failed - %3$d skipped - %4$d ms', 'fieldpilot-for-acf' ),
+				data.passed,
+				data.failed,
+				data.skipped,
+				data.duration
+			) )
 		);
 
 		if ( data.ok ) {
-			headline.appendChild( el( 'p', 'description', s.selfTestPassHint || '' ) );
+			headline.appendChild( el( 'p', 'description', __( 'The engine works correctly against this ACF installation.', 'fieldpilot-for-acf' ) ) );
 		} else if ( data.critical ) {
-			headline.appendChild( el( 'p', 'acfjp-critical', s.selfTestCritical || '' ) );
+			headline.appendChild( el( 'p', 'acfjp-critical', __( 'A check that protects your configuration failed. Do not use this on field groups you care about until it is fixed.', 'fieldpilot-for-acf' ) ) );
 		}
 
 		target.appendChild( headline );
@@ -704,7 +805,7 @@
 				}
 
 				if ( check.critical && 'fail' === check.status ) {
-					body.appendChild( el( 'span', 'acfjp-pill acfjp-pill--destructive', s.selfTestBlocking || 'blocking' ) );
+					body.appendChild( el( 'span', 'acfjp-pill acfjp-pill--destructive', __( 'blocking', 'fieldpilot-for-acf' ) ) );
 				}
 
 				row.appendChild( body );
@@ -767,7 +868,7 @@
 		if ( ! text ) {
 			switchTab( 'editor' );
 			setEditorValue( '' );
-			window.alert( s.pasteError || 'Please press Ctrl+V or Cmd+V directly into the editor.' );
+			window.alert( __( 'Could not access clipboard directly. Please use Ctrl+V / Cmd+V.', 'fieldpilot-for-acf' ) );
 			return;
 		}
 
@@ -919,7 +1020,7 @@
 			if ( isOpen ) {
 				newGroupContainer.style.display = 'block';
 				if ( toggleNewGroupBtn ) {
-					toggleNewGroupBtn.innerHTML = '<span class="dashicons dashicons-no-alt" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> <span>' + ( s.close || 'Close' ) + '</span>';
+					setIconText( toggleNewGroupBtn, 'dashicons-no-alt', __( 'Close', 'fieldpilot-for-acf' ), true );
 				}
 				if ( newGroupTitleInput ) {
 					newGroupTitleInput.focus();
@@ -927,7 +1028,7 @@
 			} else {
 				newGroupContainer.style.display = 'none';
 				if ( toggleNewGroupBtn ) {
-					toggleNewGroupBtn.innerHTML = '<span class="dashicons dashicons-plus-alt2" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> <span>' + ( s.addNewFieldGroup || 'Add New Field Group' ) + '</span>';
+					setIconText( toggleNewGroupBtn, 'dashicons-plus-alt2', __( 'Add New Field Group', 'fieldpilot-for-acf' ), true );
 				}
 				if ( newGroupTitleInput ) {
 					newGroupTitleInput.classList.remove( 'acfjp-input-error' );
@@ -1027,7 +1128,7 @@
 					createGroupFeedback.style.gap = '4px';
 					createGroupFeedback.style.color = '#d63638';
 					createGroupFeedback.style.fontWeight = '600';
-					createGroupFeedback.innerHTML = '<span class="dashicons dashicons-warning" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> Field group title is required.';
+					setIconText( createGroupFeedback, 'dashicons-warning', __( 'Field group title is required.', 'fieldpilot-for-acf' ), true );
 				}
 				newGroupTitleInput.focus();
 				return;
@@ -1035,32 +1136,26 @@
 
 			createGroupBtn.disabled = true;
 			const origText = createGroupBtn.textContent;
-			createGroupBtn.textContent = 'Creating...';
+			createGroupBtn.textContent = __( 'Creating...', 'fieldpilot-for-acf' );
 			if ( createGroupFeedback ) {
 				createGroupFeedback.style.display = 'block';
 				createGroupFeedback.style.color = '#50575e';
-				createGroupFeedback.textContent = 'Creating field group in ACF...';
+				createGroupFeedback.textContent = __( 'Creating field group in ACF...', 'fieldpilot-for-acf' );
 			}
 
 			try {
-				const params = new URLSearchParams();
-				params.append( 'action', 'fieldpilot_create_field_group' );
-				params.append( 'nonce', ( window.ACFJP && window.ACFJP.ajaxNonce ) || '' );
-				params.append( 'title', title );
-
-				const ajaxUrl = ( window.ACFJP && window.ACFJP.ajaxUrl ) || '/wp-admin/admin-ajax.php';
-				const res = await fetch( ajaxUrl, {
+				// Same REST pipeline as every other change: guarded, verified,
+				// journaled, and undoable from History.
+				const data = await api( '/field-groups', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: params.toString()
+					body: JSON.stringify( { title: title } ),
 				} );
 
-				const data = await res.json();
-				if ( ! data.success ) {
-					throw new Error( ( data.data && data.data.message ) || 'Failed to create field group.' );
+				if ( ! data.ok ) {
+					throw new Error( ( data.error && data.error.message ) || __( 'Failed to create field group.', 'fieldpilot-for-acf' ) );
 				}
 
-				const created = data.data;
+				const created = { key: data.key, title: data.title };
 
 				// Append to Tab 1 promptGroupSelect
 				if ( promptGroupSelect ) {
@@ -1086,7 +1181,7 @@
 					const opt2 = document.createElement( 'option' );
 					opt2.value = created.title;
 					opt2.dataset.key = created.key;
-					opt2.textContent = '🎯 ' + created.title;
+					opt2.textContent = created.title;
 					templateGroupSelect.appendChild( opt2 );
 					templateGroupSelect.value = created.title;
 				}
@@ -1098,7 +1193,7 @@
 				}
 				const newGroupLabel = document.getElementById( 'acfjp-new-group-label' );
 				if ( newGroupLabel ) {
-					newGroupLabel.textContent = 'Create New ACF Field Group:';
+					newGroupLabel.textContent = __( 'Create New ACF Field Group:', 'fieldpilot-for-acf' );
 				}
 				if ( toggleNewGroupBtn ) {
 					toggleNewGroupBtn.style.display = 'inline-flex';
@@ -1111,9 +1206,17 @@
 				// Show brief success notice next to select
 				const desc = document.getElementById( 'acfjp-prompt-group-desc' );
 				if ( desc ) {
-					desc.innerHTML = '<span style="color: #007017; font-weight: 600;">✓ Field group "' + created.title + '" created and selected.</span>';
+					const okNote = el(
+						'span',
+						null,
+						/* translators: %s: field group title. */
+						'\u2713 ' + sprintf( __( 'Field group "%s" created and selected.', 'fieldpilot-for-acf' ), created.title )
+					);
+					okNote.style.color = '#007017';
+					okNote.style.fontWeight = '600';
+					desc.replaceChildren( okNote );
 					setTimeout( function () {
-						desc.textContent = 'Select the field group you want to modify, or click "Add New Field Group" to create one.';
+						desc.textContent = __( 'Select the field group you want to modify, or click "Add New Field Group" to create one.', 'fieldpilot-for-acf' );
 					}, 4000 );
 				}
 
@@ -1125,7 +1228,7 @@
 				if ( createGroupFeedback ) {
 					createGroupFeedback.style.display = 'block';
 					createGroupFeedback.style.color = '#d63638';
-					createGroupFeedback.textContent = err.message || 'Error creating group.';
+					createGroupFeedback.textContent = err.message || __( 'Error creating group.', 'fieldpilot-for-acf' );
 				}
 			} finally {
 				createGroupBtn.disabled = false;
@@ -1284,7 +1387,7 @@
 				nameInput.classList.add( 'acfjp-input-error' );
 				if ( nameErr ) {
 					nameErr.style.display = 'flex';
-					nameErr.innerHTML = '<span class="dashicons dashicons-warning" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> Please enter a Field Label or Name (e.g. Price, Subtitle) to append.';
+					setIconText( nameErr, 'dashicons-warning', __( 'Please enter a Field Label or Name (e.g. Price, Subtitle) to append.', 'fieldpilot-for-acf' ), true );
 				}
 				nameInput.focus();
 				return;
@@ -1301,7 +1404,7 @@
 					maxInput.classList.add( 'acfjp-input-error' );
 					if ( nameErr ) {
 						nameErr.style.display = 'flex';
-						nameErr.innerHTML = '<span class="dashicons dashicons-warning" style="font-size: 14px; width: 14px; height: 14px; line-height: 14px;"></span> Minimum value cannot be greater than Maximum value in Validation settings.';
+						setIconText( nameErr, 'dashicons-warning', __( 'Minimum value cannot be greater than Maximum value in Validation settings.', 'fieldpilot-for-acf' ), true );
 					}
 					const valTabBtn = document.querySelector( '.acfjp-builder-tab[data-builder-tab="validation"]' );
 					if ( valTabBtn ) valTabBtn.click();
@@ -1548,6 +1651,10 @@
 			const chip = target.closest( '.acfjp-chip' );
 			if ( chip ) {
 				event.preventDefault();
+				// A type this site's ACF cannot use is listed but disabled.
+				if ( chip.disabled ) {
+					return;
+				}
 				const intent = chip.dataset.intent;
 				if ( intent ) {
 					appendIntent( intent );
@@ -1567,9 +1674,9 @@
 				}
 				if ( key && navigator.clipboard && navigator.clipboard.writeText ) {
 					navigator.clipboard.writeText( key );
-					const originalText = keyBadge.innerHTML;
-					keyBadge.innerHTML = '<code>' + ( s.copied || 'Copied!' ) + '</code>';
-					window.setTimeout( function () { keyBadge.innerHTML = originalText; }, 1500 );
+					const originalNodes = snapshotChildren( keyBadge );
+					keyBadge.replaceChildren( el( 'code', null, __( 'Copied!', 'fieldpilot-for-acf' ) ) );
+					window.setTimeout( function () { keyBadge.replaceChildren.apply( keyBadge, originalNodes ); }, 1500 );
 				}
 				return;
 			}
@@ -1604,10 +1711,10 @@
 				event.preventDefault();
 				const output = document.getElementById( 'acfjp-prompt-output' );
 				if ( output ) {
-					const original = promptCopy.innerHTML;
+					const originalNodes = snapshotChildren( promptCopy );
 					copyFrom( output, promptCopy );
-					promptCopy.innerHTML = '<span class="dashicons dashicons-yes"></span> ' + ( s.promptCopied || '1. Copied! Now paste into AI ➔' );
-					window.setTimeout( function () { promptCopy.innerHTML = original; }, 2500 );
+					setIconText( promptCopy, 'dashicons-yes', __( 'Prompt Copied! Now paste into your AI (ChatGPT / Claude / Gemini)', 'fieldpilot-for-acf' ), false );
+					window.setTimeout( function () { promptCopy.replaceChildren.apply( promptCopy, originalNodes ); }, 2500 );
 
 					const step2b = document.getElementById( 'acfjp-prompt-step2b' );
 					if ( step2b ) {
@@ -1645,9 +1752,9 @@
 				const codeEl = targetId ? document.getElementById( targetId ) : null;
 				if ( codeEl && navigator.clipboard && navigator.clipboard.writeText ) {
 					navigator.clipboard.writeText( codeEl.textContent || '' );
-					const origHtml = guideCopyBtn.innerHTML;
-					guideCopyBtn.innerHTML = '<span class="dashicons dashicons-yes"></span> ' + ( s.copied || 'Copied!' );
-					window.setTimeout( function () { guideCopyBtn.innerHTML = origHtml; }, 1500 );
+					const originalNodes = snapshotChildren( guideCopyBtn );
+					setIconText( guideCopyBtn, 'dashicons-yes', __( 'Copied!', 'fieldpilot-for-acf' ), false );
+					window.setTimeout( function () { guideCopyBtn.replaceChildren.apply( guideCopyBtn, originalNodes ); }, 1500 );
 				}
 				return;
 			}
@@ -1663,7 +1770,7 @@
 			const rollbackButton = target.closest( '.acfjp-rollback' );
 			if ( rollbackButton ) {
 				event.preventDefault();
-				if ( window.confirm( 'Restore this field group to its previous state?' ) ) {
+				if ( window.confirm( rollbackButton.dataset.confirm || __( 'Restore this field group to its previous state?', 'fieldpilot-for-acf' ) ) ) {
 					rollback( rollbackButton.dataset.id, rollbackButton );
 				}
 			}

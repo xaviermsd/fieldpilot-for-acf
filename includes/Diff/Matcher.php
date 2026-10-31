@@ -65,7 +65,10 @@ final class Matcher {
 
 			$taken[ (string) $match->key ] = true;
 
-			$pairs[] = array( 'current' => $match, 'incoming' => $field );
+			$pairs[] = array(
+				'current'  => $match,
+				'incoming' => $field,
+			);
 		}
 
 		$removed = array();
@@ -76,7 +79,11 @@ final class Matcher {
 			}
 		}
 
-		return array( 'pairs' => $pairs, 'added' => $added, 'removed' => $removed );
+		return array(
+			'pairs'   => $pairs,
+			'added'   => $added,
+			'removed' => $removed,
+		);
 	}
 
 	/**

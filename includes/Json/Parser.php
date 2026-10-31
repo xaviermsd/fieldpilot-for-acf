@@ -49,7 +49,10 @@ final class Parser {
 					size_format( strlen( $raw ) ),
 					size_format( $this->maxBytes() )
 				),
-				array( 'bytes' => strlen( $raw ), 'max_bytes' => $this->maxBytes() )
+				array(
+					'bytes'     => strlen( $raw ),
+					'max_bytes' => $this->maxBytes(),
+				)
 			);
 			throw $e;
 		}

@@ -19,6 +19,8 @@ final class WriteResult implements \JsonSerializable {
 	 * @param list<string>        $deletedKeys
 	 * @param list<string>        $skipped      Change ids skipped by conflict resolution.
 	 * @param array<string,mixed> $context
+	 * @param array<string,array<string,string>> $addedKeys Change id => key => type for
+	 *                                                      everything an add created.
 	 */
 	public function __construct(
 		public readonly string $groupKey,
@@ -28,6 +30,7 @@ final class WriteResult implements \JsonSerializable {
 		public readonly array $deletedKeys = array(),
 		public readonly array $skipped = array(),
 		public readonly array $context = array(),
+		public readonly array $addedKeys = array(),
 	) {}
 
 	public function total(): int {
@@ -39,14 +42,14 @@ final class WriteResult implements \JsonSerializable {
 	 */
 	public function jsonSerialize(): array {
 		return array(
-			'group_key'    => $this->groupKey,
-			'group_id'     => $this->groupId,
-			'created'      => array_keys( $this->createdKeys ),
-			'updated'      => $this->updatedKeys,
-			'deleted'      => $this->deletedKeys,
-			'skipped'      => $this->skipped,
-			'total'        => $this->total(),
-			'context'      => $this->context,
+			'group_key' => $this->groupKey,
+			'group_id'  => $this->groupId,
+			'created'   => array_keys( $this->createdKeys ),
+			'updated'   => $this->updatedKeys,
+			'deleted'   => $this->deletedKeys,
+			'skipped'   => $this->skipped,
+			'total'     => $this->total(),
+			'context'   => $this->context,
 		);
 	}
 }

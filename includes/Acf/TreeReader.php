@@ -129,10 +129,29 @@ final class TreeReader {
 			throw $e;
 		}
 
-		$fields = acf_get_fields( $group );
+		$fields          = acf_get_fields( $group );
 		$group['fields'] = $fields;
 
 		return acf_prepare_field_group_for_export( $group );
+	}
+
+	/**
+	 * The database state of a group as a native export, for snapshots.
+	 *
+	 * Built from the raw tree rather than acf_get_field_group()/acf_get_fields():
+	 * those return the acf-json copy when one shadows the database row, and with
+	 * seamless Clone they splice in fields owned by other groups. Restoring such a
+	 * snapshot would write that foreign state into the database.
+	 *
+	 * @return array<string,mixed>
+	 * @throws ResolutionException When the group is not in the database.
+	 */
+	public function snapshotArray( string $groupKey ): array {
+		$export = $this->readRaw( $groupKey, true )->group->toAcfArray();
+
+		unset( $export['ID'], $export['local'], $export['_valid'] );
+
+		return $export;
 	}
 
 	/**
@@ -285,7 +304,10 @@ final class TreeReader {
 				levenshtein( $n, $t )
 			);
 
-			$scored[] = array( 'label' => sprintf( '%s (%s)', $title, $key ), 'score' => $distance );
+			$scored[] = array(
+				'label' => sprintf( '%s (%s)', $title, $key ),
+				'score' => $distance,
+			);
 		}
 
 		usort( $scored, static fn( array $a, array $b ): int => $a['score'] <=> $b['score'] );

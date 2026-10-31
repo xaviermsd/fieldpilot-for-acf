@@ -44,7 +44,8 @@ final class Target implements \JsonSerializable {
 
 		if ( is_string( $path ) ) {
 			// Tolerate "Agent > Contact" and "Agent.Contact" - AI output does this.
-			$path = preg_split( '/\s*(?:>|›|\.|\/)\s*/u', $path, -1, PREG_SPLIT_NO_EMPTY ) ?: array();
+			$segments = preg_split( '/\s*(?:>|›|\.|\/)\s*/u', $path, -1, PREG_SPLIT_NO_EMPTY );
+			$path     = false !== $segments ? $segments : array();
 		}
 
 		return new self(

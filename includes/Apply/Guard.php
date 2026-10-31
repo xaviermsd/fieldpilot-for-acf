@@ -39,12 +39,18 @@ final class Guard {
 
 	/**
 	 * @param string|null $expectedHash The tree hash the plan was computed against.
+	 * @param bool        $isNewGroup   The batch creates its group, which therefore
+	 *                                  cannot be in the database yet.
 	 * @throws GuardException
 	 */
-	public function assertCanApply( ChangeSet $changeSet, RawTree $current, bool $confirmed, ?string $expectedHash = null ): void {
+	public function assertCanApply( ChangeSet $changeSet, RawTree $current, bool $confirmed, ?string $expectedHash = null, bool $isNewGroup = false ): void {
 		$this->assertWritable();
 		$this->assertCapability();
-		$this->assertMutable( $changeSet->groupKey );
+
+		if ( ! $isNewGroup ) {
+			$this->assertMutable( $changeSet->groupKey );
+		}
+
 		$this->assertStateUnchanged( $current, $expectedHash );
 		$this->assertTypesAvailable( $changeSet );
 		$this->assertConflictsResolved( $changeSet );
@@ -101,7 +107,7 @@ final class Guard {
 			array(
 				defined( 'ACFJP_READ_ONLY' ) && ACFJP_READ_ONLY
 					? __( 'Remove the ACFJP_READ_ONLY constant from wp-config.php to allow changes.', 'fieldpilot-for-acf' )
-					: __( 'Turn off read-only mode under FieldPilot → Settings to allow changes.', 'fieldpilot-for-acf' ),
+					: __( 'Turn off read-only mode under FieldPilot > Settings to allow changes.', 'fieldpilot-for-acf' ),
 			)
 		);
 		throw $e;
@@ -150,7 +156,11 @@ final class Guard {
 					__( '"%s" is registered in PHP with acf_add_local_field_group(), so it cannot be changed from the database. Edit the code that registers it.', 'fieldpilot-for-acf' ),
 					$report->groupTitle
 				),
-				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value, 'remedy' => $report->remedy ),
+				array(
+					'group_key'  => $groupKey,
+					'mutability' => $report->mutability->value,
+					'remedy'     => $report->remedy,
+				),
 				array( __( 'Use Export to generate the PHP for the change, then paste it into the file that registers this group.', 'fieldpilot-for-acf' ) )
 			),
 			Mutability::LocalJson => new GuardException(
@@ -160,7 +170,12 @@ final class Guard {
 					__( '"%s" is loaded from an acf-json file and has not been synced into the database yet, so there is nothing here to patch.', 'fieldpilot-for-acf' ),
 					$report->groupTitle
 				),
-				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value, 'remedy' => 'sync', 'json_path' => $report->jsonPath ),
+				array(
+					'group_key'  => $groupKey,
+					'mutability' => $report->mutability->value,
+					'remedy'     => 'sync',
+					'json_path'  => $report->jsonPath,
+				),
 				array( __( 'Sync this field group into the database first, then apply the change. The JSON file is rewritten afterwards, so your repository stays authoritative.', 'fieldpilot-for-acf' ) )
 			),
 			default => new GuardException(
@@ -170,7 +185,10 @@ final class Guard {
 					__( 'Field group "%s" cannot be modified.', 'fieldpilot-for-acf' ),
 					$groupKey
 				),
-				array( 'group_key' => $groupKey, 'mutability' => $report->mutability->value )
+				array(
+					'group_key'  => $groupKey,
+					'mutability' => $report->mutability->value,
+				)
 			),
 		};
 		throw $exception;
@@ -197,7 +215,10 @@ final class Guard {
 		$e = new GuardException(
 			ErrorCodes::STATE_CHANGED,
 			__( 'This field group changed after the preview was generated. Review the changes again before applying.', 'fieldpilot-for-acf' ),
-			array( 'expected' => $expectedHash, 'actual' => $actual ),
+			array(
+				'expected' => $expectedHash,
+				'actual'   => $actual,
+			),
 			array( __( 'Re-run the preview to see a diff against the current state.', 'fieldpilot-for-acf' ) )
 		);
 		throw $e;
@@ -320,7 +341,10 @@ final class Guard {
 						$change->label,
 						$current->group->title
 					),
-					array( 'field_key' => $change->targetKey, 'group_key' => $current->group->key )
+					array(
+						'field_key' => $change->targetKey,
+						'group_key' => $current->group->key,
+					)
 				);
 				throw $e;
 			}

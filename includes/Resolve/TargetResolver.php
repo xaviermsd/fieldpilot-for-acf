@@ -61,9 +61,23 @@ final class TargetResolver {
 						$parent->label,
 						$parent->type
 					),
-					array( 'field_key' => $parent->key, 'type' => $parent->type )
+					array(
+						'field_key' => $parent->key,
+						'type'      => $parent->type,
+					)
 				);
 				throw $e;
+			}
+		}
+
+		// `field` can name the container itself, e.g. {"field": "blocks"} to add
+		// layouts to a flexible content field. A plain field there adds nothing to
+		// the scope, but it must exist: a typo must not fall back to the group root.
+		if ( null !== $target->field ) {
+			$named = $this->resolveField( $tree, $target->field, $parent?->key, null );
+
+			if ( $named->isContainer() ) {
+				$parent = $named;
 			}
 		}
 
@@ -151,11 +165,12 @@ final class TargetResolver {
 
 		// 3. Dotted or arrowed path, e.g. "contact.email".
 		if ( 1 === preg_match( '/[>›.\/]/u', $reference ) ) {
-			$segments = preg_split( '/\s*[>›.\/]\s*/u', $reference, -1, PREG_SPLIT_NO_EMPTY ) ?: array();
+			$split    = preg_split( '/\s*[>›.\/]\s*/u', $reference, -1, PREG_SPLIT_NO_EMPTY );
+			$segments = false !== $split ? $split : array();
 
-			$cursor     = $withinParentKey;
+			$cursor       = $withinParentKey;
 			$cursorLayout = $withinLayoutKey;
-			$field      = null;
+			$field        = null;
 
 			foreach ( $segments as $segment ) {
 				$field        = $this->resolveField( $tree, $segment, $cursor, $cursorLayout );
@@ -194,7 +209,10 @@ final class TargetResolver {
 				$reference,
 				$tree->group->title
 			),
-			array( 'reference' => $reference, 'group_key' => $tree->group->key ),
+			array(
+				'reference' => $reference,
+				'group_key' => $tree->group->key,
+			),
 			$this->describe( $tree, $candidates )
 		);
 		throw $e;
@@ -216,10 +234,10 @@ final class TargetResolver {
 	/**
 	 * @throws ResolutionException
 	 */
-	private function stepInto( Tree $tree, ?Field $parent, ?string $layoutKey, string $segment, Target $target ): Field {
+	private function stepInto( Tree $tree, ?Field $container, ?string $layoutKey, string $segment, Target $target ): Field {
 		// A segment may name a layout rather than a field.
-		if ( null !== $parent && array() !== $parent->layouts ) {
-			foreach ( $parent->layouts as $layout ) {
+		if ( null !== $container && array() !== $container->layouts ) {
+			foreach ( $container->layouts as $layout ) {
 				if ( 0 === strcasecmp( $layout->name, $segment ) || 0 === strcasecmp( $layout->label, $segment ) || $layout->key === $segment ) {
 					// Layouts are not fields; descend by re-scoping instead.
 					$children = $layout->subFields;
@@ -239,13 +257,13 @@ final class TargetResolver {
 
 					// Represent the layout as its owning field with the layout scope
 					// carried in the Locus; callers use resolveLocus for this.
-					return $parent;
+					return $container;
 				}
 			}
 		}
 
 		try {
-			return $this->resolveField( $tree, $segment, $parent?->key, $layoutKey );
+			return $this->resolveField( $tree, $segment, $container?->key, $layoutKey );
 		} catch ( ResolutionException $e ) {
 			$wrapper = new ResolutionException(
 				ErrorCodes::PATH_NOT_FOUND,
@@ -267,10 +285,10 @@ final class TargetResolver {
 	/**
 	 * @throws ResolutionException
 	 */
-	private function resolveLayoutKey( Field $parent, string $reference ): string {
+	private function resolveLayoutKey( Field $container, string $reference ): string {
 		$matches = array();
 
-		foreach ( $parent->layouts as $layout ) {
+		foreach ( $container->layouts as $layout ) {
 			if ( $layout->key === $reference || 0 === strcasecmp( $layout->name, $reference ) || 0 === strcasecmp( $layout->label, $reference ) ) {
 				$matches[] = $layout;
 			}
@@ -299,12 +317,12 @@ final class TargetResolver {
 				/* translators: 1: layout reference, 2: field label */
 				__( 'Layout "%1$s" was not found in "%2$s".', 'fieldpilot-for-acf' ),
 				$reference,
-				$parent->label
+				$container->label
 			),
 			array( 'layout' => $reference ),
 			array_map(
 				static fn( $l ): string => $l->label !== '' ? $l->label : $l->name,
-				$parent->layouts
+				$container->layouts
 			)
 		);
 		throw $e;
@@ -384,7 +402,10 @@ final class TargetResolver {
 				count( $matches ),
 				$reference
 			),
-			array( 'reference' => $reference, 'matches' => array_map( static fn( Field $f ): ?string => $f->key, $matches ) ),
+			array(
+				'reference' => $reference,
+				'matches'   => array_map( static fn( Field $f ): ?string => $f->key, $matches ),
+			),
 			array_map(
 				static fn( Field $f ): string => sprintf( '%s (%s)', $tree->displayPath( (string) $f->key ), (string) $f->key ),
 				$matches

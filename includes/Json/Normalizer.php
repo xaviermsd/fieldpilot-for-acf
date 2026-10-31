@@ -110,7 +110,8 @@ final class Normalizer {
 		$operation = $this->readOperation( $raw, $defaultOperation );
 		$target    = $this->readTarget( $raw );
 
-		$add          = $this->toFields( $this->normalizeFieldList( $this->listOf( $raw, 'add' ), 1, '/add' ) );
+		$addList      = $this->normalizeFieldList( $this->listOf( $raw, 'add' ), 1, '/add' );
+		$add          = $this->toFields( $addList );
 		$changes      = $this->readChanges( $raw );
 		$delete       = $this->readDelete( $raw );
 		$moves        = $this->readMoves( $raw );
@@ -126,7 +127,7 @@ final class Normalizer {
 			$group                = FieldGroup::fromAcfArray( $groupArray );
 		}
 
-		// A `create` written as {"operation":"create","title":..,"fields":[..]}.
+		// A `create` with the group title and its fields at the top level.
 		if ( null === $group && Operation::Create === $operation && isset( $raw['fields'] ) ) {
 			$group = FieldGroup::fromAcfArray(
 				array(
@@ -135,6 +136,22 @@ final class Normalizer {
 					'fields' => $this->normalizeFieldList( $raw['fields'], 1, '/fields' ),
 				)
 			);
+		}
+
+		// A `create` in the shape the AI prompt and the templates use: the new
+		// group takes its settings from group_changes and its fields from add.
+		if ( null === $group && Operation::Create === $operation && ( array() !== $addList || array() !== $groupChanges ) ) {
+			$group        = FieldGroup::fromAcfArray(
+				array_merge(
+					$groupChanges,
+					array(
+						'title'  => (string) ( $groupChanges['title'] ?? ( null !== $target ? $target->group : '' ) ),
+						'fields' => $addList,
+					)
+				)
+			);
+			$add          = array();
+			$groupChanges = array();
 		}
 
 		return new Payload(
@@ -157,10 +174,10 @@ final class Normalizer {
 	 * @param array<string,mixed> $raw
 	 * @throws ValidationException
 	 */
-	private function readOperation( array $raw, ?Operation $default ): Operation {
+	private function readOperation( array $raw, ?Operation $fallback ): Operation {
 		if ( ! isset( $raw['operation'] ) ) {
-			if ( null !== $default ) {
-				return $default;
+			if ( null !== $fallback ) {
+				return $fallback;
 			}
 
 			$e = new ValidationException(
@@ -233,6 +250,23 @@ final class Normalizer {
 
 		foreach ( $changes as $key => $value ) {
 			if ( ! is_array( $value ) ) {
+				// {"required": 1} names a setting but no field. Dropping it would
+				// leave an empty update and an error that says "changes" is missing.
+				if ( is_string( $key ) ) {
+					$e = new ValidationException(
+						ErrorCodes::INVALID_SETTING,
+						sprintf(
+							/* translators: %s: the key found directly under "changes" */
+							__( 'In "changes", "%s" should be a field with its settings, but it holds a single value.', 'fieldpilot-for-acf' ),
+							$key
+						),
+						array( 'key' => $key ),
+						array( __( 'Name the field, then its settings: {"changes": {"email": {"required": 1}}}. Field group settings go in "group_changes".', 'fieldpilot-for-acf' ) ),
+						'/changes/' . $key
+					);
+					throw $e;
+				}
+
 				continue;
 			}
 
@@ -398,6 +432,10 @@ final class Normalizer {
 		$raw  = Aliases::field( $raw );
 		$type = (string) ( $raw['type'] ?? 'text' );
 
+		// Remember what we fill in, so a declarative merge does not mistake a
+		// default for something the payload asked to change.
+		$implicit = isset( $raw['type'] ) && '' !== $raw['type'] ? array() : array( 'type' );
+
 		$raw['type'] = $type;
 
 		// Label and name fill in for each other. ACF itself derives name from label.
@@ -405,11 +443,17 @@ final class Normalizer {
 		$name  = isset( $raw['name'] ) ? (string) $raw['name'] : '';
 
 		if ( '' === $name && '' !== $label && ! FieldKind::isStructural( $type ) ) {
-			$name = (string) KeyFactory::normalizeName( $label );
+			$name       = (string) KeyFactory::normalizeName( $label );
+			$implicit[] = 'name';
 		}
 
 		if ( '' === $label && '' !== $name ) {
-			$label = ucwords( str_replace( '_', ' ', $name ) );
+			$label      = ucwords( str_replace( '_', ' ', $name ) );
+			$implicit[] = 'label';
+		}
+
+		if ( array() !== $implicit ) {
+			$raw['_acfjp_implicit'] = $implicit;
 		}
 
 		if ( '' !== $name ) {

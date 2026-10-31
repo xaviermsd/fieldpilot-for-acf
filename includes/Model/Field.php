@@ -46,6 +46,7 @@ final class Field implements \JsonSerializable {
 		'_prepare',
 		'class',
 		'id',
+		'_acfjp_implicit',
 	);
 
 	/**
@@ -58,6 +59,8 @@ final class Field implements \JsonSerializable {
 	 * @param list<Field>         $children Sub-fields, for group/repeater.
 	 * @param list<Layout>        $layouts  Layouts, for flexible_content.
 	 * @param array<string,mixed> $settings Every non-reserved ACF setting.
+	 * @param list<string>        $implicit Identity props (type, label, name) the
+	 *                                      Normalizer derived rather than read.
 	 */
 	public function __construct(
 		public readonly ?string $key,
@@ -71,6 +74,7 @@ final class Field implements \JsonSerializable {
 		public readonly ?string $parentKey = null,
 		public readonly ?string $parentLayout = null,
 		public readonly ?int $menuOrder = null,
+		public readonly array $implicit = array(),
 	) {}
 
 	/**
@@ -118,6 +122,7 @@ final class Field implements \JsonSerializable {
 			parentKey: $parentKey ?? ( isset( $raw['parent'] ) && ! is_numeric( $raw['parent'] ) ? (string) $raw['parent'] : null ),
 			parentLayout: $parentLayout ?? ( isset( $raw['parent_layout'] ) ? (string) $raw['parent_layout'] : null ),
 			menuOrder: isset( $raw['menu_order'] ) ? (int) $raw['menu_order'] : null,
+			implicit: is_array( $raw['_acfjp_implicit'] ?? null ) ? array_values( array_map( 'strval', $raw['_acfjp_implicit'] ) ) : array(),
 		);
 	}
 
@@ -169,7 +174,12 @@ final class Field implements \JsonSerializable {
 	}
 
 	public function withParent( ?string $parentKey, ?string $parentLayout = null ): self {
-		return $this->copy( array( 'parentKey' => $parentKey, 'parentLayout' => $parentLayout ) );
+		return $this->copy(
+			array(
+				'parentKey'    => $parentKey,
+				'parentLayout' => $parentLayout,
+			)
+		);
 	}
 
 	public function withMenuOrder( int $order ): self {
@@ -229,6 +239,7 @@ final class Field implements \JsonSerializable {
 			parentKey: array_key_exists( 'parentKey', $overrides ) ? $overrides['parentKey'] : $this->parentKey,
 			parentLayout: array_key_exists( 'parentLayout', $overrides ) ? $overrides['parentLayout'] : $this->parentLayout,
 			menuOrder: $overrides['menuOrder'] ?? $this->menuOrder,
+			implicit: $overrides['implicit'] ?? $this->implicit,
 		);
 	}
 

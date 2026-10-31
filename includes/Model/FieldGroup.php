@@ -116,7 +116,15 @@ final class FieldGroup implements \JsonSerializable {
 
 		ksort( $material );
 
-		return hash( 'sha256', (string) wp_json_encode( array( 'title' => $this->title, 'settings' => $material ) ) );
+		return hash(
+			'sha256',
+			(string) wp_json_encode(
+				array(
+					'title'    => $this->title,
+					'settings' => $material,
+				)
+			)
+		);
 	}
 
 	/**

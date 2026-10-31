@@ -8,7 +8,7 @@
 
 /* ---- Dashboard cards ---- */
 .acfjp-cards { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
-.acfjp-card { flex: 1 1 200px; background: #fff; border: 1px solid var(--acfjp-line); border-radius: 4px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px; }
+.acfjp-card { flex: 1 1 200px; background: #fff; border: 1px solid var(--acfjp-line); border-top: 3px solid var(--acfjp-navy); border-radius: 4px; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px; }
 .acfjp-card__value { font-size: 32px; font-weight: 600; line-height: 1.1; }
 .acfjp-card__label { font-weight: 600; }
 .acfjp-card__hint { color: #646970; font-size: 12px; }
@@ -18,12 +18,18 @@
 .acfjp-pill--ok { background: #edfaef; color: #00653a; }
 .acfjp-pill--warn, .acfjp-pill--caution { background: #fcf9e8; color: #8a6116; }
 .acfjp-pill--blocked, .acfjp-pill--destructive { background: #fcf0f1; color: var(--acfjp-destructive); }
+/* History statuses */
+.acfjp-pill--applied { background: #edfaef; color: #00653a; }
+.acfjp-pill--failed { background: #fcf9e8; color: #8a6116; }
+.acfjp-pill--incomplete { background: #fcf0f1; color: var(--acfjp-destructive); }
+.acfjp-pill--reverted, .acfjp-pill--sample { background: #e0f0ff; color: #005a9c; }
+.acfjp-pill + .acfjp-rollback, .acfjp-rollback + .acfjp-pill { margin-left: 6px; }
 
 /* ---- Import layout (Side-by-Side Split Workbench) ---- */
 .acfjp-import {
 	display: grid;
-	grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.05fr);
-	gap: 20px;
+	grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+	gap: 24px;
 	margin-top: 16px;
 	align-items: start;
 }
@@ -32,7 +38,7 @@
 		grid-template-columns: 1fr;
 	}
 }
-.acfjp-import__editor textarea { width: 100%; font-family: Menlo, Consolas, monospace; font-size: 13px; }
+.acfjp-import__editor textarea { width: 100%; font-family: Menlo, Consolas, Monaco, monospace; font-size: 13px; box-sizing: border-box; min-height: 380px; }
 .acfjp-import__controls {
 	background: #fff;
 	border: 1px solid var(--acfjp-line);
@@ -45,9 +51,9 @@
 .acfjp-field-row select,
 .acfjp-field-row input[type="text"] { display: block; width: 100%; max-width: 100%; box-sizing: border-box; margin: 4px 0; }
 .acfjp-field-row .description { display: block; margin-top: 4px; line-height: 1.4; color: #646970; }
-.acfjp-upload { margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.acfjp-groups { margin-top: 16px; }
-.acfjp-groups ul { margin: 8px 0 0; max-height: 220px; overflow: auto; }
+.acfjp-upload { margin-top: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid #f0f0f1; }
+.acfjp-groups { margin-top: 16px; border: 1px solid #f0f0f1; border-radius: 4px; padding: 8px 12px; }
+.acfjp-groups ul { margin: 8px 0 0; max-height: 240px; overflow: auto; padding-left: 0; list-style: none; }
 .acfjp-groups code { font-size: 11px; }
 .acfjp-prompt textarea { width: 100%; font-family: Menlo, Consolas, monospace; font-size: 12px; }
 
@@ -143,7 +149,7 @@
 .acfjp-selftest__check.is-fail .acfjp-selftest__detail { color: #a02121; }
 
 /* ---- Tabs Navigation ---- */
-.acfjp-wrap { margin-top: 16px; max-width: 1400px; }
+.acfjp-wrap { margin-top: 16px; max-width: 1400px; position: relative; padding-bottom: 40px; clear: both; }
 .acfjp-wrap .button {
 	display: inline-flex;
 	align-items: center;
@@ -205,10 +211,10 @@
 }
 .acfjp-nav-tab-wrapper .nav-tab.nav-tab-active,
 .acfjp-nav-tab-wrapper .nav-tab.is-active {
-	color: #2271b1;
+	color: var(--acfjp-navy);
 	background: #fff;
-	border-color: #2271b1;
-	border-top: 3px solid #2271b1;
+	border-color: #c3c4c7;
+	border-top: 3px solid var(--acfjp-lime);
 	border-bottom: 2px solid #fff;
 	font-weight: 700;
 }
@@ -226,12 +232,6 @@
 	clear: both !important;
 	margin-top: 40px !important;
 	z-index: 1 !important;
-}
-
-.acfjp-wrap {
-	position: relative;
-	padding-bottom: 40px;
-	clear: both;
 }
 
 /* ---- AI Card & Workflow ---- */
@@ -279,6 +279,8 @@
 	font-weight: 500; transition: background .15s ease, border-color .15s ease;
 }
 .acfjp-chip:hover { background: #e0f0ff; border-color: #2271b1; }
+/* A type this site's ACF cannot use: listed, not clickable. */
+.acfjp-chip:disabled, .acfjp-chip:disabled:hover { background: #f6f7f7; border-color: #dcdcde; border-style: dashed; color: #8c8f94; cursor: not-allowed; }
 
 .acfjp-quick-dropdown-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 #acfjp-quick-field-select {
@@ -343,7 +345,7 @@
 .acfjp-ai-step__action .description { margin: 0 0 10px; color: #3c434a; font-size: 12px; }
 
 /* ---- Import layout ---- */
-.acfjp-import { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: 24px; align-items: start; }
+
 @media (max-width: 960px) { .acfjp-import { grid-template-columns: 1fr; } }
 
 .acfjp-import__editor,
@@ -412,7 +414,6 @@
 	outline: 2px solid transparent;
 }
 
-.acfjp-import__editor textarea { width: 100%; font-family: Menlo, Consolas, Monaco, monospace; font-size: 13px; box-sizing: border-box; min-height: 380px; }
 .acfjp-import__editor .CodeMirror { height: 420px; border: 1px solid #c3c4c7; border-radius: 4px; font-size: 13px; font-family: Menlo, Consolas, Monaco, monospace; }
 
 .acfjp-primary-actions {
@@ -585,17 +586,12 @@
 	margin-top: 1px;
 }
 
-.acfjp-field-row { margin-bottom: 16px; }
-.acfjp-field-row label { display: block; margin-bottom: 4px; font-weight: 600; color: #1d2327; }
 .acfjp-field-row select,
 .acfjp-field-row textarea,
 .acfjp-field-row input[type="text"] { display: block; width: 100%; max-width: 100%; box-sizing: border-box; margin: 4px 0; }
-.acfjp-field-row .description { display: block; margin-top: 4px; line-height: 1.4; color: #646970; }
-.acfjp-upload { margin-top: 14px; padding-top: 12px; border-top: 1px solid #f0f0f1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-.acfjp-groups { margin-top: 16px; border: 1px solid #f0f0f1; border-radius: 4px; padding: 8px 12px; }
 .acfjp-groups summary { cursor: pointer; color: #1d2327; font-size: 13px; font-weight: 600; }
-.acfjp-groups ul { margin: 8px 0 0; max-height: 240px; overflow: auto; padding-left: 0; list-style: none; }
+
 .acfjp-groups li { padding: 5px 0; border-bottom: 1px solid #f6f7f7; }
 .acfjp-groups li:last-child { border-bottom: none; }
 .acfjp-group-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
@@ -711,6 +707,9 @@
 	padding: 3px 7px; font-size: 11px; color: #334155; display: inline-flex; align-items: center; gap: 4px;
 }
 .acfjp-ft-tags code { font-size: 11px; font-weight: bold; color: #2271b1; background: transparent; padding: 0; }
+.acfjp-ft-tags .is-unavailable { background: #f6f7f7; border-style: dashed; color: #8c8f94; }
+.acfjp-ft-tags .is-unavailable code { color: #8c8f94; }
+.acfjp-ft-tags em { font-style: normal; font-size: 10px; font-weight: 600; color: #8a6116; }
 
 /* Example Templates List */
 .acfjp-examples-list {
@@ -768,7 +767,7 @@
 .acfjp-stat-chip--add { color: #008a20; border-color: #c2edc8; background: #f4fcf5; }
 .acfjp-stat-chip--modify { color: #856404; border-color: #ffeeba; background: #fffdf5; }
 .acfjp-stat-chip--delete { color: var(--acfjp-destructive); border-color: #f5c6cb; background: #fff8f8; }
-.acfjp-stat-chip--protected { color: #005a9c; border-color: #bde0fe; background: #f0f7ff; }
+.acfjp-stat-chip--protected { color: #3b5a00; border-color: var(--acfjp-lime); background: #f4ffd9; }
 
 /* ---- Safety Checklist & Backup Banner ---- */
 .acfjp-safety-box {
@@ -778,6 +777,13 @@
 .acfjp-safety-box--destructive {
 	border-left: 4px solid var(--acfjp-destructive); background: #fffdfd;
 }
+/* Icons that used to be emoji inside translatable strings. */
+.acfjp-stat-chip--protected::before,
+.acfjp-safety-box h3::before { font-family: dashicons; content: "\f332"; font-weight: 400; margin-right: 4px; vertical-align: -2px; }
+.acfjp-safety-box--destructive h3::before { content: "\f534"; }
+.acfjp-builder-tab .dashicons { font-size: 15px; width: 15px; height: 15px; vertical-align: -2px; margin-right: 2px; }
+.acfjp-tip-icon.dashicons { font-size: 16px; width: 16px; height: 16px; vertical-align: text-bottom; color: #dba617; }
+
 .acfjp-safety-box h3 {
 	margin: 0 0 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px;
 }
@@ -892,21 +898,21 @@
 
 /* ---- Onboarding Tour & Spotlight ---- */
 #acfjp-tour-overlay {
-	position: fixed;
-	inset: 0;
-	width: 100vw;
-	height: 100vh;
-	pointer-events: auto;
-	z-index: 999998;
-	transition: opacity 0.25s ease;
+	position: fixed !important;
+	inset: 0 !important;
+	width: 100vw !important;
+	height: 100vh !important;
+	pointer-events: auto !important;
+	z-index: 999998 !important;
+	transition: opacity 0.25s ease !important;
 }
 
 .acfjp-tour-svg-mask {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	pointer-events: none !important;
 }
 
 #acfjp-tour-mask-cutout {
@@ -917,13 +923,13 @@
 }
 
 #acfjp-tour-spotlight-border {
-	position: fixed;
-	border: 2px solid #2271b1;
-	border-radius: 8px;
-	box-shadow: 0 0 0 4px rgba(34, 113, 177, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25);
-	pointer-events: none;
-	z-index: 999998;
-	box-sizing: border-box;
+	position: fixed !important;
+	border: 2px solid var(--acfjp-cyan) !important;
+	border-radius: 8px !important;
+	box-shadow: 0 0 0 4px rgba(45, 226, 230, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+	pointer-events: none !important;
+	z-index: 999998 !important;
+	box-sizing: border-box !important;
 	transition: top 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
 	            left 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
 	            width 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -932,89 +938,90 @@
 
 /* Tooltip Popup */
 #acfjp-tour-tooltip {
-	position: fixed;
-	z-index: 999999;
-	width: 380px;
-	max-width: calc(100vw - 32px);
-	background: #ffffff;
-	border-radius: 8px;
-	box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25), 0 2px 6px rgba(15, 23, 42, 0.1);
-	border: 1px solid #c3c4c7;
-	padding: 20px;
-	box-sizing: border-box;
+	position: fixed !important;
+	z-index: 999999 !important;
+	width: 380px !important;
+	max-width: calc(100vw - 32px) !important;
+	background: #ffffff !important;
+	border-radius: 8px !important;
+	box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25), 0 2px 6px rgba(15, 23, 42, 0.1) !important;
+	border: 1px solid #c3c4c7 !important;
+	padding: 20px !important;
+	box-sizing: border-box !important;
 	transition: top 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
 	            left 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
 	            opacity 0.2s ease;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
 .acfjp-tour-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 10px;
+	display: flex !important;
+	justify-content: space-between !important;
+	align-items: center !important;
+	margin-bottom: 10px !important;
 }
 
 .acfjp-tour-badge {
-	display: inline-block;
-	background: #f0f6fc;
-	color: #005a9c;
-	font-size: 11px;
-	font-weight: 700;
-	padding: 2px 8px;
-	border-radius: 12px;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	border: 1px solid #c2e0ff;
+	display: inline-block !important;
+	background: var(--acfjp-navy) !important;
+	color: var(--acfjp-lime) !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	padding: 2px 8px !important;
+	border-radius: 12px !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.04em !important;
+	border: 1px solid var(--acfjp-navy) !important;
 }
 
 .acfjp-tour-close {
-	background: none;
-	border: none;
-	cursor: pointer;
-	color: #8c8f94;
-	font-size: 18px;
-	line-height: 1;
-	padding: 2px 4px;
+	background: none !important;
+	border: none !important;
+	cursor: pointer !important;
+	color: #8c8f94 !important;
+	font-size: 20px !important;
+	line-height: 1 !important;
+	padding: 2px 4px !important;
 }
 .acfjp-tour-close:hover {
 	color: #1d2327;
 }
 
 .acfjp-tour-title {
-	margin: 0 0 8px 0;
-	font-size: 16px;
-	font-weight: 700;
-	color: #1d2327;
-	line-height: 1.3;
+	margin: 0 0 8px 0 !important;
+	font-family: var(--acfjp-heading-font) !important;
+	font-size: 16px !important;
+	font-weight: 700 !important;
+	color: #1d2327 !important;
+	line-height: 1.3 !important;
 }
 
 .acfjp-tour-body {
-	margin: 0 0 16px 0;
-	font-size: 13px;
-	color: #50575e;
-	line-height: 1.5;
+	margin: 0 0 16px 0 !important;
+	font-size: 13px !important;
+	color: #50575e !important;
+	line-height: 1.5 !important;
 }
 
 .acfjp-tour-footer {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-top: 16px;
-	padding-top: 12px;
-	border-top: 1px solid #f0f0f1;
+	display: flex !important;
+	justify-content: space-between !important;
+	align-items: center !important;
+	margin-top: 16px !important;
+	padding-top: 12px !important;
+	border-top: 1px solid #f0f0f1 !important;
 }
 
 .acfjp-tour-nav {
-	display: flex;
-	gap: 8px;
+	display: flex !important;
+	gap: 8px !important;
 }
 
 .acfjp-tour-btn-skip {
 	color: #646970 !important;
 	text-decoration: none !important;
 	font-size: 12px !important;
-	cursor: pointer;
+	cursor: pointer !important;
 	padding: 0 !important;
 }
 .acfjp-tour-btn-skip:hover {
@@ -1089,19 +1096,24 @@
 	justify-content: center;
 	padding: 16px;
 	box-sizing: border-box;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
 }
 
 .acfjp-tour-modal-card {
-	background: #ffffff;
-	border-radius: 12px;
-	max-width: 520px;
-	width: 100%;
-	padding: 36px 32px 32px 32px;
-	box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
-	text-align: center;
-	box-sizing: border-box;
-	position: relative;
-	border: 1px solid #dcdcde;
+	background: #ffffff !important;
+	border-radius: 12px !important;
+	max-width: 520px !important;
+	width: 100% !important;
+	padding: 36px 32px 32px 32px !important;
+	box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35) !important;
+	text-align: center !important;
+	box-sizing: border-box !important;
+	position: relative !important;
+	border: 1px solid #dcdcde !important;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
 .acfjp-tour-modal-close {
@@ -1130,27 +1142,28 @@
 }
 
 .acfjp-tour-modal-icon {
-	font-size: 48px;
-	width: 48px;
-	height: 48px;
-	line-height: 48px;
-	color: #2271b1;
-	margin: 0 auto 16px auto;
-	display: block;
+	font-size: 48px !important;
+	width: 48px !important;
+	height: 48px !important;
+	line-height: 48px !important;
+	color: var(--acfjp-navy) !important;
+	margin: 0 auto 16px auto !important;
+	display: block !important;
 }
 
 .acfjp-tour-modal-card h2 {
-	margin: 0 0 12px 0;
-	font-size: 22px;
-	font-weight: 700;
-	color: #1d2327;
+	margin: 0 0 12px 0 !important;
+	font-family: var(--acfjp-heading-font) !important;
+	font-size: 22px !important;
+	font-weight: 700 !important;
+	color: #1d2327 !important;
 }
 
 .acfjp-tour-modal-card p {
-	font-size: 14px;
-	line-height: 1.55;
-	color: #50575e;
-	margin: 0 0 24px 0;
+	font-size: 14px !important;
+	line-height: 1.55 !important;
+	color: #50575e !important;
+	margin: 0 0 24px 0 !important;
 }
 
 .acfjp-tour-modal-actions {
@@ -1232,48 +1245,46 @@
 
 /* History Screen Empty State Card */
 .acfjp-history-empty-card {
-	background: #ffffff;
-	border: 1px solid #c3c4c7;
-	border-radius: 8px;
-	padding: 32px 28px;
-	margin: 20px 0;
-	max-width: 640px;
-	text-align: center;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-	box-sizing: border-box;
+	background: #ffffff !important;
+	border: 1px solid #c3c4c7 !important;
+	border-radius: 8px !important;
+	padding: 32px 28px !important;
+	margin: 20px 0 !important;
+	max-width: 640px !important;
+	text-align: center !important;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+	box-sizing: border-box !important;
 }
 
 .acfjp-history-empty-icon .dashicons {
-	font-size: 40px;
-	width: 40px;
-	height: 40px;
-	line-height: 40px;
-	color: #2271b1;
-	margin-bottom: 12px;
-	display: inline-block;
+	font-size: 40px !important;
+	width: 40px !important;
+	height: 40px !important;
+	line-height: 40px !important;
+	color: #2271b1 !important;
+	margin-bottom: 12px !important;
+	display: inline-block !important;
 }
 
 .acfjp-history-empty-card h3 {
-	margin: 0 0 8px 0;
-	font-size: 16px;
-	font-weight: 600;
-	color: #1d2327;
+	margin: 0 0 8px 0 !important;
+	font-size: 16px !important;
+	font-weight: 600 !important;
+	color: #1d2327 !important;
 }
 
 .acfjp-history-empty-card p {
-	margin: 0;
-	font-size: 13px;
-	color: #50575e;
-	line-height: 1.55;
+	margin: 0 !important;
+	font-size: 13px !important;
+	color: #50575e !important;
+	line-height: 1.55 !important;
 }
 
 /* History Screen Sample Row (Non-revocable / Disabled) */
-.acfjp-history-sample-row {
-	background-color: #fafbfc !important;
-}
-.acfjp-history-sample-row td {
-	color: #50575e;
-}
+.acfjp-history-sample-notice.notice { margin: 0 0 16px; padding: 10px 14px; border-left-color: #2271b1; }
+.acfjp-history-sample-note.description { margin: 4px 0 0; font-size: 11px; }
+.acfjp-history-sample-row { background-color: #fafbfc !important; }
+.acfjp-history-sample-row td { color: #50575e !important; }
 .acfjp-history-sample-row .acfjp-rollback[disabled],
 .acfjp-history-sample-row .acfjp-rollback.is-disabled {
 	opacity: 0.55 !important;
@@ -1282,12 +1293,8 @@
 }
 
 /* Dashboard Screen Sample Row */
-.acfjp-dashboard-sample-row {
-	background-color: #fafbfc !important;
-}
-.acfjp-dashboard-sample-row td {
-	color: #50575e;
-}
+.acfjp-dashboard-sample-row { background-color: #fafbfc !important; }
+.acfjp-dashboard-sample-row td { color: #50575e !important; }
 
 /* Validation States & Mandatory Gate */
 .acfjp-input-error {
@@ -1359,3 +1366,39 @@
 	animation: acfjpPulseHighlight 1.5s ease-out;
 }
 
+/* Tour */
+
+.acfjp-history-sample-row .acfjp-rollback[disabled] {
+	opacity: 0.55 !important;
+	cursor: not-allowed !important;
+	pointer-events: none !important;
+}
+
+/* ---- Brand ----
+ * FieldPilot's own accents: lime, cyan and navy, with Sora for headings. Everything
+ * else stays on the WordPress admin palette so the plugin still fits the admin.
+ * The tokens live on :root because the tour overlay sits outside .acfjp.
+ */
+:root {
+	--acfjp-lime: #c6ff3d;
+	--acfjp-cyan: #2de2e6;
+	--acfjp-navy: #0b2233;
+	--acfjp-navy-deep: #050c14;
+	--acfjp-heading-font: 'Sora', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.acfjp .acfjp-title {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-family: var(--acfjp-heading-font);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+.acfjp .acfjp-logo { width: 32px; height: 32px; flex: none; border-radius: 7px; }
+.acfjp h2, .acfjp h3, .acfjp .acfjp-card__value { font-family: var(--acfjp-heading-font); }
+.acfjp-card:nth-child(1) { border-top-color: var(--acfjp-lime); }
+.acfjp-card:nth-child(2) { border-top-color: var(--acfjp-cyan); }
+
+/* Sample rows the Dashboard and the tour show on an empty site. */
+.acfjp-sample-notice.notice { margin: 0 0 16px; padding: 10px 14px; border-left-color: var(--acfjp-cyan); }
+.acfjp-dashboard-sample-row .acfjp-pill--sample { margin-left: 6px; border: 1px solid #c2e0ff; }

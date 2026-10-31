@@ -36,20 +36,21 @@ final class Autoloader {
 	/**
 	 * Resolve a fully qualified class name to a file and require it.
 	 *
-	 * @param string $class Fully qualified class name.
+	 * @param string $className Fully qualified class name.
 	 */
-	public function load( string $class ): void {
-		if ( ! str_starts_with( $class, $this->prefix ) ) {
+	public function load( string $className ): void {
+		if ( ! str_starts_with( $className, $this->prefix ) ) {
 			return;
 		}
 
-		$relative = substr( $class, strlen( $this->prefix ) );
+		$relative = substr( $className, strlen( $this->prefix ) );
 		$path     = $this->baseDir . str_replace( '\\', DIRECTORY_SEPARATOR, $relative ) . '.php';
 
 		// realpath() + prefix check guards against any future caller passing a
 		// class name containing traversal sequences.
 		$real = realpath( $path );
-		if ( false === $real || ! str_starts_with( $real, realpath( $this->baseDir ) ?: $this->baseDir ) ) {
+		$base = realpath( $this->baseDir );
+		if ( false === $real || ! str_starts_with( $real, false !== $base ? $base : $this->baseDir ) ) {
 			return;
 		}
 

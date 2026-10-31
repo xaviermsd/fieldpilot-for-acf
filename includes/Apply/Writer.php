@@ -20,6 +20,13 @@
  *    also means PRO's Repeater and Flexible Content set their own `parent_layout`
  *    and `menu_order`, so we never hand-build them (ARCHITECTURE-REVIEW B.4, B.7).
  *
+ * 3. EVERYTHING HANDED TO ACF IS SLASHED FIRST.
+ *    acf_update_field(), acf_update_field_group() and acf_import_field_group() all
+ *    run wp_unslash() because ACF's own callers pass $_POST [verified, ACF 6.8.10].
+ *    Data read from the database is already unslashed, so passing it straight in
+ *    strips every backslash from instructions, defaults and choices. save() and
+ *    saveGroup() add the one layer of slashes ACF is about to remove.
+ *
  * @package ACFJP
  */
 
@@ -58,6 +65,22 @@ final class Writer {
 	/** @var list<string> */
 	private array $skipped = array();
 
+	/** @var array<string,array<string,string>> change id => key => field type, root first */
+	private array $added = array();
+
+	/** @var array<string,list<string>> sibling scope => names claimed earlier in this batch */
+	private array $claimedNames = array();
+
+	/** The group being written. Changes from '' to the minted key when a batch creates it. */
+	private string $groupKey = '';
+
+	private ?string $createdGroupKey = null;
+
+	private ?RawTree $current = null;
+
+	/** Marks a layout in WriteResult::$addedKeys, which otherwise maps field keys to types. */
+	public const LAYOUT_MARKER = '__layout__';
+
 	public function __construct( private readonly KeyFactory $keys ) {}
 
 	/**
@@ -68,34 +91,43 @@ final class Writer {
 	public function write( ChangeSet $changeSet, RawTree $current ): WriteResult {
 		$this->reset();
 
-		$groupKey = $changeSet->groupKey;
-		$groupId  = $current->group->acfId ?? 0;
+		$this->current  = $current;
+		$this->groupKey = $changeSet->groupKey;
+		$groupId        = $current->group->acfId ?? 0;
 
-		$this->seedIdMap( $current, $groupKey, $groupId );
+		$this->seedIdMap( $current, $this->groupKey, $groupId );
 
 		// Ordered deliberately. Creates and updates settle before moves need their
 		// IDs; deletes go last so nothing is removed that a later step depends on.
 		$this->applyOfType( $changeSet, Change::CREATE_GROUP, fn( Change $c ) => $this->writeCreateGroup( $c ) );
-		$this->applyOfType( $changeSet, Change::GROUP_UPDATE, fn( Change $c ) => $this->writeGroupUpdate( $c, $groupKey ) );
+		$this->applyOfType( $changeSet, Change::GROUP_UPDATE, fn( Change $c ) => $this->writeGroupUpdate( $c ) );
 		$this->applyOfType( $changeSet, Change::ADD_LAYOUT, fn( Change $c ) => $this->writeLayout( $c, true ) );
-		$this->applyOfType( $changeSet, Change::ADD, fn( Change $c ) => $this->writeAdd( $c, $groupKey ) );
+		$this->applyOfType( $changeSet, Change::ADD, fn( Change $c ) => $this->writeAdd( $c ) );
 		$this->applyOfType( $changeSet, Change::UPDATE, fn( Change $c ) => $this->writeUpdate( $c ) );
-		$this->applyOfType( $changeSet, Change::MOVE, fn( Change $c ) => $this->writeMove( $c, $current, $groupKey ) );
+		$this->applyOfType( $changeSet, Change::MOVE, fn( Change $c ) => $this->writeMove( $c ) );
 		$this->applyOfType( $changeSet, Change::DELETE_LAYOUT, fn( Change $c ) => $this->writeLayout( $c, false ) );
 		$this->applyOfType( $changeSet, Change::DELETE, fn( Change $c ) => $this->writeDelete( $c ) );
 
-		$finalGroupId = $this->idMap[ $groupKey ] ?? $groupId;
+		$finalGroupId = $this->idMap[ $this->groupKey ] ?? $groupId;
 
-		$this->resyncLocalJson( $groupKey );
+		$this->resyncLocalJson( $this->groupKey );
 
 		return new WriteResult(
-			groupKey: $groupKey,
+			groupKey: $this->groupKey,
 			groupId: $finalGroupId,
 			createdKeys: $this->created,
 			updatedKeys: $this->updated,
 			deletedKeys: $this->deleted,
 			skipped: $this->skipped,
+			addedKeys: $this->added,
 		);
+	}
+
+	/**
+	 * The key of a group the last write() created, so a failed batch can remove it.
+	 */
+	public function createdGroupKey(): ?string {
+		return $this->createdGroupKey;
 	}
 
 	// ---- Change handlers -----------------------------------------------------
@@ -111,13 +143,21 @@ final class Writer {
 		// Restore - see ARCHITECTURE-REVIEW B.5.
 		$array = is_array( $group ) ? $group : array( 'title' => $change->label );
 
-		if ( empty( $array['key'] ) ) {
-			$array['key'] = $this->keys->group();
+		unset( $array['ID'] );
+
+		// Fields arrive as ADD changes, so each one is keyed, verified and
+		// journaled exactly like an addition to an existing group.
+		$array['fields'] = array();
+
+		$key = isset( $array['key'] ) ? (string) $array['key'] : '';
+
+		if ( '' === $key || ! KeyFactory::isWellFormed( $key ) || is_array( acf_get_raw_field_group( $key ) ) ) {
+			$key = $this->keys->group();
 		}
 
-		$array['fields'] ??= array();
+		$array['key'] = $key;
 
-		$imported = acf_import_field_group( $array );
+		$imported = acf_import_field_group( wp_slash( $array ) );
 
 		if ( ! is_array( $imported ) || empty( $imported['ID'] ) ) {
 			$e = new ApplyException(
@@ -132,15 +172,19 @@ final class Writer {
 			throw $e;
 		}
 
-		$this->idMap[ (string) $imported['key'] ] = (int) $imported['ID'];
-		$this->created[ (string) $imported['key'] ] = (int) $imported['ID'];
+		$this->groupKey        = (string) $imported['key'];
+		$this->createdGroupKey = $this->groupKey;
+
+		$this->idMap[ $this->groupKey ]   = (int) $imported['ID'];
+		$this->created[ $this->groupKey ] = (int) $imported['ID'];
 	}
 
 	/**
 	 * @throws ApplyException
 	 */
-	private function writeGroupUpdate( Change $change, string $groupKey ): void {
-		$raw = acf_get_raw_field_group( $groupKey );
+	private function writeGroupUpdate( Change $change ): void {
+		$groupKey = $this->groupKey;
+		$raw      = acf_get_raw_field_group( $groupKey );
 
 		if ( ! is_array( $raw ) ) {
 			$e = new ApplyException(
@@ -158,7 +202,7 @@ final class Writer {
 			$raw[ (string) $setting ] = $diff['to'];
 		}
 
-		$updated = acf_update_field_group( $raw );
+		$updated = $this->saveGroup( $raw );
 
 		if ( ! is_array( $updated ) ) {
 			$e = new ApplyException(
@@ -175,7 +219,7 @@ final class Writer {
 	/**
 	 * @throws ApplyException
 	 */
-	private function writeAdd( Change $change, string $groupKey ): void {
+	private function writeAdd( Change $change ): void {
 		$field = $change->field;
 
 		if ( null === $field ) {
@@ -189,24 +233,26 @@ final class Writer {
 			return;
 		}
 
-		// "Update the existing field instead" turns an add into an update.
-		if ( Conflict::APPLY_INCOMING === $resolution && Conflict::NAME_COLLISION === $change->conflict?->kind ) {
-			$existingKey = (string) ( $change->conflict->context['existing_key'] ?? '' );
+		$parentKey = $change->parentKey ?? $this->groupKey;
 
-			if ( '' !== $existingKey ) {
-				$this->mergeIntoExisting( $existingKey, $field );
+		if ( Conflict::NAME_COLLISION === $change->conflict?->kind ) {
+			// "Update the existing field instead" turns an add into an update.
+			if ( Conflict::APPLY_INCOMING === $resolution ) {
+				$this->mergeIntoExisting( $change, (string) ( $change->conflict->context['existing_key'] ?? '' ), $field );
 				return;
 			}
-		}
 
-		if ( Conflict::CREATE_NEW === $resolution ) {
-			$field = $field->withSettings( array( 'name' => $this->uniqueName( $field->name ) ) );
+			if ( Conflict::CREATE_NEW === $resolution ) {
+				$field = $field->withSettings( array( 'name' => $this->uniqueName( $field->name, $parentKey, $change->layoutKey ) ) );
+			}
 		}
 
 		$field = $this->assignKeys( $field );
 
-		$parentKey = $change->parentKey ?? $groupKey;
-		$order     = isset( $change->context['order'] ) ? (int) $change->context['order'] : null;
+		$this->claimName( $field->name, $parentKey, $change->layoutKey );
+		$this->added[ $change->id ] = $this->keyTypes( $field );
+
+		$order = isset( $change->context['order'] ) ? (int) $change->context['order'] : null;
 
 		$flatFields = $this->flattenField( $field, $parentKey, $change->layoutKey, $order );
 
@@ -219,6 +265,11 @@ final class Writer {
 	private function writeUpdate( Change $change ): void {
 		$key = (string) $change->targetKey;
 
+		if ( Conflict::CREATE_NEW === $change->conflict?->resolution && Conflict::TYPE_CHANGE === $change->conflict->kind ) {
+			$this->addAsNewField( $change );
+			return;
+		}
+
 		$diffs = $this->effectiveDiffs( $change );
 
 		if ( null === $diffs ) {
@@ -230,7 +281,7 @@ final class Writer {
 			return;
 		}
 
-		$raw = acf_get_raw_field( $key );
+		$raw = $this->raw( $key );
 
 		if ( ! is_array( $raw ) ) {
 			$e = new ApplyException(
@@ -240,7 +291,10 @@ final class Writer {
 					__( 'Field "%s" could not be loaded for update.', 'fieldpilot-for-acf' ),
 					$key
 				),
-				array( 'field_key' => $key, 'change_id' => $change->id )
+				array(
+					'field_key' => $key,
+					'change_id' => $change->id,
+				)
 			);
 			throw $e;
 		}
@@ -251,7 +305,7 @@ final class Writer {
 			$raw[ (string) $setting ] = $diff['to'];
 		}
 
-		$result = acf_update_field( $raw );
+		$result = $this->save( $raw );
 
 		if ( ! is_array( $result ) || empty( $result['ID'] ) ) {
 			$e = new ApplyException(
@@ -261,7 +315,10 @@ final class Writer {
 					__( '"%s" could not be updated.', 'fieldpilot-for-acf' ),
 					$change->label
 				),
-				array( 'field_key' => $key, 'change_id' => $change->id )
+				array(
+					'field_key' => $key,
+					'change_id' => $change->id,
+				)
 			);
 			throw $e;
 		}
@@ -282,7 +339,7 @@ final class Writer {
 		$id  = $this->idMap[ $key ] ?? 0;
 
 		if ( 0 === $id ) {
-			$raw = acf_get_raw_field( $key );
+			$raw = $this->raw( $key );
 			$id  = is_array( $raw ) ? (int) ( $raw['ID'] ?? 0 ) : 0;
 		}
 
@@ -299,7 +356,10 @@ final class Writer {
 					__( '"%s" could not be deleted.', 'fieldpilot-for-acf' ),
 					$change->label
 				),
-				array( 'field_key' => $key, 'change_id' => $change->id )
+				array(
+					'field_key' => $key,
+					'change_id' => $change->id,
+				)
 			);
 			throw $e;
 		}
@@ -310,14 +370,14 @@ final class Writer {
 	/**
 	 * @throws ApplyException
 	 */
-	private function writeMove( Change $change, RawTree $current, string $groupKey ): void {
+	private function writeMove( Change $change ): void {
 		if ( Conflict::SKIP === $change->conflict?->resolution ) {
 			$this->skipped[] = $change->id;
 			return;
 		}
 
 		$key = (string) $change->targetKey;
-		$raw = acf_get_raw_field( $key );
+		$raw = $this->raw( $key );
 
 		if ( ! is_array( $raw ) ) {
 			$e = new ApplyException(
@@ -332,9 +392,31 @@ final class Writer {
 			throw $e;
 		}
 
-		$newParentKey = $change->parentKey ?? $groupKey;
+		$newParentKey = $change->parentKey ?? $this->groupKey;
+		$parentId     = $this->idMap[ $newParentKey ] ?? 0;
 
-		$raw['parent'] = $this->idMap[ $newParentKey ] ?? $newParentKey;
+		if ( 0 === $parentId ) {
+			$parent   = $this->raw( $newParentKey );
+			$parentId = is_array( $parent ) ? (int) ( $parent['ID'] ?? 0 ) : 0;
+		}
+
+		if ( 0 === $parentId ) {
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				sprintf(
+					/* translators: %s: field label */
+					__( 'The destination for "%s" could not be found.', 'fieldpilot-for-acf' ),
+					$change->label
+				),
+				array(
+					'field_key'  => $key,
+					'parent_key' => $newParentKey,
+				)
+			);
+			throw $e;
+		}
+
+		$raw['parent'] = $parentId;
 
 		if ( null !== $change->layoutKey ) {
 			$raw['parent_layout'] = $change->layoutKey;
@@ -345,11 +427,14 @@ final class Writer {
 		$position = (string) ( $change->context['position'] ?? MoveSpec::POSITION_LAST );
 		$anchor   = $change->context['anchor'] ?? null;
 
-		$ordered = $this->orderedSiblingKeys( $current, $newParentKey, $change->layoutKey, $key, $position, is_string( $anchor ) ? $anchor : null );
+		// Read the destination from the database, not the pre-write tree, so fields
+		// added earlier in this batch keep their place in the numbering.
+		$siblings = $this->destinationSiblings( $parentId, $change->layoutKey, $key );
+		$ordered  = $this->orderAfterMove( $siblings, $key, $position, is_string( $anchor ) ? $anchor : null );
 
 		$raw['menu_order'] = (int) array_search( $key, $ordered, true );
 
-		if ( ! is_array( acf_update_field( $raw ) ) ) {
+		if ( ! is_array( $this->save( $raw ) ) ) {
 			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
@@ -366,15 +451,15 @@ final class Writer {
 
 		// Renumber the rest of the destination so ordering is contiguous.
 		foreach ( $ordered as $index => $siblingKey ) {
-			if ( $siblingKey === $key ) {
+			if ( $siblingKey === $key || ! isset( $siblings[ $siblingKey ] ) ) {
 				continue;
 			}
 
-			$sibling = acf_get_raw_field( $siblingKey );
+			$sibling = $siblings[ $siblingKey ];
 
-			if ( is_array( $sibling ) && (int) ( $sibling['menu_order'] ?? -1 ) !== $index ) {
+			if ( (int) ( $sibling['menu_order'] ?? -1 ) !== $index ) {
 				$sibling['menu_order'] = $index;
-				acf_update_field( $sibling );
+				$this->save( $sibling );
 			}
 		}
 	}
@@ -387,9 +472,9 @@ final class Writer {
 	 */
 	private function writeLayout( Change $change, bool $adding ): void {
 		$parentKey = (string) $change->parentKey;
-		$raw       = acf_get_raw_field( $parentKey );
+		$raw       = $this->raw( $parentKey );
 
-		if ( ! is_array( $raw ) ) {
+		if ( ! is_array( $raw ) || 'flexible_content' !== ( $raw['type'] ?? '' ) ) {
 			$e = new ApplyException(
 				ErrorCodes::WRITE_FAILED,
 				sprintf(
@@ -411,17 +496,25 @@ final class Writer {
 				return;
 			}
 
-			$layoutKey = $layout->key ?? $this->keys->layout();
-			$layout    = $layout->withKey( $layoutKey );
+			$layoutKey = (string) $layout->key;
+
+			if ( '' === $layoutKey || isset( $layouts[ $layoutKey ] ) ) {
+				$layoutKey = $this->keys->layout();
+			}
+
+			// Key the whole subtree first: grandchildren with no key would otherwise
+			// be skipped by writeFlattened() and silently lost.
+			$layout = $layout
+				->withKey( $layoutKey )
+				->withSubFields( array_map( fn( Field $f ): Field => $this->assignKeys( $f ), $layout->subFields ) );
 
 			$stored = $layout->toAcfArray();
-			$subs   = $stored['sub_fields'] ?? array();
 			unset( $stored['sub_fields'] );
 
 			$layouts[ $layoutKey ] = $stored;
 			$raw['layouts']        = $layouts;
 
-			if ( ! is_array( acf_update_field( $raw ) ) ) {
+			if ( ! is_array( $this->save( $raw ) ) ) {
 				$e = new ApplyException(
 					ErrorCodes::WRITE_FAILED,
 					__( 'The layout could not be added.', 'fieldpilot-for-acf' ),
@@ -430,23 +523,17 @@ final class Writer {
 				throw $e;
 			}
 
+			$added = array( $layoutKey => self::LAYOUT_MARKER );
+
 			// Layout sub-fields are ordinary acf-field posts parented to the FC
 			// field and bound to the layout by parent_layout.
-			foreach ( (array) $subs as $index => $sub ) {
-				if ( ! is_array( $sub ) ) {
-					continue;
-				}
+			foreach ( $layout->subFields as $index => $sub ) {
+				$added += $this->keyTypes( $sub );
 
-				$sub['parent']        = $parentKey;
-				$sub['parent_layout'] = $layoutKey;
-				$sub['menu_order']    = $index;
-
-				if ( empty( $sub['key'] ) ) {
-					$sub['key'] = $this->keys->field();
-				}
-
-				$this->writeFlattened( array( $sub ), $change );
+				$this->writeFlattened( $this->flattenField( $sub, $parentKey, $layoutKey, $index ), $change );
 			}
+
+			$this->added[ $change->id ] = $added;
 
 			return;
 		}
@@ -457,7 +544,14 @@ final class Writer {
 
 		$raw['layouts'] = $layouts;
 
-		acf_update_field( $raw );
+		if ( ! is_array( $this->save( $raw ) ) ) {
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				__( 'The layout could not be removed.', 'fieldpilot-for-acf' ),
+				array( 'field_key' => $parentKey )
+			);
+			throw $e;
+		}
 
 		// Remove the layout's fields too, or they are orphaned and ACF silently
 		// reassigns them to the first remaining layout on the next read.
@@ -497,7 +591,7 @@ final class Writer {
 				$field['ID'] = $this->idMap[ (string) $field['key'] ];
 			}
 
-			$saved = acf_update_field( $field );
+			$saved = $this->save( $field );
 
 			if ( ! is_array( $saved ) || empty( $saved['ID'] ) ) {
 				$e = new ApplyException(
@@ -507,7 +601,10 @@ final class Writer {
 						__( '"%s" could not be written.', 'fieldpilot-for-acf' ),
 						(string) ( $field['label'] ?? $field['key'] )
 					),
-					array( 'field_key' => (string) $field['key'], 'change_id' => $change->id )
+					array(
+						'field_key' => (string) $field['key'],
+						'change_id' => $change->id,
+					)
 				);
 				throw $e;
 			}
@@ -524,25 +621,148 @@ final class Writer {
 
 	/**
 	 * Merge an incoming definition into a field that already exists, preserving its
-	 * key and therefore its content.
+	 * key and therefore its content. The Comparator offers this only when both
+	 * sides share a type and the incoming field has no children, so it never
+	 * retypes a field or rebuilds a container behind the user's back.
+	 *
+	 * @throws ApplyException
 	 */
-	private function mergeIntoExisting( string $existingKey, Field $incoming ): void {
-		$raw = acf_get_raw_field( $existingKey );
+	private function mergeIntoExisting( Change $change, string $existingKey, Field $incoming ): void {
+		$raw = $this->raw( $existingKey );
 
 		if ( ! is_array( $raw ) ) {
-			return;
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				sprintf(
+					/* translators: %s: field label */
+					__( 'The existing field "%s" could not be loaded, so nothing was merged into it.', 'fieldpilot-for-acf' ),
+					$change->label
+				),
+				array(
+					'field_key' => $existingKey,
+					'change_id' => $change->id,
+				)
+			);
+			throw $e;
+		}
+
+		if ( (string) ( $raw['type'] ?? '' ) !== $incoming->type ) {
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				sprintf(
+					/* translators: 1: field label, 2: existing type, 3: incoming type */
+					__( '"%1$s" is a %2$s field and the payload describes a %3$s field, so it was not changed.', 'fieldpilot-for-acf' ),
+					$change->label,
+					(string) ( $raw['type'] ?? '' ),
+					$incoming->type
+				),
+				array(
+					'field_key' => $existingKey,
+					'change_id' => $change->id,
+				)
+			);
+			throw $e;
 		}
 
 		foreach ( $incoming->settings as $setting => $value ) {
+			if ( 'wrapper' === $setting && is_array( $value ) ) {
+				$value = array_merge( is_array( $raw['wrapper'] ?? null ) ? $raw['wrapper'] : array(), $value );
+			}
+
 			$raw[ (string) $setting ] = $value;
 		}
 
-		$raw['label'] = $incoming->label;
-		$raw['type']  = $incoming->type;
+		if ( '' !== $incoming->label && ! in_array( 'label', $incoming->implicit, true ) ) {
+			$raw['label'] = $incoming->label;
+		}
 
-		acf_update_field( $raw );
+		$saved = $this->save( $raw );
 
-		$this->updated[] = $existingKey;
+		if ( ! is_array( $saved ) || empty( $saved['ID'] ) ) {
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				sprintf(
+					/* translators: %s: field label */
+					__( '"%s" could not be updated.', 'fieldpilot-for-acf' ),
+					$change->label
+				),
+				array(
+					'field_key' => $existingKey,
+					'change_id' => $change->id,
+				)
+			);
+			throw $e;
+		}
+
+		$this->updated[]            = $existingKey;
+		$this->added[ $change->id ] = array( $existingKey => $incoming->type );
+	}
+
+	/**
+	 * "Add as a new field" on a type conflict: the original keeps its type, key and
+	 * content, and a sibling with the requested settings, a fresh key and a unique
+	 * name is created right after it.
+	 *
+	 * @throws ApplyException
+	 */
+	private function addAsNewField( Change $change ): void {
+		$original = $this->raw( (string) $change->targetKey );
+
+		if ( ! is_array( $original ) ) {
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				sprintf(
+					/* translators: %s: field label */
+					__( '"%s" could not be loaded, so no new field was added next to it.', 'fieldpilot-for-acf' ),
+					$change->label
+				),
+				array(
+					'field_key' => (string) $change->targetKey,
+					'change_id' => $change->id,
+				)
+			);
+			throw $e;
+		}
+
+		$copy = $original;
+
+		foreach ( $change->settingDiffs as $setting => $diff ) {
+			$copy[ (string) $setting ] = $diff['to'];
+		}
+
+		$parentKey = $change->parentKey ?? $this->groupKey;
+
+		unset( $copy['ID'] );
+
+		$copy['key']        = $this->keys->field();
+		$copy['name']       = $this->uniqueName( (string) ( $copy['name'] ?? '' ), $parentKey, $change->layoutKey );
+		$copy['menu_order'] = (int) ( $original['menu_order'] ?? 0 ) + 1;
+
+		$saved = $this->save( $copy );
+
+		if ( ! is_array( $saved ) || empty( $saved['ID'] ) ) {
+			$e = new ApplyException(
+				ErrorCodes::WRITE_FAILED,
+				sprintf(
+					/* translators: %s: field label */
+					__( 'The new field for "%s" could not be written.', 'fieldpilot-for-acf' ),
+					$change->label
+				),
+				array(
+					'field_key' => (string) $change->targetKey,
+					'change_id' => $change->id,
+				)
+			);
+			throw $e;
+		}
+
+		$newKey = (string) $saved['key'];
+
+		$this->claimName( (string) $copy['name'], $parentKey, $change->layoutKey );
+
+		$this->idMap[ $newKey ]     = (int) $saved['ID'];
+		$this->created[ $newKey ]   = (int) $saved['ID'];
+		$this->added[ $change->id ] = array( $newKey => (string) ( $copy['type'] ?? '' ) );
 	}
 
 	/**
@@ -602,41 +822,50 @@ final class Writer {
 	}
 
 	/**
-	 * Destination ordering after a move.
+	 * Current members of a move destination, keyed by field key, in stored order.
 	 *
-	 * @return list<string>
+	 * @return array<string,array<string,mixed>>
 	 */
-	private function orderedSiblingKeys(
-		RawTree $current,
-		string $parentKey,
-		?string $layoutKey,
-		string $movingKey,
-		string $position,
-		?string $anchor
-	): array {
+	private function destinationSiblings( int $parentId, ?string $layoutKey, string $movingKey ): array {
 		$siblings = array();
 
-		if ( $parentKey === $current->group->key ) {
-			$siblings = $current->group->fields;
-		} elseif ( null !== $layoutKey ) {
-			$layout   = $current->layout( $layoutKey );
-			$siblings = null === $layout ? array() : $layout->subFields;
-		} else {
-			$parent   = $current->byKey( $parentKey );
-			$siblings = null === $parent ? array() : $parent->children;
+		foreach ( (array) acf_get_raw_fields( $parentId ) as $row ) {
+			if ( ! is_array( $row ) || empty( $row['key'] ) || $row['key'] === $movingKey ) {
+				continue;
+			}
+
+			if ( 'trash' === get_post_status( (int) ( $row['ID'] ?? 0 ) ) ) {
+				continue;
+			}
+
+			if ( null !== $layoutKey && ( $row['parent_layout'] ?? '' ) !== $layoutKey ) {
+				continue;
+			}
+
+			$siblings[ (string) $row['key'] ] = $row;
 		}
 
-		$keys = array_values(
-			array_filter(
-				array_map( static fn( Field $f ): string => (string) $f->key, $siblings ),
-				static fn( string $k ): bool => $k !== $movingKey && '' !== $k
-			)
+		uasort(
+			$siblings,
+			static fn( array $a, array $b ): int => (int) ( $a['menu_order'] ?? 0 ) <=> (int) ( $b['menu_order'] ?? 0 )
 		);
+
+		return $siblings;
+	}
+
+	/**
+	 * Destination ordering after a move.
+	 *
+	 * @param array<string,array<string,mixed>> $siblings
+	 * @return list<string>
+	 */
+	private function orderAfterMove( array $siblings, string $movingKey, string $position, ?string $anchor ): array {
+		$keys = array_map( 'strval', array_keys( $siblings ) );
 
 		$index = match ( $position ) {
 			MoveSpec::POSITION_FIRST  => 0,
-			MoveSpec::POSITION_BEFORE => $this->anchorIndex( $current, $keys, $anchor, 0 ),
-			MoveSpec::POSITION_AFTER  => $this->anchorIndex( $current, $keys, $anchor, 1 ),
+			MoveSpec::POSITION_BEFORE => $this->anchorIndex( $siblings, $anchor, 0 ),
+			MoveSpec::POSITION_AFTER  => $this->anchorIndex( $siblings, $anchor, 1 ),
 			default                   => count( $keys ),
 		};
 
@@ -646,22 +875,26 @@ final class Writer {
 	}
 
 	/**
-	 * @param list<string> $keys
+	 * @param array<string,array<string,mixed>> $siblings
 	 */
-	private function anchorIndex( RawTree $current, array $keys, ?string $anchor, int $offset ): int {
+	private function anchorIndex( array $siblings, ?string $anchor, int $offset ): int {
 		if ( null === $anchor ) {
-			return count( $keys );
+			return count( $siblings );
 		}
 
-		foreach ( $keys as $index => $key ) {
-			$field = $current->byKey( $key );
+		$index = 0;
 
-			if ( $key === $anchor || ( null !== $field && ( $field->name === $anchor || 0 === strcasecmp( $field->label, $anchor ) ) ) ) {
+		foreach ( $siblings as $key => $row ) {
+			if ( (string) $key === $anchor
+				|| ( $row['name'] ?? null ) === $anchor
+				|| 0 === strcasecmp( (string) ( $row['label'] ?? '' ), $anchor ) ) {
 				return $index + $offset;
 			}
+
+			++$index;
 		}
 
-		return count( $keys );
+		return count( $siblings );
 	}
 
 	/**
@@ -672,6 +905,15 @@ final class Writer {
 	 */
 	private function flattenField( Field $field, string $parentKey, ?string $parentLayout = null, ?int $order = null ): array {
 		$array = $field->settings;
+
+		// The payload may name only part of the wrapper; ACF expects all three keys.
+		if ( isset( $array['wrapper'] ) && is_array( $array['wrapper'] ) ) {
+			$array['wrapper'] += array(
+				'width' => '',
+				'class' => '',
+				'id'    => '',
+			);
+		}
 
 		$array['key']    = (string) $field->key;
 		$array['name']   = $field->name;
@@ -692,11 +934,11 @@ final class Writer {
 		if ( FieldKind::hasLayouts( $field->type ) ) {
 			$layouts = array();
 			foreach ( $field->layouts as $layout ) {
-				$layoutKey = $layout->key ?? ( 'layout_' . $layout->name );
-				$layoutArr = $layout->settings;
-				$layoutArr['key']   = $layoutKey;
-				$layoutArr['name']  = $layout->name;
-				$layoutArr['label'] = $layout->label;
+				$layoutKey             = $layout->key ?? ( 'layout_' . $layout->name );
+				$layoutArr             = $layout->settings;
+				$layoutArr['key']      = $layoutKey;
+				$layoutArr['name']     = $layout->name;
+				$layoutArr['label']    = $layout->label;
 				$layouts[ $layoutKey ] = $layoutArr;
 			}
 			$array['layouts'] = $layouts;
@@ -720,16 +962,114 @@ final class Writer {
 		return $out;
 	}
 
-	private function uniqueName( string $name ): string {
-		$candidate = $name . '_2';
-		$suffix    = 2;
+	/**
+	 * A name no sibling uses yet, derived from $name. Names are unique per
+	 * container in ACF, not site-wide, so only the destination is checked.
+	 */
+	private function uniqueName( string $name, string $parentKey, ?string $layoutKey ): string {
+		$taken  = $this->siblingNames( $parentKey, $layoutKey );
+		$suffix = 2;
 
-		while ( is_array( acf_get_raw_field( $candidate ) ) && $suffix < 50 ) {
-			++$suffix;
+		do {
 			$candidate = $name . '_' . $suffix;
-		}
+			++$suffix;
+		} while ( in_array( $candidate, $taken, true ) );
 
 		return $candidate;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function siblingNames( string $parentKey, ?string $layoutKey ): array {
+		$names   = $this->claimedNames[ $this->scope( $parentKey, $layoutKey ) ] ?? array();
+		$current = $this->current;
+
+		if ( null === $current ) {
+			return $names;
+		}
+
+		if ( $parentKey === $current->group->key ) {
+			$siblings = $current->group->fields;
+		} elseif ( null !== $layoutKey ) {
+			$layout   = $current->layout( $layoutKey );
+			$siblings = null === $layout ? array() : $layout->subFields;
+		} else {
+			$parent   = $current->byKey( $parentKey );
+			$siblings = null === $parent ? array() : $parent->children;
+		}
+
+		foreach ( $siblings as $sibling ) {
+			$names[] = $sibling->name;
+		}
+
+		return $names;
+	}
+
+	private function claimName( string $name, string $parentKey, ?string $layoutKey ): void {
+		if ( '' !== $name ) {
+			$this->claimedNames[ $this->scope( $parentKey, $layoutKey ) ][] = $name;
+		}
+	}
+
+	private function scope( string $parentKey, ?string $layoutKey ): string {
+		return $parentKey . '|' . ( $layoutKey ?? '' );
+	}
+
+	/**
+	 * Every key in a keyed subtree with its type, root first, for verification.
+	 *
+	 * @return array<string,string>
+	 */
+	private function keyTypes( Field $field ): array {
+		$out = array( (string) $field->key => $field->type );
+
+		foreach ( $field->descendants() as $descendant ) {
+			$out[ (string) $descendant->key ] = $descendant->type;
+		}
+
+		return $out;
+	}
+
+	/**
+	 * acf_get_raw_field() does not fail on an empty key: ACF runs an unfiltered
+	 * query and returns whichever field post sorts first. A lookup that comes
+	 * back with another field's key is treated as not found too.
+	 *
+	 * @return array<string,mixed>|false
+	 */
+	private function raw( string $key ): array|false {
+		if ( '' === $key ) {
+			return false;
+		}
+
+		$raw = acf_get_raw_field( $key );
+
+		return is_array( $raw ) && ( $raw['key'] ?? '' ) === $key ? $raw : false;
+	}
+
+	/**
+	 * acf_update_field() unslashes its input; see mechanic 3 above.
+	 *
+	 * @param array<string,mixed> $field
+	 * @return array<string,mixed>|false
+	 */
+	private function save( array $field ): array|false {
+		$saved = acf_update_field( wp_slash( $field ) );
+
+		// ACF hands the field back even when wp_insert_post() failed, so only a
+		// real post ID shows it was stored.
+		return is_array( $saved ) && ! empty( $saved['ID'] ) ? $saved : false;
+	}
+
+	/**
+	 * @param array<string,mixed> $group
+	 * @return array<string,mixed>|false
+	 */
+	private function saveGroup( array $group ): array|false {
+		$saved = acf_update_field_group( wp_slash( $group ) );
+
+		return is_array( $saved ) && ! empty( $saved['ID'] ) ? $saved : false;
 	}
 
 	/**
@@ -742,7 +1082,7 @@ final class Writer {
 		$group = acf_get_raw_field_group( $groupKey );
 
 		if ( is_array( $group ) ) {
-			acf_update_field_group( $group );
+			$this->saveGroup( $group );
 		}
 
 		// Loaded field arrays are now stale everywhere in this request.
@@ -782,5 +1122,11 @@ final class Writer {
 		$this->updated = array();
 		$this->deleted = array();
 		$this->skipped = array();
+		$this->added   = array();
+
+		$this->claimedNames    = array();
+		$this->groupKey        = '';
+		$this->createdGroupKey = null;
+		$this->current         = null;
 	}
 }

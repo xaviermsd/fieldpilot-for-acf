@@ -5,7 +5,7 @@ Tags: acf, advanced custom fields, ai, json, developer
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.30
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,9 +25,9 @@ The rule the whole plugin is built around:
 
 > **Nothing changes except what the JSON asked for.**
 
-Set one field to required and that is the only byte that moves. Instructions,
+Set one field to required and that is the only setting that changes. Instructions,
 conditional logic, wrapper classes, field keys and every other field in the group
-come out byte-identical.
+stay as they were, and FieldPilot checks that after every write.
 
 = What it does =
 
@@ -35,40 +35,50 @@ come out byte-identical.
   replace a whole field group; this changes precisely what you named.
 * **Diff preview.** Every change is shown before anything is written - added,
   removed, moved, and every setting that differs, old value to new.
-* **Target Isolation & Sibling Protection.** Target any node in a nested ACF tree
-  (Repeater subfield, Flexible Content layout) with guarantees that sibling branches
-  are untouched.
+* **Target isolation.** Aim at any node in a nested ACF tree, such as a repeater
+  sub-field or a flexible content layout. Changes stay inside that target, and the
+  check after the write confirms nothing else moved.
 * **Conflict detection.** Changing a field's type, renaming a field that holds
   content, deleting something with data in it - each stops and asks, with the
   trade-offs spelled out. It never guesses.
-* **Snapshot and rollback.** Every batch is snapshotted with its complete field tree.
-  One click restores the exact prior configuration. If a write fails verification,
-  it rolls back automatically.
-* **Interactive Custom Field Builder (All 4 ACF Tabs).** Dynamic controls for General,
-  Validation, Presentation, and Conditional Logic across all 36 ACF field types with
-  responsive width, return formats, choices, sub-fields, layouts, and bulk appending.
-* **Deep 4-Tab Settings Mapping.** Full parameter mapping for General, Validation,
-  Presentation, and Conditional Logic across all 36 ACF field types.
+* **Snapshot and rollback.** Every batch is snapshotted before the first write. Roll
+  changes back from History, newest first, and the field group returns to its
+  previous configuration, setting for setting. If a write fails the check, it rolls
+  back automatically.
+* **Field types that follow your ACF.** The builder, templates, type guide and AI
+  prompt offer all 36 field types on ACF PRO and the 32 free ones on ACF free. PRO
+  types are shown disabled with the reason, and the engine refuses them on a free
+  install.
+* **Custom field builder.** Pick a field type, fill in the common settings from
+  ACF's four tabs (General, Validation, Presentation, Conditional Logic) and queue
+  as many fields as you like. Each one becomes a line in the AI prompt, and your AI
+  turns the list into JSON.
 * **Deep nesting.** Groups, Repeaters, Flexible Content layouts and Clone fields,
   at any depth, targeted by human path: `["Agent", "Contact", "Social"]`.
 * **Reads sloppy JSON.** AI output uses `group` for `field_group`, `description` for
   `instructions`, `true` where ACF wants `1`. All of it is normalised rather than
   rejected, so you paste instead of hand-fixing.
-* **Reads native ACF exports** too, in both directions.
-* **Visual 10-Step Guided Onboarding Tour.** An interactive walkthrough across Dashboard, Import, and History with target spotlights, safety checklists, and replay controls.
-* **Target Field Group Gate & Inline Creation.** Select an existing group or click "+ Add New Field Group" to generate one in ACF with instant AJAX selection and builder unlock.
-* **WordPress.org Compliant Uninstall Controls.** Configure data cleanup options in Settings to preserve or completely wipe snapshots, options, and logs on uninstall.
-* **REST API and WP-CLI** with full parity, so deployments can do everything the UI
-  can.
+* **Reads native ACF exports**, and exports any field group as clean JSON.
+* **Guided tour.** A 10-step walkthrough across the Dashboard, Import and History
+  screens. Restart it any time from the Dashboard or Settings.
+* **Create field groups in place.** Pick an existing group, or click "Add New Field
+  Group" to create one without leaving the screen. It is recorded in History like
+  any other change.
+* **Your data, your call.** Nothing is removed when you delete the plugin unless you
+  ask for it in Settings. Field groups are never touched.
+* **REST API and WP-CLI.** Validate, preview, apply, roll back, export, create field
+  groups and generate prompts from scripts and deployments. Plugin settings stay on
+  the Settings screen.
 * **Knows what it cannot touch.** Field groups registered in PHP, or loaded from
-  `acf-json` and not yet synced, are physically unpatchable. The plugin detects them
-  up front and says so, instead of silently writing orphaned rows.
+  `acf-json` and not yet synced, cannot be patched. The plugin detects them up front
+  and says so, instead of silently writing orphaned rows.
 
 = AI, without an AI dependency =
 
 The plugin never calls a language model. It publishes a schema and generates a
 ready-to-paste prompt - including your field group's current structure, so the model
-stops inventing field names - and you use whatever AI you already pay for.
+stops inventing field names, and only the field types your ACF can store - and you
+use whatever AI you already pay for.
 
 No API keys. No per-seat model cost. No site data leaving your server. No vendor to
 be locked to. It works fully with zero configuration, and it keeps working when a
@@ -76,10 +86,11 @@ provider changes its pricing.
 
 = Requirements =
 
-WordPress 6.5+, PHP 8.1+, ACF 6.2+ (free or PRO). On ACF 6.8+ payloads are validated
-against ACF's own shipped field-type schemas, so validation tracks ACF automatically.
-Repeater, Flexible Content, Clone and Gallery require ACF PRO; payloads using them on
-a free install are refused with a clear message rather than a cryptic error.
+WordPress 6.5+, PHP 8.1+, ACF 6.2+ (free or PRO). On ACF 6.8 and newer, new fields
+are also checked against ACF's own field-type schemas, and anything unexpected is
+flagged in the preview. Repeater, Flexible Content, Clone and Gallery need ACF PRO,
+and Icon Picker needs ACF 6.3 or newer. Where a type is not available, FieldPilot
+shows it disabled and refuses payloads that use it, with a clear message.
 
 == Installation ==
 
@@ -93,33 +104,36 @@ a free install are refused with a clear message rather than a cryptic error.
 = Will this overwrite my existing fields? =
 
 No. An `update` changes only the settings your JSON names. Every other setting, and
-every other field, is preserved exactly. Field keys are never regenerated, so no
+every other field, is left as it was. Field keys are never regenerated, so no
 existing content is ever orphaned by an update.
 
 = What happens if something goes wrong? =
 
-Every batch is snapshotted before the first write, then verified afterwards by
-re-reading what was saved. If the result does not match the plan, the snapshot is
-restored automatically and you are told nothing was changed. You can also roll back
-any past change manually from the History screen.
+Every batch is snapshotted before the first write, then checked afterwards by
+re-reading what was saved: the requested changes must be there, and every other field
+in the group must be unchanged. If not, the snapshot is restored automatically and
+you are told what happened. You can also roll back past changes from the History
+screen, newest first.
 
 = How do I create a new field group if none exist yet? =
 
-Click "+ Add New Field Group" in the Target Field Group bar on the Import screen,
-enter a title, and click "Create & Select". FieldPilot creates the ACF group via AJAX
-and instantly unlocks the custom field builder and prompt generator.
+Click "Add New Field Group" in the Target Field Group bar on the Import screen, enter
+a title, and click "Create & Select". FieldPilot creates the group, selects it and
+unlocks the custom field builder and prompt generator. The new group shows up in
+History, so you can roll it back.
 
 = What happens to my data when I delete the plugin? =
 
-By default, your settings and rollback history remain safely stored in the database
-in case you reinstall. If you want a complete wipe, go to FieldPilot -> Settings and
-enable "Wipe all FieldPilot data on uninstall". When deleted through the WordPress
-Plugins screen, all snapshots, options, and demo flags are cleanly purged.
+By default nothing is removed: your settings and history stay in the database in case
+you reinstall. To remove them, go to FieldPilot -> Settings, tick "Delete all
+FieldPilot data when the plugin is deleted" under "On uninstall", then delete the
+plugin from the Plugins screen. That removes FieldPilot's settings, history and
+snapshots. Your field groups belong to ACF and are never touched. On multisite, each
+site's own setting decides for that site.
 
-= How do I replay or restart the guided onboarding tour? =
+= How do I restart the guided tour? =
 
-You can restart the 10-step guided tour anytime by clicking the "Replay Guided Tour"
-button at the top of the FieldPilot Dashboard or Settings screen.
+Click "Restart Guided Tour" on the FieldPilot Dashboard or on the Settings screen.
 
 = Can I delete fields? =
 
@@ -136,8 +150,15 @@ know in advance; for JSON groups, sync them into the database first.
 
 = Does it work with ACF free? =
 
-Yes, for every field type ACF free provides. Repeater, Flexible Content, Clone and
-Gallery are ACF PRO features.
+Yes, with the 32 field types ACF free provides. Repeater, Flexible Content, Clone and
+Gallery are ACF PRO features: FieldPilot shows them disabled and refuses payloads that
+use them.
+
+= Can I use it from WP-CLI? =
+
+Yes. Commands that write need a user, for example
+`wp acfjp apply patch.json --user=admin`. A batch with destructive changes also needs
+`--confirm`. Run `wp help acfjp` for the full list.
 
 = Does it need an API key? =
 
@@ -146,14 +167,62 @@ AI you already use.
 
 == Screenshots ==
 
-1. Inline ACF Field Group creator with instant AJAX auto-selection and safety gate
-2. Interactive Custom Field Builder and AI prompt generator with 1-click model launchers
-3. Side-by-side split review workbench showing diff preview and Target Isolated scope badge
+1. Inline ACF Field Group creator with instant selection and safety gate
+2. Custom Field Builder and AI prompt generator with links to open your AI
+3. Side-by-side review workbench showing the diff preview and Target Isolated scope badge
 4. Non-destructive conflict resolution with transparent trade-offs (keep, replace, or duplicate)
-5. History screen with snapshot audit logs and one-click rollback points
+5. History screen with snapshots and rollback
 6. Dashboard showing field group health, editable database groups, and guided tour launcher
 
 == Changelog ==
+
+= 1.1.0 =
+The biggest FieldPilot update so far. It fixes bugs that could change things you did not ask to change, makes the plugin follow your ACF edition, and tightens WordPress.org compliance. Please update.
+
+Data safety:
+
+* Fixed: Adding layouts with a target that was not a flexible content field could write the layout into a field of another field group. Layouts now go only into the flexible content field you target; anything else is refused before writing.
+* Fixed: Backslashes in labels, instructions and other text settings were stripped on save and on rollback.
+* Fixed: "create" payloads always failed at Apply, including native ACF imports. Creating a group is now journaled, and rolling it back moves the group to the trash.
+* Fixed: "create" payloads in the shape the AI prompt and templates use (group_changes and add) were rejected as missing a field group definition.
+* Fixed: A partial wrapper update, such as only the width, wiped the field's class and id.
+* Fixed: "Keep the original and add a second field" changed the original field's type, and skipping a move still moved the field.
+* Fixed: A failure after the write (the check, the after-snapshot or the history entry) left the changes in place without a rollback or a history row. The whole batch is now undone and recorded.
+* Fixed: Failure messages now say truthfully whether the automatic rollback worked, and point to "Restore snapshot" when it did not.
+* Fixed: Rolling back an older entry silently wiped every later change. Rollbacks now go newest first, and History explains why an older entry has to wait.
+* Fixed: "merge" proposed a type and label the JSON never asked for, and min, max and step were cut to whole numbers (0.01 was saved as 0).
+* Fixed: Two applies at the same moment could both write. The second one is now refused.
+* Fixed: A move without a destination pulled the field out of its container.
+* Fixed: Sub-fields of a new layout could get duplicate or missing keys.
+* Fixed: A misspelled target field fell back to the group root. It is now an error, and target.field can name a container such as a flexible content field.
+* Fixed: History retention kept about twice as many entries as configured.
+
+Field types:
+
+* New: The builder, quick-add chips, templates, type guide and AI prompt all come from one list of the 36 ACF field types and follow the installed ACF. On ACF free, Repeater, Flexible Content, Clone and Gallery are shown disabled with "Requires ACF PRO", and Icon Picker needs ACF 6.3 or newer. The type guide now includes Icon Picker.
+* New: The AI prompt lists only the field types your site can store and tells the AI which ones to leave out.
+
+Screens:
+
+* Fixed: JSON file uploads failed on Windows servers.
+* Fixed: Generating a prompt failed on sites with plain permalinks.
+* Fixed: "Add New Field Group" ignored read-only mode and the capability filter, and was not recorded in History.
+* Fixed: The guided tour treated the Export and Diagnostics screens as the Dashboard.
+* Fixed: The target pickers on the Import screen offered groups registered in PHP or waiting in acf-json, which FieldPilot cannot change. They now list only groups it can patch; the others stay in the list below with the reason.
+* Enhanced: Every History entry shows its status (Applied, Failed - undone, Failed - needs restore, Rolled back, Rollback), with clearer rollback prompts.
+
+WP-CLI and REST:
+
+* New: `wp acfjp create-group` and `wp acfjp schema`.
+* New: REST endpoint to create a field group (POST /field-groups).
+* Enhanced: CLI commands that write ask for a user (for example --user=admin) instead of failing with a permission error.
+
+WordPress.org standards:
+
+* Fixed: On multisite, uninstall now cleans each site that asked for it. It removes only FieldPilot's own data and never deletes field groups.
+* Fixed: Translations loaded too early when ACF was inactive, which logged a notice on WordPress 6.7 and newer.
+* Enhanced: All JavaScript text is translatable, emoji are out of translatable strings, and the code passes WordPress Coding Standards and Plugin Check.
+* Enhanced: The readme and the text inside the plugin now describe exactly what the code does.
 
 = 1.0.30 =
 * Fixed: Guided tour Step 2 on fresh sites with zero field groups now displays sample preview rows and highlights the status table clearly, avoiding collapsed 0px spotlight line.
@@ -167,10 +236,11 @@ AI you already use.
 = 1.0.28 =
 * Enhanced: Target Field Group creation UX with toggle button state switching between "+ Add New Field Group" and "Close".
 * Enhanced: Persistent creation form when no field groups exist, preventing dead-end UI states on fresh installations.
-* Enhanced: 100% WordPress.org guideline compliance for uninstall cleanup by configuring data purge exclusively via FieldPilot Settings.
+* Enhanced: Uninstall cleanup is configured only from FieldPilot Settings, in line with WordPress.org guidelines.
 * Fixed: Form cancellation and focus state handling when closing field group creation box.
 
 = 1.0.27 =
+* Includes the changes from development builds 1.0.23 to 1.0.26.
 * Added: Uninstall data cleanup setting in FieldPilot Settings to wipe or preserve settings, history snapshots, and demo data when deleting the plugin.
 * Added: Safe, idempotent uninstall routine (uninstall.php) with prefix handling, demo marker checks, and scheduled cron cleanup.
 * Added: Direct "Add New Field Group" creation button with instant AJAX ACF group generation and auto-selection.
@@ -186,7 +256,7 @@ AI you already use.
 = 1.0.21 =
 * Added: Non-revocable, disabled sample row in History table when empty to cleanly demonstrate rollback functionality.
 * Fixed: Ensured Step 8 targets conflict box directly instead of falling back to sidebar controls.
-* Fixed: Flawless step transitions between Import (Step 8) and History (Step 9).
+* Fixed: Smoother step transitions between Import (Step 8) and History (Step 9).
 
 = 1.0.20 =
 * Fixed: Replaced collapsed empty notice in History screen with styled empty card to fix spotlight rendering.
@@ -230,28 +300,28 @@ AI you already use.
 * Added: Visual indicator badge confirming when fields are added to the queue.
 
 = 1.0.10 =
-* Added: Comprehensive in-app Schema & Operations Developer Guide in Tab 3 covering all 8 operations, target scope resolution, 4 ACF tabs parameter mapping, 36 field types reference matrix, and 1-click template loaders.
+* Added: In-app Schema & Operations Developer Guide in Tab 3 covering all 8 operations, target scope resolution, the 4 ACF tabs, a field types reference, and template loaders.
 * Fixed: Resolved DOM hierarchy and removed duplicate intent textarea in AI Prompt tab.
 * Fixed: Prevented WordPress admin footer (#wpfooter) from overlapping content.
 * Fixed: Standardized AI steps into full-width sequential workflow and aligned editor action buttons.
 
 = 1.0.9 =
-* Added: Complete 36 ACF field type template patches in the JSON Editor template selector across 6 clean optgroups.
+* Added: Template patches for the ACF field types in the JSON Editor template selector across 6 optgroups.
 * Enhanced: Reordered workflow tabs so Tab 1 is "1. Generate with AI" (default) and Tab 2 is "2. JSON Editor & Import".
 * Enhanced: Interactive step guidance animations (pulsing ready states) when fields are queued to direct the user toward generating prompts and pasting responses.
 * Fixed: Standardized button alignments, heights (36px), and flex centering across all action bars.
-* Enhanced: AI prompt generator with compound multi-field examples and full 4-tab token parsing.
+* Enhanced: AI prompt generator with compound multi-field examples and 4-tab token parsing.
 
 = 1.0.8 =
-* Added: Full 4-tab interactive Custom Field Builder (General, Validation, Presentation, Conditional Logic) with dynamic type-adapting controls for return format, choices, sub-fields, layouts, post types, taxonomy, toolbar, button label, min/max/step, allowed MIME types, maxlength, placeholder, prepend, append, textarea rows, wrapper classes, and conditional logic.
+* Added: 4-tab interactive Custom Field Builder (General, Validation, Presentation, Conditional Logic) with type-adapting controls for return format, choices, sub-fields, layouts, post types, taxonomy, toolbar, button label, min/max/step, allowed MIME types, maxlength, placeholder, prepend, append, textarea rows, wrapper classes, and conditional logic.
 
 = 1.0.7 =
-* Added: Complete 4-tab parameter mapping (General, Validation, Presentation, Conditional Logic) and comprehensive specifications across all 36 ACF field types.
+* Added: 4-tab parameter mapping (General, Validation, Presentation, Conditional Logic) in the AI prompt.
 * Added: Width and instructions controls in the Interactive Custom Field Builder with Enter key shortcuts.
-* Enhanced: Detailed user guide and complete JSON property mapping documentation in README.md and readme.txt.
+* Enhanced: Detailed user guide and JSON property mapping documentation in README.md and readme.txt.
 
 = 1.0.6 =
-* Added: Interactive Custom Field Builder in AI tab allowing developers to specify project-specific field names, choose from all 36 ACF types, toggle required flags, and append specs into prompt.
+* Added: Interactive Custom Field Builder in AI tab allowing developers to specify project-specific field names, choose a field type, toggle required flags, and append specs into prompt.
 * Enhanced: AI prompt generator with deep parameter rules, return formats, choice schemas, and bulk multi-field addition examples.
 
 = 1.0.5 =
@@ -259,11 +329,11 @@ AI you already use.
 
 = 1.0.4 =
 * Added: Multi-field bulk append without overwriting when clicking quick idea chips.
-* Added: Categorized quick dropdown covering all 36 ACF field types.
+* Added: Categorized quick dropdown of ACF field types.
 * Added: Quick "Clear text" action in AI prompt tab.
 
 = 1.0.3 =
-* Fixed: TreeReader exportArray now populates complete field trees via acf_get_fields prior to export, guaranteeing byte-for-byte snapshot and rollback integrity.
+* Fixed: TreeReader exportArray now loads the complete field tree via acf_get_fields before export, so snapshots and rollbacks include every field.
 * Enhanced: Standardized button heights, flex vertical centering, Dashicons alignment, and AI launcher pills.
 
 = 1.0.2 =
@@ -281,6 +351,9 @@ AI you already use.
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+Important safety update: fixes layouts that could land in the wrong field group, lost backslashes, and rollbacks that wiped later changes. Field types now follow your ACF edition.
+
 = 1.0.30 =
 Upgrade recommended for refined guided tour step 2 and zero-group dashboard preview handling.
 
@@ -289,15 +362,3 @@ Upgrade recommended for refined guided onboarding tour, updated documentation, a
 
 = 1.0.28 =
 Upgrade recommended for improved Target Field Group creation UX, zero-group state handling, and WordPress.org compliant uninstall configuration.
-
-= 1.0.11 =
-Upgrade recommended for all users to get dual append buttons and Enter key shortcuts in Custom Field Builder.
-
-= 1.0.10 =
-Upgrade recommended for all users to get comprehensive in-app developer guide, single-column workflow, and layout fixes.
-
-= 1.0.9 =
-Upgrade recommended for streamlined AI-first tab workflow, 36 field type template payloads, and enhanced step guidance animations.
-
-= 1.0.8 =
-Upgrade recommended for all users to get full 4-tab interactive Custom Field Builder with dynamic controls for all 36 ACF field types.

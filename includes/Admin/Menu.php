@@ -66,26 +66,26 @@ final class Menu {
 			$capability,
 			self::SLUG,
 			array( $this, 'renderDashboard' ),
-			'dashicons-superhero-alt',
+			ACFJP_URL . 'assets/images/fieldpilot-menu-icon.svg',
 			81
 		);
 
 		$pages = array(
-			''          => __( 'Dashboard', 'fieldpilot-for-acf' ),
-			'-import'   => __( 'Import JSON', 'fieldpilot-for-acf' ),
-			'-history'  => __( 'History', 'fieldpilot-for-acf' ),
-			'-export'   => __( 'Export', 'fieldpilot-for-acf' ),
+			''             => __( 'Dashboard', 'fieldpilot-for-acf' ),
+			'-import'      => __( 'Import JSON', 'fieldpilot-for-acf' ),
+			'-history'     => __( 'History', 'fieldpilot-for-acf' ),
+			'-export'      => __( 'Export', 'fieldpilot-for-acf' ),
 			'-diagnostics' => __( 'Diagnostics', 'fieldpilot-for-acf' ),
-			'-settings' => __( 'Settings', 'fieldpilot-for-acf' ),
+			'-settings'    => __( 'Settings', 'fieldpilot-for-acf' ),
 		);
 
 		$callbacks = array(
-			''          => array( $this, 'renderDashboard' ),
-			'-import'   => array( $this, 'renderImport' ),
-			'-history'  => array( $this, 'renderHistory' ),
-			'-export'   => array( $this, 'renderExport' ),
+			''             => array( $this, 'renderDashboard' ),
+			'-import'      => array( $this, 'renderImport' ),
+			'-history'     => array( $this, 'renderHistory' ),
+			'-export'      => array( $this, 'renderExport' ),
 			'-diagnostics' => array( $this, 'renderDiagnostics' ),
-			'-settings' => array( $this, 'renderSettings' ),
+			'-settings'    => array( $this, 'renderSettings' ),
 		);
 
 		foreach ( $pages as $suffix => $title ) {

@@ -43,3 +43,4 @@ desktop.ini
 /dist/
 *.zip
 /scratch/
+/.wp-env.free.json

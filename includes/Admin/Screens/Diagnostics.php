@@ -59,7 +59,7 @@ final class Diagnostics extends Screen {
 
 		<h2><?php esc_html_e( 'From the command line', 'fieldpilot-for-acf' ); ?></h2>
 		<p><?php esc_html_e( 'If you have WP-CLI, the same checks run there and exit non-zero on failure, which makes them usable in a deployment script:', 'fieldpilot-for-acf' ); ?></p>
-		<pre class="acfjp-code">wp acfjp self-test</pre>
+		<pre class="acfjp-code">wp acfjp self-test --user=admin</pre>
 		<?php
 	}
 

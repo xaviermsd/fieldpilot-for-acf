@@ -135,7 +135,7 @@ final class SelfTest {
 
 		global $wpdb;
 
-		$table  = $wpdb->prefix . 'acfjp_journal';
+		$table = $wpdb->prefix . 'acfjp_journal';
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$exists = (string) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table;
 
@@ -213,7 +213,7 @@ final class SelfTest {
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'Sibling fields are byte-identical', 'fieldpilot-for-acf' ),
+					__( 'Sibling fields are unchanged', 'fieldpilot-for-acf' ),
 					$this->normalise( $beforeAgent[0] ) === $this->normalise( $afterAgent[0] )
 						&& $this->normalise( $beforeAgent[1] ) === $this->normalise( $afterAgent[1] ),
 					__( 'A field the payload never mentioned was modified.', 'fieldpilot-for-acf' ),
@@ -221,7 +221,7 @@ final class SelfTest {
 				)
 			);
 
-			$this->journalId = $result->journalId;
+			$this->journalId      = $result->journalId;
 			$this->beforeSnapshot = $before;
 		} catch ( \Throwable $e ) {
 			$this->result->add( Check::fail( $section, __( 'Partial update', 'fieldpilot-for-acf' ), $this->describe( $e ), true ) );
@@ -250,8 +250,8 @@ final class SelfTest {
 			$this->result->add(
 				Check::true(
 					$section,
-					__( 'Restores a byte-identical configuration', 'fieldpilot-for-acf' ),
-					$this->normalise( $this->beforeSnapshot ) === $this->normalise( $restored ),
+					__( 'Restores the original configuration, setting for setting', 'fieldpilot-for-acf' ),
+					$this->sortKeys( $this->normalise( $this->beforeSnapshot ) ) === $this->sortKeys( $this->normalise( $restored ) ),
 					__( 'The snapshot did not reproduce the original state. Rollback is the safety net; treat a failure here as blocking.', 'fieldpilot-for-acf' ),
 					true
 				)
@@ -272,8 +272,16 @@ final class SelfTest {
 			$plan = $this->engine->plan(
 				array(
 					'operation' => 'update',
-					'target'    => array( 'field_group' => self::GROUP_KEY, 'path' => array( 'Agent' ) ),
-					'changes'   => array( 'phone' => array( 'type' => 'email', 'label' => 'Telephone' ) ),
+					'target'    => array(
+						'field_group' => self::GROUP_KEY,
+						'path'        => array( 'Agent' ),
+					),
+					'changes'   => array(
+						'phone' => array(
+							'type'  => 'email',
+							'label' => 'Telephone',
+						),
+					),
 				)
 			);
 
@@ -290,8 +298,16 @@ final class SelfTest {
 			$plan       = $this->engine->plan(
 				array(
 					'operation' => 'update',
-					'target'    => array( 'field_group' => self::GROUP_KEY, 'path' => array( 'Agent' ) ),
-					'changes'   => array( 'phone' => array( 'type' => 'email', 'label' => 'Telephone' ) ),
+					'target'    => array(
+						'field_group' => self::GROUP_KEY,
+						'path'        => array( 'Agent' ),
+					),
+					'changes'   => array(
+						'phone' => array(
+							'type'  => 'email',
+							'label' => 'Telephone',
+						),
+					),
 				)
 			);
 			$conflictId = $plan->changeSet->conflicts()[0]->id;
@@ -319,7 +335,7 @@ final class SelfTest {
 			$raw = acf_get_raw_field( 'field' . self::MARKER . '_name' );
 			if ( is_array( $raw ) ) {
 				$raw['label'] = 'Full Name';
-				acf_update_field( $raw );
+				acf_update_field( wp_slash( $raw ) );
 			}
 
 			$this->flushAcf();
@@ -350,9 +366,22 @@ final class SelfTest {
 			array(
 				'key'      => self::LOCAL_KEY,
 				'title'    => 'ACFJP Self Test Local PHP',
-				'location' => array( array( array( 'param' => 'post_type', 'operator' => '==', 'value' => 'post' ) ) ),
+				'location' => array(
+					array(
+						array(
+							'param'    => 'post_type',
+							'operator' => '==',
+							'value'    => 'post',
+						),
+					),
+				),
 				'fields'   => array(
-					array( 'key' => 'field' . self::MARKER . '_local', 'name' => 'thing', 'label' => 'Thing', 'type' => 'text' ),
+					array(
+						'key'   => 'field' . self::MARKER . '_local',
+						'name'  => 'thing',
+						'label' => 'Thing',
+						'type'  => 'text',
+					),
 				),
 			)
 		);
@@ -418,12 +447,22 @@ final class SelfTest {
 							'label'      => 'Team',
 							'type'       => 'repeater',
 							'sub_fields' => array(
-								array( 'name' => 'member_name', 'label' => 'Member Name', 'type' => 'text' ),
+								array(
+									'name'  => 'member_name',
+									'label' => 'Member Name',
+									'type'  => 'text',
+								),
 								array(
 									'name'       => 'social',
 									'label'      => 'Social',
 									'type'       => 'group',
-									'sub_fields' => array( array( 'name' => 'linkedin', 'label' => 'LinkedIn', 'type' => 'url' ) ),
+									'sub_fields' => array(
+										array(
+											'name'  => 'linkedin',
+											'label' => 'LinkedIn',
+											'type'  => 'url',
+										),
+									),
 								),
 							),
 						),
@@ -436,14 +475,28 @@ final class SelfTest {
 									'name'       => 'hero',
 									'label'      => 'Hero',
 									'sub_fields' => array(
-										array( 'name' => 'heading', 'label' => 'Heading', 'type' => 'text' ),
-										array( 'name' => 'hero_image', 'label' => 'Image', 'type' => 'image' ),
+										array(
+											'name'  => 'heading',
+											'label' => 'Heading',
+											'type'  => 'text',
+										),
+										array(
+											'name'  => 'hero_image',
+											'label' => 'Image',
+											'type'  => 'image',
+										),
 									),
 								),
 								array(
 									'name'       => 'cta',
 									'label'      => 'Call To Action',
-									'sub_fields' => array( array( 'name' => 'cta_label', 'label' => 'Button Label', 'type' => 'text' ) ),
+									'sub_fields' => array(
+										array(
+											'name'  => 'cta_label',
+											'label' => 'Button Label',
+											'type'  => 'text',
+										),
+									),
 								),
 							),
 						),
@@ -510,7 +563,10 @@ final class SelfTest {
 			$this->engine->plan(
 				array(
 					'operation' => 'update',
-					'target'    => array( 'field_group' => self::GROUP_KEY, 'path' => array( 'Agent' ) ),
+					'target'    => array(
+						'field_group' => self::GROUP_KEY,
+						'path'        => array( 'Agent' ),
+					),
 					'changes'   => array( 'emial' => array( 'required' => true ) ),
 				)
 			);
@@ -526,7 +582,7 @@ final class SelfTest {
 					sprintf(
 						/* translators: %s: comma-separated suggestions */
 						__( 'Suggestions were: %s', 'fieldpilot-for-acf' ),
-						implode( ', ', $e->suggestions() ) ?: '-'
+						array() !== $e->suggestions() ? implode( ', ', $e->suggestions() ) : '-'
 					)
 				)
 			);
@@ -544,9 +600,18 @@ final class SelfTest {
 		return array(
 			'version'   => '1.0',
 			'operation' => 'update',
-			'target'    => array( 'field_group' => self::GROUP_KEY, 'path' => array( 'Agent' ) ),
+			'target'    => array(
+				'field_group' => self::GROUP_KEY,
+				'path'        => array( 'Agent' ),
+			),
 			'changes'   => array( 'email' => array( 'required' => true ) ),
-			'add'       => array( array( 'name' => 'whatsapp', 'label' => 'WhatsApp', 'type' => 'text' ) ),
+			'add'       => array(
+				array(
+					'name'  => 'whatsapp',
+					'label' => 'WhatsApp',
+					'type'  => 'text',
+				),
+			),
 		);
 	}
 
@@ -557,7 +622,15 @@ final class SelfTest {
 		return array(
 			'key'      => self::GROUP_KEY,
 			'title'    => 'ACFJP Self Test Property',
-			'location' => array( array( array( 'param' => 'post_type', 'operator' => '==', 'value' => 'post' ) ) ),
+			'location' => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'post',
+					),
+				),
+			),
 			'active'   => false,
 			'fields'   => array(
 				array(
@@ -566,8 +639,18 @@ final class SelfTest {
 					'label'      => 'Agent',
 					'type'       => 'group',
 					'sub_fields' => array(
-						array( 'key' => 'field' . self::MARKER . '_name', 'name' => 'name', 'label' => 'Name', 'type' => 'text' ),
-						array( 'key' => 'field' . self::MARKER . '_phone', 'name' => 'phone', 'label' => 'Phone', 'type' => 'text' ),
+						array(
+							'key'   => 'field' . self::MARKER . '_name',
+							'name'  => 'name',
+							'label' => 'Name',
+							'type'  => 'text',
+						),
+						array(
+							'key'   => 'field' . self::MARKER . '_phone',
+							'name'  => 'phone',
+							'label' => 'Phone',
+							'type'  => 'text',
+						),
 						array(
 							'key'          => 'field' . self::MARKER . '_email',
 							'name'         => 'email',
@@ -586,7 +669,7 @@ final class SelfTest {
 	private function resetFixture(): void {
 		$this->deleteGroup( self::GROUP_KEY );
 
-		acf_import_field_group( $this->fixture() );
+		acf_import_field_group( wp_slash( $this->fixture() ) );
 
 		$this->flushAcf();
 
@@ -604,8 +687,7 @@ final class SelfTest {
 		if ( null !== $this->reader ) {
 			try {
 				return $this->reader->exportArray( $key );
-			} catch ( \Throwable ) {
-				// Fallback to manual export below
+			} catch ( \Throwable ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Falls back to the manual export below.
 			}
 		}
 
@@ -681,6 +763,29 @@ final class SelfTest {
 		}
 
 		return $export;
+	}
+
+	/**
+	 * For comparing a restored group: acf_import_field_group() appends
+	 * `sub_fields` after a container's other settings, so key order inside a
+	 * field can change while every setting and value stays the same. Lists keep
+	 * their order, so field, layout and choice order is still compared.
+	 *
+	 * @param array<mixed> $value
+	 * @return array<mixed>
+	 */
+	private function sortKeys( array $value ): array {
+		if ( ! array_is_list( $value ) ) {
+			ksort( $value );
+		}
+
+		foreach ( $value as $key => $item ) {
+			if ( is_array( $item ) ) {
+				$value[ $key ] = $this->sortKeys( $item );
+			}
+		}
+
+		return $value;
 	}
 
 	private function describe( \Throwable $e ): string {

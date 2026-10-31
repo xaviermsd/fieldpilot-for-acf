@@ -3,7 +3,9 @@
  * Content-addressed storage for field-group snapshots.
  *
  * A snapshot is a native ACF export of one field group, gzipped and keyed by the
- * sha256 of its canonical JSON. Two consequences make this worth the extra table
+ * sha256 of its canonical (key-sorted) JSON. The stored copy keeps ACF's own key
+ * order, so a restore writes back exactly what was read. Two consequences make
+ * this worth the extra table
  * (docs/ARCHITECTURE-REVIEW.md B.6):
  *
  *  - Identical states are stored once. In an editing session, batch N's "after"
@@ -57,27 +59,32 @@ final class SnapshotStore {
 			return $hash;
 		}
 
-		$payload = $this->encode( $canonical );
+		$json    = (string) wp_json_encode( $export );
+		$payload = $this->encode( $json );
 
+		// Two requests can snapshot the same state at once; the upsert turns the
+		// second insert into a reference bump instead of a primary-key error.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$inserted = $wpdb->insert(
-			$this->table,
-			array(
-				'hash'       => $hash,
-				'created_at' => current_time( 'mysql', true ),
-				'bytes'      => strlen( $canonical ),
-				'encoding'   => $payload['encoding'],
-				'payload'    => $payload['data'],
-				'refcount'   => 1,
-			),
-			array( '%s', '%s', '%d', '%s', '%s', '%d' )
+		$inserted = $wpdb->query(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"INSERT INTO {$this->table} (hash, created_at, bytes, encoding, payload, refcount) VALUES (%s, %s, %d, %s, %s, 1) ON DUPLICATE KEY UPDATE refcount = refcount + 1",
+				$hash,
+				current_time( 'mysql', true ),
+				strlen( $json ),
+				$payload['encoding'],
+				$payload['data']
+			)
 		);
 
 		if ( false === $inserted ) {
 			$e = new ApplyException(
 				ErrorCodes::SNAPSHOT_FAILED,
-				esc_html__( 'The snapshot could not be saved, so no changes were applied.', 'fieldpilot-for-acf' ),
-				array( 'hash' => $hash, 'db_error' => $wpdb->last_error )
+				__( 'The snapshot could not be saved, so no changes were applied.', 'fieldpilot-for-acf' ),
+				array(
+					'hash'     => $hash,
+					'db_error' => $wpdb->last_error,
+				)
 			);
 			throw $e;
 		}
@@ -200,11 +207,17 @@ final class SnapshotStore {
 			$compressed = gzencode( $json, 6 );
 
 			if ( false !== $compressed ) {
-				return array( 'encoding' => 'gz', 'data' => base64_encode( $compressed ) );
+				return array(
+					'encoding' => 'gz',
+					'data'     => base64_encode( $compressed ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Gzipped snapshot JSON stored in a text column, not code.
+				);
 			}
 		}
 
-		return array( 'encoding' => 'plain', 'data' => $json );
+		return array(
+			'encoding' => 'plain',
+			'data'     => $json,
+		);
 	}
 
 	private function decode( string $payload, string $encoding ): ?string {
@@ -212,7 +225,7 @@ final class SnapshotStore {
 			return $payload;
 		}
 
-		$raw = base64_decode( $payload, true );
+		$raw = base64_decode( $payload, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Reads back the gzipped snapshot JSON written by encode().
 
 		if ( false === $raw ) {
 			return null;

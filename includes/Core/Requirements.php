@@ -18,7 +18,12 @@ defined( 'ABSPATH' ) || exit;
 
 final class Requirements {
 
-	/** @var list<string> Human-readable, translated failure reasons. */
+	/**
+	 * Failure reasons, translated only when shown. met() runs on plugins_loaded,
+	 * before WordPress loads translations; translating there triggers a notice.
+	 *
+	 * @var list<\Closure():string>
+	 */
 	private array $failures = array();
 
 	private ?bool $result = null;
@@ -34,7 +39,7 @@ final class Requirements {
 		$this->failures = array();
 
 		if ( version_compare( PHP_VERSION, ACFJP_MIN_PHP, '<' ) ) {
-			$this->failures[] = sprintf(
+			$this->failures[] = static fn (): string => sprintf(
 				/* translators: 1: required PHP version, 2: current PHP version */
 				__( 'PHP %1$s or newer is required. This site runs PHP %2$s.', 'fieldpilot-for-acf' ),
 				ACFJP_MIN_PHP,
@@ -43,7 +48,7 @@ final class Requirements {
 		}
 
 		if ( version_compare( get_bloginfo( 'version' ), ACFJP_MIN_WP, '<' ) ) {
-			$this->failures[] = sprintf(
+			$this->failures[] = static fn (): string => sprintf(
 				/* translators: 1: required WP version, 2: current WP version */
 				__( 'WordPress %1$s or newer is required. This site runs WordPress %2$s.', 'fieldpilot-for-acf' ),
 				ACFJP_MIN_WP,
@@ -53,9 +58,9 @@ final class Requirements {
 
 		// Feature detection, not version sniffing: a function we actually call.
 		if ( ! function_exists( 'acf_get_field_groups' ) ) {
-			$this->failures[] = __( 'Advanced Custom Fields is not active. FieldPilot extends ACF and cannot run without it.', 'fieldpilot-for-acf' );
+			$this->failures[] = static fn (): string => __( 'Advanced Custom Fields is not active. FieldPilot extends ACF and cannot run without it.', 'fieldpilot-for-acf' );
 		} elseif ( defined( 'ACF_VERSION' ) && version_compare( ACF_VERSION, ACFJP_MIN_ACF, '<' ) ) {
-			$this->failures[] = sprintf(
+			$this->failures[] = static fn (): string => sprintf(
 				/* translators: 1: required ACF version, 2: current ACF version */
 				__( 'Advanced Custom Fields %1$s or newer is required. This site runs ACF %2$s.', 'fieldpilot-for-acf' ),
 				ACFJP_MIN_ACF,
@@ -85,11 +90,14 @@ final class Requirements {
 	}
 
 	/**
+	 * Human-readable, translated failure reasons. Call it from init or later.
+	 *
 	 * @return list<string>
 	 */
 	public function failures(): array {
 		$this->met();
-		return $this->failures;
+
+		return array_map( static fn ( \Closure $reason ): string => $reason(), $this->failures );
 	}
 
 	/**

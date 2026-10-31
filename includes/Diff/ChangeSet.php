@@ -45,6 +45,14 @@ final class ChangeSet implements \JsonSerializable, \Countable {
 	}
 
 	/**
+	 * The same changes against a known group key. A "create" is planned before its
+	 * group exists, so its key is only known once the write has minted it.
+	 */
+	public function withGroupKey( string $groupKey ): self {
+		return new self( $groupKey, $this->groupTitle, $this->operation, $this->changes, $this->beforeHash );
+	}
+
+	/**
 	 * @return list<Change>
 	 */
 	public function ofType( string $type ): array {

@@ -18,6 +18,9 @@ final class Entry implements \JsonSerializable {
 	public const STATUS_ROLLED_BACK = 'rolled_back';
 	public const STATUS_REVERTED    = 'reverted';
 
+	/** Failed, and the automatic rollback did not finish either. */
+	public const STATUS_INCOMPLETE = 'incomplete';
+
 	/**
 	 * @param array<string,mixed> $changeset Decoded ChangeSet as stored.
 	 */
@@ -66,8 +69,29 @@ final class Entry implements \JsonSerializable {
 		);
 	}
 
+	/**
+	 * Whether History can offer to undo this row.
+	 *
+	 * - An applied change restores its before-snapshot; an applied "create" moves
+	 *   the new group to the trash.
+	 * - A batch whose automatic rollback did not finish can be restored by hand.
+	 *
+	 * Rollback rows are a record, not a change to undo: changes come off newest
+	 * first, like an undo stack.
+	 */
 	public function isRollbackable(): bool {
-		return self::STATUS_APPLIED === $this->status && '' !== $this->beforeHash;
+		return match ( $this->status ) {
+			self::STATUS_APPLIED    => '' !== $this->beforeHash || $this->isCreation(),
+			self::STATUS_INCOMPLETE => '' !== $this->beforeHash,
+			default                 => false,
+		};
+	}
+
+	/**
+	 * A batch that created its group, so there is no earlier state to restore.
+	 */
+	public function isCreation(): bool {
+		return 'create' === $this->operation && '' === $this->beforeHash && '' !== $this->groupKey;
 	}
 
 	public function userName(): string {
@@ -81,21 +105,21 @@ final class Entry implements \JsonSerializable {
 	 */
 	public function jsonSerialize(): array {
 		return array(
-			'id'            => $this->id,
-			'batch_id'      => $this->batchId,
-			'created_at'    => $this->createdAt,
-			'user_id'       => $this->userId,
-			'user_name'     => $this->userName(),
-			'source'        => $this->source,
-			'operation'     => $this->operation,
-			'group_key'     => $this->groupKey,
-			'group_title'   => $this->groupTitle,
-			'change_count'  => $this->changeCount,
-			'status'        => $this->status,
-			'message'       => $this->message,
-			'rollbackable'  => $this->isRollbackable(),
+			'id'             => $this->id,
+			'batch_id'       => $this->batchId,
+			'created_at'     => $this->createdAt,
+			'user_id'        => $this->userId,
+			'user_name'      => $this->userName(),
+			'source'         => $this->source,
+			'operation'      => $this->operation,
+			'group_key'      => $this->groupKey,
+			'group_title'    => $this->groupTitle,
+			'change_count'   => $this->changeCount,
+			'status'         => $this->status,
+			'message'        => $this->message,
+			'rollbackable'   => $this->isRollbackable(),
 			'rolled_back_at' => $this->rolledBackAt,
-			'changeset'     => $this->changeset,
+			'changeset'      => $this->changeset,
 		);
 	}
 }

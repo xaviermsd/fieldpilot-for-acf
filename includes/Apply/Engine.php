@@ -13,8 +13,11 @@ declare( strict_types = 1 );
 
 namespace ACFJP\Apply;
 
+use ACFJP\Acf\DataProbe;
 use ACFJP\Acf\GroupLocator;
 use ACFJP\Acf\TreeReader;
+use ACFJP\Diff\Change;
+use ACFJP\Diff\ChangeSet;
 use ACFJP\Diff\Comparator;
 use ACFJP\Exceptions\ApplyException;
 use ACFJP\Exceptions\ErrorCodes;
@@ -37,6 +40,12 @@ defined( 'ABSPATH' ) || exit;
 
 final class Engine {
 
+	/** One batch at a time: a second apply waits for the first to finish or time out. */
+	public const LOCK_OPTION = 'acfjp_apply_lock';
+
+	/** Seconds after which a lock left by a crashed request is ignored. */
+	private const LOCK_TTL = 120;
+
 	public function __construct(
 		private readonly Parser $parser,
 		private readonly Normalizer $normalizer,
@@ -52,6 +61,7 @@ final class Engine {
 		private readonly SnapshotStore $snapshots,
 		private readonly Journal $journal,
 		private readonly PlanStore $plans,
+		private readonly ?DataProbe $probe = null,
 	) {}
 
 	// ---- Validate only -------------------------------------------------------
@@ -85,7 +95,7 @@ final class Engine {
 			// full list of problems, and an AI regenerating its JSON needs them all.
 			return new Plan(
 				id: PlanStore::newId(),
-				changeSet: new \ACFJP\Diff\ChangeSet( '', '', $payload->operation->value ),
+				changeSet: new ChangeSet( '', '', $payload->operation->value ),
 				report: $report,
 				stateHash: '',
 				meta: array( 'dialect' => $payload->dialect ),
@@ -145,6 +155,29 @@ final class Engine {
 			throw $e;
 		}
 
+		$this->acquireLock();
+
+		try {
+			$result = $this->applyLocked( $plan, $changeSet, $confirmed, $source );
+		} finally {
+			$this->releaseLock();
+		}
+
+		$this->plans->forget( $planId );
+
+		do_action( 'acfjp_applied', $result );
+
+		return $result;
+	}
+
+	/**
+	 * Guard, snapshot, write, verify, journal. Anything that throws after the first
+	 * write - verification, the after-snapshot, the journal insert - undoes the
+	 * batch, so no partial application is ever left behind.
+	 *
+	 * @throws ApplyException
+	 */
+	private function applyLocked( Plan $plan, ChangeSet $changeSet, bool $confirmed, string $source ): ApplyResult {
 		$isNewGroup = (bool) ( $plan->meta['is_new_group'] ?? false );
 
 		$current = $isNewGroup
@@ -156,75 +189,60 @@ final class Engine {
 			$changeSet,
 			$current,
 			$confirmed,
-			$isNewGroup ? null : $plan->stateHash
+			$isNewGroup ? null : $plan->stateHash,
+			$isNewGroup
 		);
 
-		$batchId    = wp_generate_uuid4();
-		$beforeHash = '';
+		$this->assertContentUnchanged( $changeSet );
 
-		if ( ! $isNewGroup ) {
-			$beforeHash = $this->snapshots->put( $this->reader->exportArray( $changeSet->groupKey ) );
-		}
+		$batchId    = wp_generate_uuid4();
+		$beforeHash = $isNewGroup ? '' : $this->snapshots->put( $this->reader->snapshotArray( $changeSet->groupKey ) );
+		$afterHash  = '';
 
 		try {
-			$write = $this->writer->write( $changeSet, $current );
-		} catch ( \Throwable $e ) {
-			$this->rollbackAfterFailure( $beforeHash, $changeSet, $batchId, $source, $e->getMessage() );
+			$write    = $this->writer->write( $changeSet, $current );
+			$failures = $this->verifier->verify( $changeSet, $write, $current );
 
-			if ( $e instanceof ApplyException ) {
+			if ( array() !== $failures ) {
+				$e = new ApplyException(
+					ErrorCodes::VERIFY_FAILED,
+					implode( ' ', $failures ),
+					array(
+						'batch_id' => $batchId,
+						'failures' => $failures,
+					),
+					$failures
+				);
 				throw $e;
 			}
 
-			$wrapped = new ApplyException(
-				ErrorCodes::WRITE_FAILED,
-				$e->getMessage(),
-				array( 'batch_id' => $batchId ),
-				array(),
-				null,
-				$e
-			);
-			throw $wrapped;
+			$this->reader->forget( $write->groupKey );
+			$this->groups->forget();
+
+			$recorded  = $changeSet->withGroupKey( $write->groupKey );
+			$afterHash = $this->snapshots->put( $this->reader->snapshotArray( $write->groupKey ) );
+			$journalId = $this->journal->record( $batchId, $recorded, $beforeHash, $afterHash, $source );
+		} catch ( \Throwable $e ) {
+			if ( '' !== $afterHash ) {
+				$this->snapshots->release( $afterHash );
+			}
+
+			$restored = $this->undoFailedBatch( $beforeHash, $changeSet, $batchId, $source, $e->getMessage() );
+
+			$failure = $this->failure( $e, $restored, $isNewGroup, $batchId );
+			throw $failure;
 		}
-
-		$failures = $this->verifier->verify( $changeSet, $write );
-
-		if ( array() !== $failures ) {
-			$this->rollbackAfterFailure( $beforeHash, $changeSet, $batchId, $source, implode( ' ', $failures ) );
-
-			$e = new ApplyException(
-				ErrorCodes::VERIFY_FAILED,
-				__( 'The changes did not save correctly, so everything was rolled back. Nothing on your site was altered.', 'fieldpilot-for-acf' ),
-				array( 'batch_id' => $batchId, 'failures' => $failures ),
-				$failures
-			);
-			throw $e;
-		}
-
-		$this->reader->forget( $changeSet->groupKey );
-		$this->groups->forget();
-
-		$afterHash = $this->snapshots->put( $this->reader->exportArray( $changeSet->groupKey ) );
-
-		$journalId = $this->journal->record(
-			$batchId,
-			$changeSet,
-			$beforeHash,
-			$afterHash,
-			$source
-		);
-
-		$this->plans->forget( $planId );
 
 		/**
 		 * Fires after a batch has been applied and verified.
 		 *
 		 * @param ApplyResult $result
 		 */
-		$result = new ApplyResult(
+		return new ApplyResult(
 			applied: true,
 			batchId: $batchId,
 			journalId: $journalId,
-			changeSet: $changeSet,
+			changeSet: $recorded,
 			write: $write,
 			beforeHash: $beforeHash,
 			afterHash: $afterHash,
@@ -233,10 +251,6 @@ final class Engine {
 				$plan->report->warnings()
 			),
 		);
-
-		do_action( 'acfjp_applied', $result );
-
-		return $result;
 	}
 
 	/**
@@ -264,9 +278,61 @@ final class Engine {
 		return $this->apply( $plan->id, $resolutions, $confirmed, $source );
 	}
 
+	/**
+	 * Create an empty field group through the same pipeline as any other change,
+	 * so it is guarded (capability, read-only mode), verified, journaled and can
+	 * be rolled back from History.
+	 *
+	 * @throws ApplyException
+	 * @throws ResolutionException
+	 */
+	public function createGroup( string $title, string $source = 'admin' ): ApplyResult {
+		$title = trim( $title );
+
+		if ( '' === $title ) {
+			$e = new ApplyException(
+				ErrorCodes::MISSING_TARGET,
+				__( 'Enter a title for the new field group.', 'fieldpilot-for-acf' )
+			);
+			throw $e;
+		}
+
+		if ( $this->groups->exists( $title ) ) {
+			$e = new ApplyException(
+				ErrorCodes::DUPLICATE_NAME,
+				sprintf(
+					/* translators: %s: field group title */
+					__( 'A field group called "%s" already exists. Pick it from the list instead.', 'fieldpilot-for-acf' ),
+					$title
+				),
+				array( 'title' => $title )
+			);
+			throw $e;
+		}
+
+		return $this->run(
+			array(
+				'operation'   => Operation::Create->value,
+				'field_group' => array(
+					'title'  => $title,
+					'fields' => array(),
+				),
+			),
+			null,
+			array(),
+			false,
+			$source
+		);
+	}
+
 	// ---- Rollback ------------------------------------------------------------
 
 	/**
+	 * Put a field group back to the state before a journaled change.
+	 *
+	 * Refused while a later change to the same group is still applied: restoring an
+	 * older snapshot would silently throw that later change away.
+	 *
 	 * @throws ApplyException
 	 */
 	public function rollback( int $journalId, string $source = 'admin' ): Entry {
@@ -295,36 +361,64 @@ final class Engine {
 
 		if ( ! $entry->isRollbackable() ) {
 			$e = new ApplyException(
-				ErrorCodes::SNAPSHOT_NOT_FOUND,
-				__( 'No snapshot was stored for this change, so it cannot be rolled back automatically.', 'fieldpilot-for-acf' ),
+				Entry::STATUS_REVERTED === $entry->status || Entry::STATUS_FAILED === $entry->status ? ErrorCodes::STATE_CHANGED : ErrorCodes::SNAPSHOT_NOT_FOUND,
+				match ( $entry->status ) {
+					Entry::STATUS_REVERTED => __( 'This entry records a rollback, so there is nothing to undo. To bring those changes back, apply the JSON again.', 'fieldpilot-for-acf' ),
+					Entry::STATUS_FAILED   => __( 'This change failed and was undone automatically, so there is nothing to roll back.', 'fieldpilot-for-acf' ),
+					default                => __( 'No snapshot was stored for this change, so it cannot be rolled back automatically.', 'fieldpilot-for-acf' ),
+				},
 				array( 'journal_id' => $journalId )
+			);
+			throw $e;
+		}
+
+		$later = $this->journal->laterChanges( $entry->groupKey, $entry->id );
+
+		if ( array() !== $later ) {
+			$e = new ApplyException(
+				ErrorCodes::STATE_CHANGED,
+				sprintf(
+					/* translators: %s: list of history entry numbers, such as "#7, #6" */
+					_n(
+						'Change %s was applied to this field group after this one. Roll it back first, so it is not lost.',
+						'Changes %s were applied to this field group after this one. Roll them back first, newest first, so they are not lost.',
+						count( $later ),
+						'fieldpilot-for-acf'
+					),
+					'#' . implode( ', #', $later )
+				),
+				array(
+					'journal_id' => $journalId,
+					'later'      => $later,
+				)
 			);
 			throw $e;
 		}
 
 		$this->guard->assertMutable( $entry->groupKey );
 
-		// A rollback is itself a change, so it gets its own snapshot. Rolling back
-		// a rollback therefore works.
-		$currentHash = $this->snapshots->put( $this->reader->exportArray( $entry->groupKey ) );
+		$this->acquireLock();
 
-		$this->restore->fromHash( $entry->beforeHash );
+		try {
+			$afterHash = $entry->isCreation()
+				? $this->rollbackCreation( $entry, $source )
+				: $this->rollbackToSnapshot( $entry, $source );
+		} finally {
+			$this->releaseLock();
+		}
 
 		$this->journal->markRolledBack( $journalId );
 
-		$reverted = new \ACFJP\Diff\ChangeSet(
-			groupKey: $entry->groupKey,
-			groupTitle: $entry->groupTitle,
-			operation: 'rollback',
-			changes: array(),
-			beforeHash: $currentHash,
-		);
-
 		$this->journal->record(
 			wp_generate_uuid4(),
-			$reverted,
-			$currentHash,
-			$entry->beforeHash,
+			new ChangeSet(
+				groupKey: $entry->groupKey,
+				groupTitle: $entry->groupTitle,
+				operation: 'rollback',
+				changes: array(),
+			),
+			$afterHash['before'],
+			$afterHash['after'],
 			$source,
 			Entry::STATUS_REVERTED,
 			sprintf(
@@ -335,8 +429,80 @@ final class Engine {
 		);
 
 		$this->reader->forget( $entry->groupKey );
+		$this->groups->forget();
 
 		return $entry;
+	}
+
+	/**
+	 * A rollback is itself a change, so the state it replaces is snapshotted and
+	 * journaled too, and stays on record until retention prunes it.
+	 *
+	 * @return array{before:string,after:?string}
+	 * @throws ApplyException
+	 */
+	private function rollbackToSnapshot( Entry $entry, string $source ): array {
+		$currentHash = $this->snapshots->put( $this->reader->snapshotArray( $entry->groupKey ) );
+
+		try {
+			$this->restore->fromHash( $entry->beforeHash );
+		} catch ( \Throwable $e ) {
+			$this->recordQuietly(
+				wp_generate_uuid4(),
+				new ChangeSet( $entry->groupKey, $entry->groupTitle, 'rollback' ),
+				$currentHash,
+				$source,
+				Entry::STATUS_FAILED,
+				$e->getMessage()
+			);
+
+			throw $e;
+		}
+
+		$this->reader->forget( $entry->groupKey );
+
+		return array(
+			'before' => $currentHash,
+			'after'  => $this->snapshots->put( $this->reader->snapshotArray( $entry->groupKey ) ),
+		);
+	}
+
+	/**
+	 * Rolling back a "create" moves the group to the trash, where ACF can restore
+	 * it, rather than deleting it outright.
+	 *
+	 * @return array{before:string,after:?string}
+	 * @throws ApplyException
+	 */
+	private function rollbackCreation( Entry $entry, string $source ): array {
+		$currentHash = $this->snapshots->put( $this->reader->snapshotArray( $entry->groupKey ) );
+
+		$trashed = function_exists( 'acf_trash_field_group' )
+			? acf_trash_field_group( $entry->groupKey )
+			: acf_delete_field_group( $entry->groupKey );
+
+		if ( ! $trashed ) {
+			$this->snapshots->release( $currentHash );
+
+			$e = new ApplyException(
+				ErrorCodes::RESTORE_FAILED,
+				sprintf(
+					/* translators: %s: field group title */
+					__( 'The field group "%s" could not be moved to the trash, so nothing was rolled back.', 'fieldpilot-for-acf' ),
+					$entry->groupTitle
+				),
+				array(
+					'group_key' => $entry->groupKey,
+					'source'    => $source,
+				)
+			);
+			throw $e;
+		}
+
+		return array(
+			'before' => $currentHash,
+			'after'  => null,
+		);
 	}
 
 	// ---- Internals -----------------------------------------------------------
@@ -412,25 +578,177 @@ final class Engine {
 		return new RawTree( new FieldGroup( '' !== $key ? $key : null, $title ) );
 	}
 
-	private function rollbackAfterFailure( string $beforeHash, \ACFJP\Diff\ChangeSet $changeSet, string $batchId, string $source, string $message ): void {
-		if ( '' !== $beforeHash ) {
-			try {
+	/**
+	 * Undo a batch that failed part-way. Returns whether the site is back to its
+	 * state before the batch.
+	 */
+	private function undoFailedBatch( string $beforeHash, ChangeSet $changeSet, string $batchId, string $source, string $message ): bool {
+		$restored   = true;
+		$createdKey = $this->writer->createdGroupKey();
+
+		try {
+			if ( '' !== $beforeHash ) {
 				$this->restore->fromHash( $beforeHash );
-			} catch ( \Throwable $restoreError ) {
-				$message .= ' ' . $restoreError->getMessage();
+			} elseif ( null !== $createdKey && is_array( acf_get_raw_field_group( $createdKey ) ) ) {
+				// A group this batch created has no earlier state to restore: remove it.
+				$restored = (bool) acf_delete_field_group( $createdKey );
 			}
+		} catch ( \Throwable $restoreError ) {
+			$restored = false;
+			$message .= ' ' . $restoreError->getMessage();
 		}
 
-		$this->journal->record(
+		$this->recordQuietly(
 			$batchId,
-			$changeSet,
+			$changeSet->withGroupKey( $createdKey ?? $changeSet->groupKey ),
 			$beforeHash,
-			null,
 			$source,
-			Entry::STATUS_FAILED,
+			$restored ? Entry::STATUS_FAILED : Entry::STATUS_INCOMPLETE,
 			$message
 		);
 
 		$this->reader->forget( $changeSet->groupKey );
+		$this->groups->forget();
+
+		return $restored;
+	}
+
+	/**
+	 * Translate whatever went wrong into the exception the caller sees, saying
+	 * truthfully whether the automatic rollback worked.
+	 */
+	private function failure( \Throwable $e, bool $restored, bool $isNewGroup, string $batchId ): ApplyException {
+		$context = array( 'batch_id' => $batchId );
+		$details = array();
+
+		if ( $e instanceof ApplyException ) {
+			$context = $e->context() + $context;
+			$details = $e->suggestions();
+		}
+
+		if ( ! $restored ) {
+			$message = $isNewGroup
+				? __( 'Applying the changes failed, and the half-created field group could not be removed. Delete it under ACF > Field Groups.', 'fieldpilot-for-acf' )
+				: __( 'Applying the changes failed, and the automatic rollback did not finish, so the field group may be partly changed. Open History and use "Restore snapshot" on the failed entry to put it back as it was.', 'fieldpilot-for-acf' );
+
+			return new ApplyException( ErrorCodes::RESTORE_FAILED, $message, $context + array( 'cause' => $e->getMessage() ), $details, null, $e );
+		}
+
+		if ( $e instanceof ApplyException && ErrorCodes::VERIFY_FAILED === $e->errorCode() ) {
+			return new ApplyException(
+				ErrorCodes::VERIFY_FAILED,
+				__( 'The changes did not save correctly, so everything was rolled back. Nothing on your site was altered.', 'fieldpilot-for-acf' ),
+				$context,
+				$details,
+				null,
+				$e
+			);
+		}
+
+		return new ApplyException(
+			$e instanceof ApplyException ? $e->errorCode() : ErrorCodes::WRITE_FAILED,
+			$e->getMessage() . ' ' . __( 'Everything was rolled back, so nothing on your site was altered.', 'fieldpilot-for-acf' ),
+			$context,
+			$details,
+			null,
+			$e
+		);
+	}
+
+	/**
+	 * Content can be saved between preview and apply. A change that was safe when
+	 * previewed - deleting, renaming, retyping or moving an empty field - is not
+	 * safe once content exists, so the user has to preview again and decide.
+	 *
+	 * @throws ApplyException
+	 */
+	private function assertContentUnchanged( ChangeSet $changeSet ): void {
+		if ( null === $this->probe || ! $this->probe->isEnabled() ) {
+			return;
+		}
+
+		foreach ( $changeSet->changes as $change ) {
+			if ( false !== $change->hasContent || null !== $change->conflict || null === $change->targetKey ) {
+				continue;
+			}
+
+			$relevant = match ( $change->type ) {
+				Change::DELETE => true,
+				Change::UPDATE => isset( $change->settingDiffs['type'] ) || isset( $change->settingDiffs['name'] ),
+				Change::MOVE   => ( $change->context['from_parent'] ?? null ) !== ( $change->context['to_parent'] ?? null ),
+				default        => false,
+			};
+
+			if ( ! $relevant ) {
+				continue;
+			}
+
+			$keys = array( (string) $change->targetKey );
+
+			if ( Change::DELETE === $change->type && null !== $change->field ) {
+				foreach ( $change->field->descendants() as $descendant ) {
+					if ( null !== $descendant->key ) {
+						$keys[] = $descendant->key;
+					}
+				}
+			}
+
+			foreach ( $keys as $key ) {
+				if ( $this->probe->hasContent( $key ) ) {
+					$e = new ApplyException(
+						ErrorCodes::STATE_CHANGED,
+						sprintf(
+							/* translators: %s: field label */
+							__( 'Content was saved to "%s" after this preview was made. Preview the change again so you can decide what happens to that content.', 'fieldpilot-for-acf' ),
+							$change->label
+						),
+						array(
+							'change_id' => $change->id,
+							'field_key' => $key,
+						)
+					);
+					throw $e;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @throws ApplyException When another batch holds the lock.
+	 */
+	private function acquireLock(): void {
+		$now = time();
+
+		if ( add_option( self::LOCK_OPTION, (string) $now, '', false ) ) {
+			return;
+		}
+
+		$held = (int) get_option( self::LOCK_OPTION, 0 );
+
+		if ( $held > 0 && ( $now - $held ) < self::LOCK_TTL ) {
+			$e = new ApplyException(
+				ErrorCodes::STATE_CHANGED,
+				__( 'Another FieldPilot change is being applied right now. Wait a few seconds, then preview and apply again.', 'fieldpilot-for-acf' )
+			);
+			throw $e;
+		}
+
+		// A lock left behind by a request that died; take it over.
+		update_option( self::LOCK_OPTION, (string) $now, false );
+	}
+
+	private function releaseLock(): void {
+		delete_option( self::LOCK_OPTION );
+	}
+
+	/**
+	 * Journal a failure without letting a broken journal hide the original error.
+	 */
+	private function recordQuietly( string $batchId, ChangeSet $changeSet, string $beforeHash, string $source, string $status, string $message ): void {
+		try {
+			$this->journal->record( $batchId, $changeSet, $beforeHash, null, $source, $status, $message );
+		} catch ( \Throwable $ignored ) {
+			unset( $ignored );
+		}
 	}
 }

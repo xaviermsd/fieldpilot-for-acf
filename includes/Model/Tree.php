@@ -213,7 +213,10 @@ abstract class Tree {
 	 * `plan` records it, `apply` recomputes it, a mismatch is 409 STATE_CHANGED.
 	 */
 	public function stateHash(): string {
-		$material = array( 'group' => $this->group->fingerprint(), 'fields' => array() );
+		$material = array(
+			'group'  => $this->group->fingerprint(),
+			'fields' => array(),
+		);
 
 		foreach ( $this->byKey as $key => $field ) {
 			$material['fields'][ $key ] = array(

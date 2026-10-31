@@ -29,7 +29,11 @@ abstract class Screen {
 		}
 
 		echo '<div class="wrap acfjp">';
-		printf( '<h1>%s</h1>', esc_html( $this->title() ) );
+		printf(
+			'<h1 class="acfjp-title"><img class="acfjp-logo" src="%s" width="32" height="32" alt="">%s</h1>',
+			esc_url( ACFJP_URL . 'assets/images/fieldpilot-icon.svg' ),
+			esc_html( $this->title() )
+		);
 
 		$this->body();
 

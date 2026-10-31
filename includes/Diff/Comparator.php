@@ -19,6 +19,7 @@ declare( strict_types = 1 );
 namespace ACFJP\Diff;
 
 use ACFJP\Acf\DataProbe;
+use ACFJP\Exceptions\ErrorCodes;
 use ACFJP\Exceptions\ResolutionException;
 use ACFJP\Model\Field;
 use ACFJP\Model\FieldKind;
@@ -88,7 +89,12 @@ final class Comparator {
 			label: $group->title,
 			path: $group->title,
 			targetKey: $group->key,
-			context: array( 'field_count' => count( $group->fields ) ),
+			context: array(
+				'field_count' => count( $group->fields ),
+				// The group's own settings (location, position, ...) travel with
+				// the change so the Writer creates the group as described.
+				'group'       => array( 'fields' => array() ) + $group->toAcfArray(),
+			),
 		);
 
 		foreach ( $group->fields as $order => $field ) {
@@ -109,17 +115,35 @@ final class Comparator {
 			$collision = $this->findSiblingByName( $siblings, $field->name );
 
 			if ( null !== $collision ) {
+				$canMerge = $collision->type === $field->type && array() === $field->children && array() === $field->layouts;
+
 				$this->replaceLast(
 					$change->withConflict(
 						Conflict::nameCollision(
-							Change::makeId( 'conflict_name', array( 'name' => $field->name, 'parent' => $locus->parentKey() ) ),
+							Change::makeId(
+								'conflict_name',
+								array(
+									'name'   => $field->name,
+									'parent' => $locus->parentKey(),
+								)
+							),
 							$field->name,
 							$locus->display,
-							array( 'existing_key' => $collision->key )
+							array( 'existing_key' => $collision->key ),
+							$canMerge
 						)
 					)
 				);
 			}
+		}
+
+		if ( array() !== $payload->addLayouts && 'flexible_content' !== $locus->parent?->type ) {
+			$e = new ResolutionException(
+				ErrorCodes::NOT_A_CONTAINER,
+				__( 'Layouts can only be added to a flexible content field. Point the target at it, for example "target": { "field_group": "Page", "path": ["Page Builder"] }.', 'fieldpilot-for-acf' ),
+				array( 'locus' => $locus->display )
+			);
+			throw $e;
 		}
 
 		foreach ( $payload->addLayouts as $layout ) {
@@ -314,7 +338,10 @@ final class Comparator {
 			$from = 'title' === $setting ? $current->group->title : ( $current->group->settings[ $setting ] ?? null );
 
 			if ( ! $this->settingsDiff->equivalent( $from, $to ) ) {
-				$diffs[ $setting ] = array( 'from' => $from, 'to' => $to );
+				$diffs[ $setting ] = array(
+					'from' => $from,
+					'to'   => $to,
+				);
 			}
 		}
 
@@ -339,7 +366,15 @@ final class Comparator {
 		$descendants = count( $field->descendants() );
 
 		$change = new Change(
-			id: Change::makeId( Change::ADD, array( 'name' => $field->name, 'parent' => $parentKey, 'layout' => $layoutKey, 'order' => $order ) ),
+			id: Change::makeId(
+				Change::ADD,
+				array(
+					'name'   => $field->name,
+					'parent' => $parentKey,
+					'layout' => $layoutKey,
+					'order'  => $order,
+				)
+			),
 			type: Change::ADD,
 			risk: Risk::Safe,
 			label: '' !== $field->label ? $field->label : $field->name,
@@ -364,7 +399,13 @@ final class Comparator {
 
 	private function emitAddLayout( Layout $layout, Locus $locus ): void {
 		$this->changes[] = new Change(
-			id: Change::makeId( Change::ADD_LAYOUT, array( 'name' => $layout->name, 'parent' => $locus->parentKey() ) ),
+			id: Change::makeId(
+				Change::ADD_LAYOUT,
+				array(
+					'name'   => $layout->name,
+					'parent' => $locus->parentKey(),
+				)
+			),
 			type: Change::ADD_LAYOUT,
 			risk: Risk::Safe,
 			label: '' !== $layout->label ? $layout->label : $layout->name,
@@ -380,8 +421,25 @@ final class Comparator {
 	 * @param array<string,array{from:mixed,to:mixed}> $diffs
 	 */
 	private function emitUpdate( RawTree $current, Field $field, array $diffs ): void {
-		$key        = (string) $field->key;
-		$hasContent = $this->probe->hasContent( $key );
+		$hasContent = $this->probe->hasContent( (string) $field->key );
+
+		// Retyping and renaming a field that holds content are two decisions. As one
+		// conflict, "keep the existing type" would still rename the field and cut it
+		// off from its content without asking.
+		if ( $hasContent && isset( $diffs['type'], $diffs['name'] ) ) {
+			$this->pushUpdate( $current, $field, array_diff_key( $diffs, array( 'name' => true ) ), $hasContent );
+			$this->pushUpdate( $current, $field, array( 'name' => $diffs['name'] ), $hasContent, 'name' );
+			return;
+		}
+
+		$this->pushUpdate( $current, $field, $diffs, $hasContent );
+	}
+
+	/**
+	 * @param array<string,array{from:mixed,to:mixed}> $diffs
+	 */
+	private function pushUpdate( RawTree $current, Field $field, array $diffs, bool $hasContent, string $part = '' ): void {
+		$key = (string) $field->key;
 
 		$conflict = null;
 		$risk     = Risk::Safe;
@@ -428,8 +486,14 @@ final class Comparator {
 			$risk = Risk::highest( array( $risk, Risk::Caution ) );
 		}
 
+		$idParts = array( 'key' => $key );
+
+		if ( '' !== $part ) {
+			$idParts['part'] = $part;
+		}
+
 		$this->changes[] = new Change(
-			id: Change::makeId( Change::UPDATE, array( 'key' => $key ) ),
+			id: Change::makeId( Change::UPDATE, $idParts ),
 			type: Change::UPDATE,
 			risk: $risk,
 			label: '' !== $field->label ? $field->label : $field->name,
@@ -483,8 +547,11 @@ final class Comparator {
 		$key   = (string) $field->key;
 
 		$fromParent = $current->parentKeyOf( $key );
-		$toLocus    = null === $move->to ? $locus : $this->resolver->resolveLocus( $current, $move->to );
-		$toParent   = $toLocus->parentKey();
+
+		// No destination means "reposition where it already is" (see MoveSpec), not
+		// "move to wherever the payload was targeted".
+		$toLocus  = null === $move->to ? $this->locusOf( $current, $key ) : $this->resolver->resolveLocus( $current, $move->to );
+		$toParent = $toLocus->parentKey();
 
 		$changesParent = $fromParent !== $toParent;
 		$hasContent    = $this->probe->hasContent( $key );
@@ -496,12 +563,15 @@ final class Comparator {
 		$conflict = null;
 
 		if ( $changesParent && $hasContent ) {
-			$conflict = Conflict::renameWithData(
+			$conflict = Conflict::moveWithData(
 				Change::makeId( 'conflict_move', array( 'key' => $key ) ),
 				$field->label,
 				$current->displayPath( $key ),
 				$toLocus->display,
-				array( 'field_key' => $key, 'move' => true )
+				array(
+					'field_key' => $key,
+					'move'      => true,
+				)
 			);
 		}
 
@@ -542,6 +612,20 @@ final class Comparator {
 	}
 
 	// ---- Helpers -------------------------------------------------------------
+
+	/**
+	 * The container a field currently sits in.
+	 */
+	private function locusOf( RawTree $current, string $key ): Locus {
+		$parentKey = $current->parentKeyOf( $key );
+		$parent    = null === $parentKey ? null : $current->byKey( $parentKey );
+
+		if ( null === $parent ) {
+			return new Locus( null, null, $current->group->title );
+		}
+
+		return new Locus( $parent, $current->layoutKeyOf( $key ), $current->displayPath( (string) $parent->key ) );
+	}
 
 	/**
 	 * @return list<Field>
