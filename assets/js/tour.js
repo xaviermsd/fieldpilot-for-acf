@@ -499,7 +499,7 @@
 			this.modalBackdrop.innerHTML = [
 				'<div class="acfjp-tour-modal-card">',
 					'<button type="button" class="acfjp-tour-modal-close" aria-label="' + escapeHtml( __( 'Close', 'fieldpilot-for-acf' ) ) + '">&times;</button>',
-					'<span class="dashicons dashicons-superhero-alt acfjp-tour-modal-icon"></span>',
+					'<img class="acfjp-tour-modal-icon" src="' + escapeHtml( ( window.ACFJP || {} ).logo || '' ) + '" width="64" height="64" alt="">',
 					'<h2>' + escapeHtml( step.headline ) + '</h2>',
 					'<p>' + escapeHtml( step.body ) + '</p>',
 					'<div class="acfjp-tour-modal-actions">',

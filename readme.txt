@@ -9,7 +9,7 @@ Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Build, import, update and manage ACF field structures with AI prompts and JSON. Diff before you apply. Roll back when you are wrong.
+Change ACF field groups safely with AI prompts and JSON. Built for ACF free and PRO. Diff first, roll back when you are wrong.
 
 == Description ==
 

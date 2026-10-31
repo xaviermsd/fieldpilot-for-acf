@@ -19,7 +19,10 @@
 
 # Internal Tooling, Tests & Docs
 /.github/
-/docs/
+/docs/*
+!/docs/brand/
+!/docs/*.svg
+!/docs/*.jpg
 /tests/
 /tools/
 /CLAUDE.md

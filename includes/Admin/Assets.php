@@ -921,6 +921,7 @@ final class Assets {
 			array(
 				'root'     => esc_url_raw( rest_url( Controller::NAMESPACE ) ),
 				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'logo'     => esc_url( ACFJP_URL . 'assets/images/fieldpilot-icon.png' ),
 				'editor'   => false === $editor ? null : $editor,
 				'example'  => $examples['add_field']['payload'] ?? null,
 				'examples' => $examples,

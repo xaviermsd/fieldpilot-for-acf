@@ -1,0 +1,129 @@
+/* FieldPilot brand: shared by banner.html and social.html. Render with render.py. */
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css");
+
+:root {
+	--bg: #061019;
+	--card: rgba(13, 34, 50, 0.72);
+	--line: rgba(45, 226, 230, 0.22);
+	--lime: #c6ff3d;
+	--cyan: #2de2e6;
+	--text: #f2fbff;
+	--muted: #a9bdcc;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+	font-family: Inter, sans-serif;
+	color: var(--text);
+	background: var(--bg);
+	-webkit-font-smoothing: antialiased;
+}
+
+.stage {
+	position: relative;
+	overflow: hidden;
+	background:
+		radial-gradient(ellipse 55% 75% at 92% 0%, rgba(45, 226, 230, 0.20), transparent 70%),
+		radial-gradient(ellipse 45% 60% at 0% 100%, rgba(198, 255, 61, 0.12), transparent 70%),
+		linear-gradient(135deg, #08182a 0%, var(--bg) 55%, #040a10 100%);
+}
+
+/* Faint grid, fading toward the left. */
+.stage::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image:
+		linear-gradient(rgba(45, 226, 230, 0.06) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(45, 226, 230, 0.06) 1px, transparent 1px);
+	background-size: 32px 32px;
+	mask-image: linear-gradient(90deg, transparent 10%, #000 70%);
+}
+
+.stage > * { position: relative; }
+
+.mark {
+	flex: none;
+	border-radius: 24%;
+	filter: drop-shadow(0 0 18px rgba(198, 255, 61, 0.28));
+}
+
+.word {
+	font-family: Sora, sans-serif;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	line-height: 1;
+}
+
+.word span { color: var(--lime); }
+
+.eyebrow {
+	font-weight: 600;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--cyan);
+}
+
+/* Compatibility, in our own style: a chip row in the banner, a corner tile elsewhere. */
+.chips { display: flex; flex-wrap: wrap; align-items: center; }
+.chips span {
+	display: inline-flex; align-items: center; gap: 0.35em;
+	border: 1px solid rgba(45, 226, 230, 0.35); border-radius: 999px;
+	background: rgba(13, 34, 50, 0.7); color: var(--text); font-weight: 500;
+}
+.chips span.lime { border-color: rgba(198, 255, 61, 0.6); color: var(--lime); font-weight: 600; }
+.chips span.cyan { border-color: rgba(45, 226, 230, 0.7); color: var(--cyan); font-weight: 600; }
+.chips i { color: var(--lime); }
+.badge {
+	position: absolute; display: inline-flex; align-items: center;
+	color: var(--text); font-weight: 600; letter-spacing: 0.01em;
+	border-radius: 999px; border: 1px solid rgba(45, 226, 230, 0.25);
+	background: rgba(13, 34, 50, 0.65); backdrop-filter: blur(8px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); margin-right: 10px; box-shadow: 0 0 10px rgba(198, 255, 61, 0.9); }
+.badge .seg { border-radius: 999px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.badge .seg.free { background: rgba(45, 226, 230, 0.14); color: var(--cyan); margin-left: 4px; }
+.badge .seg.pro { background: rgba(198, 255, 61, 0.14); color: var(--lime); margin-left: -4px; }
+
+.headline {
+	font-family: Sora, sans-serif;
+	font-weight: 600;
+	letter-spacing: -0.02em;
+	line-height: 1.15;
+}
+
+.headline em { font-style: normal; color: var(--cyan); }
+
+.ticks { display: flex; flex-wrap: wrap; color: var(--muted); }
+.ticks i { color: var(--lime); }
+
+.card {
+	position: relative;
+	background: var(--card);
+	border: 1px solid var(--line);
+	backdrop-filter: blur(6px);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.card .chip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--lime);
+	border: 1.5px solid rgba(198, 255, 61, 0.55);
+	background: rgba(198, 255, 61, 0.08);
+}
+
+.card .tag {
+	position: absolute;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	color: var(--cyan);
+	opacity: 0.85;
+}
+
+.card h3 { font-family: Sora, sans-serif; font-weight: 600; letter-spacing: -0.01em; }
+.card p { color: var(--muted); }

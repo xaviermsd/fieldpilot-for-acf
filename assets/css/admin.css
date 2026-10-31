@@ -1142,11 +1142,9 @@
 }
 
 .acfjp-tour-modal-icon {
-	font-size: 48px !important;
-	width: 48px !important;
-	height: 48px !important;
-	line-height: 48px !important;
-	color: var(--acfjp-navy) !important;
+	width: 64px !important;
+	height: 64px !important;
+	border-radius: 14px;
 	margin: 0 auto 16px auto !important;
 	display: block !important;
 }
