@@ -9,7 +9,7 @@ Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Change ACF field groups safely with AI prompts and JSON. Built for ACF free and PRO. Diff first, roll back when you are wrong.
+Build ACF field groups with AI prompts and JSON. Built for ACF free and PRO. Preview every change first, undo any time.
 
 == Description ==
 

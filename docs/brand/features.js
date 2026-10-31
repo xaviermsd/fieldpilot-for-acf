@@ -1,11 +1,11 @@
 // Feature cards shared by banner.html and social.html.
 const FIELDPILOT_FEATURES = [
-	[ 'ti-sparkles', 'Build', 'Prompt your AI', 'A ready prompt, no API key' ],
-	[ 'ti-code', 'Build', 'Paste JSON', 'AI replies or ACF exports' ],
-	[ 'ti-git-compare', 'Preview', 'Diff first', 'Only what you named changes' ],
-	[ 'ti-shield-check', 'Protect', 'Risky changes ask', 'Type changes, deletes with content' ],
-	[ 'ti-history', 'Undo', 'Snapshot and undo', 'Every batch, newest first' ],
-	[ 'ti-terminal-2', 'Automate', 'REST and WP-CLI', 'Apply from deployments' ],
+	[ 'ti-list-details', 'Describe', 'Queue the fields', 'Across ACF’s four tabs, no JSON by hand' ],
+	[ 'ti-sparkles', 'Prompt', 'Ask your AI', 'A ready prompt with your real field names' ],
+	[ 'ti-code', 'Paste', 'Paste JSON back', 'AI replies or native ACF exports' ],
+	[ 'ti-git-compare', 'Preview', 'See the diff first', 'Only what you named changes' ],
+	[ 'ti-shield-check', 'Apply', 'Apply, then undo', 'A snapshot before every write' ],
+	[ 'ti-terminal-2', 'Automate', 'REST and WP-CLI', 'The same preview and rollback' ],
 ];
 
 document.getElementById( 'grid' ).innerHTML = FIELDPILOT_FEATURES.map(

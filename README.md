@@ -1,14 +1,15 @@
 <p align="center">
-  <img src=".wordpress-org/banner-1544x500.jpg" alt="FieldPilot: AI and JSON copilot for ACF. Change ACF fields safely. Undo when you are wrong." width="100%">
+  <img src=".wordpress-org/banner-1544x500.jpg" alt="FieldPilot - AI & JSON Copilot for ACF. Build ACF field groups from your AI's JSON." width="100%">
 </p>
 
 <h1 align="center">
-  <img src="docs/fieldpilot-logo.gif" alt="" width="56" align="center"> FieldPilot: AI and JSON copilot for ACF
+  <img src="docs/fieldpilot-logo.gif" alt="" width="56" align="center"> FieldPilot - AI &amp; JSON Copilot for ACF
 </h1>
 
 <p align="center">
-  <b>Change ACF field groups with JSON, from your AI or by hand, and never lose a field.</b><br>
-  Preview the exact diff, apply only what you reviewed, and roll back when you are wrong.<br>
+  <b>Build and change ACF field groups with your AI and JSON, in minutes instead of clicks.</b><br>
+  Queue the fields you want, copy a prompt that knows your real field names, paste the JSON reply back,<br>
+  preview the exact diff and apply. Every change is snapshotted, so you can undo it any time.<br>
   Built for ACF free and PRO. No API keys, no external services, no tracking.
 </p>
 
@@ -46,12 +47,14 @@ Click a task to jump straight to how it works.
 
 | I want to... | FieldPilot gives you | |
 | --- | --- | --- |
-| Add a field to a repeater without clicking through ACF | A JSON patch aimed at **one target**, with everything else left alone | [Show me](#see-every-change-before-anything-is-written) |
 | Let my AI write the fields, without giving it my site | A **ready prompt** with your real field names; paste the JSON reply back | [Show me](#describe-fields-get-a-ready-prompt) |
+| Build a whole field group from a description | **Create** a group and its fields from one JSON payload | [Show me](#start-from-any-field-group-or-make-one) |
+| Add a field to a repeater without clicking through ACF | A JSON patch aimed at **one target**, with everything else left alone | [Show me](#see-every-change-before-anything-is-written) |
 | Make one field required and change nothing else | **Partial updates**: only the settings you name change | [Show me](#see-every-change-before-anything-is-written) |
+| Import a native ACF export, or an AI reply with code fences | Sloppy JSON is **normalised**, not rejected | [Show me](#see-every-change-before-anything-is-written) |
 | Know what a patch will do before it runs | A **diff preview**, old value to new, nothing hidden | [Show me](#see-every-change-before-anything-is-written) |
 | Change a field's type without losing content | **Conflicts stop and ask**, with three clear choices | [Show me](#risky-changes-stop-and-ask) |
-| Undo a change that broke the site | A **snapshot before every write** and one-click rollback | [Show me](#every-change-logged-ready-to-roll-back) |
+| Undo a change | A **snapshot before every write** and one-click rollback | [Show me](#every-change-logged-ready-to-roll-back) |
 | See which groups I can edit from here | The **Dashboard** labels database, PHP and acf-json groups | [Show me](#know-what-is-safe-to-edit) |
 | Apply patches from a deployment | **REST and WP-CLI**, with the same preview and rollback | [Show me](#for-developers) |
 
