@@ -13,9 +13,11 @@ Build ACF field groups with AI prompts and JSON. Built for ACF free and PRO. Pre
 
 == Description ==
 
+https://www.youtube.com/watch?v=FjoeySz05xw
+
 Advanced Custom Fields has not changed how you author fields in a decade: you click
 through a UI, one field at a time. Meanwhile every developer has an AI that writes
-JSON perfectly well. The missing piece was never generation - it was **safe
+JSON perfectly well. The missing piece was never generation. It was **safe
 application**.
 
 FieldPilot builds and changes ACF field groups from JSON: queue the fields you want, copy a
@@ -34,13 +36,13 @@ stay as they were, and FieldPilot checks that after every write.
 
 * **Partial updates.** Change one setting on one field. ACF's own importer can only
   replace a whole field group; this changes precisely what you named.
-* **Diff preview.** Every change is shown before anything is written - added,
+* **Diff preview.** Every change is shown before anything is written: added,
   removed, moved, and every setting that differs, old value to new.
 * **Target isolation.** Aim at any node in a nested ACF tree, such as a repeater
   sub-field or a flexible content layout. Changes stay inside that target, and the
   check after the write confirms nothing else moved.
 * **Conflict detection.** Changing a field's type, renaming a field that holds
-  content, deleting something with data in it - each stops and asks, with the
+  content, deleting something with data in it: each stops and asks, with the
   trade-offs spelled out. It never guesses.
 * **Snapshot and rollback.** Every batch is snapshotted before the first write. Roll
   changes back from History, newest first, and the field group returns to its
@@ -77,8 +79,8 @@ stay as they were, and FieldPilot checks that after every write.
 = AI, without an AI dependency =
 
 The plugin never calls a language model. It publishes a schema and generates a
-ready-to-paste prompt - including your field group's current structure, so the model
-stops inventing field names, and only the field types your ACF can store - and you
+ready-to-paste prompt. The prompt includes your field group's current structure, so the model
+stops inventing field names, and only the field types your ACF can store. You
 use whatever AI you already pay for.
 
 No API keys. No per-seat model cost. No site data leaving your server. No vendor to
@@ -138,8 +140,8 @@ Click "Restart Guided Tour" on the FieldPilot Dashboard or on the Settings scree
 
 = Can I delete fields? =
 
-Yes, but deliberately. The plugin scans for stored content first - including values
-inside repeaters, which a name-based search would miss - and a delete that would
+Yes, but deliberately. The plugin scans for stored content first, including values
+inside repeaters, which a name-based search would miss. A delete that would
 orphan content requires explicit confirmation.
 
 = Why can't it edit my field group? =
@@ -163,7 +165,7 @@ Yes. Commands that write need a user, for example
 
 = Does it need an API key? =
 
-No. The plugin contains no AI integration at all - it generates prompts for whichever
+No. The plugin contains no AI integration at all. It generates prompts for whichever
 AI you already use.
 
 == Screenshots ==
