@@ -19,6 +19,11 @@
 </p>
 
 <p align="center">
+  <a href="https://youtu.be/FjoeySz05xw"><img src="docs/tutorial-video.jpg" alt="Play the FieldPilot tutorial on YouTube (3:42)" width="720"></a><br>
+  <a href="https://youtu.be/FjoeySz05xw"><b>Watch the full tutorial on YouTube (3:42)</b></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/WordPress-6.5%2B-c6ff3d?labelColor=061019" alt="WordPress 6.5+">
   <img src="https://img.shields.io/badge/PHP-8.1%2B-c6ff3d?labelColor=061019" alt="PHP 8.1+">
   <img src="https://img.shields.io/badge/ACF-6.2%2B%20free%20and%20PRO-c6ff3d?labelColor=061019" alt="ACF 6.2+ free and PRO">
