@@ -1,10 +1,10 @@
-<p align="center">
-  <img src=".wordpress-org/banner-1544x500.jpg" alt="FieldPilot: AI & JSON Copilot for ACF. Build ACF field groups from your AI's JSON." width="100%">
-</p>
-
 <h1 align="center">
   <img src="docs/fieldpilot-logo.gif" alt="" width="56" align="center"> FieldPilot: AI &amp; JSON Copilot for ACF
 </h1>
+
+<p align="center">
+  <img src=".wordpress-org/banner-1544x500.jpg" alt="FieldPilot: AI & JSON Copilot for ACF. Build ACF field groups from your AI's JSON." width="100%">
+</p>
 
 <p align="center">
   <b>Build and change ACF field groups with your AI and JSON, in minutes instead of clicks.</b><br>
@@ -50,18 +50,16 @@
 
 Click a task to jump straight to how it works.
 
-| I want to... | FieldPilot gives you | |
-| --- | --- | --- |
-| Let my AI write the fields, without giving it my site | A **ready prompt** with your real field names; paste the JSON reply back | [Show me](#describe-fields-get-a-ready-prompt) |
-| Build a whole field group from a description | **Create** a group and its fields from one JSON payload | [Show me](#start-from-any-field-group-or-make-one) |
-| Add a field to a repeater without clicking through ACF | A JSON patch aimed at **one target**, with everything else left alone | [Show me](#see-every-change-before-anything-is-written) |
-| Make one field required and change nothing else | **Partial updates**: only the settings you name change | [Show me](#see-every-change-before-anything-is-written) |
-| Import a native ACF export, or an AI reply with code fences | Sloppy JSON is **normalised**, not rejected | [Show me](#see-every-change-before-anything-is-written) |
-| Know what a patch will do before it runs | A **diff preview**, old value to new, nothing hidden | [Show me](#see-every-change-before-anything-is-written) |
-| Change a field's type without losing content | **Conflicts stop and ask**, with three clear choices | [Show me](#risky-changes-stop-and-ask) |
-| Undo a change | A **snapshot before every write** and one-click rollback | [Show me](#every-change-logged-ready-to-roll-back) |
-| See which groups I can edit from here | The **Dashboard** labels database, PHP and acf-json groups | [Show me](#know-what-is-safe-to-edit) |
-| Apply patches from a deployment | **REST and WP-CLI**, with the same preview and rollback | [Show me](#for-developers) |
+- **Let my AI write the fields, without giving it my site**<br>A **ready prompt** with your real field names; paste the JSON reply back · [Show me](#describe-fields-get-a-ready-prompt)
+- **Build a whole field group from a description**<br>**Create** a group and its fields from one JSON payload · [Show me](#start-from-any-field-group-or-make-one)
+- **Add a field to a repeater without clicking through ACF**<br>A JSON patch aimed at **one target**, with everything else left alone · [Show me](#see-every-change-before-anything-is-written)
+- **Make one field required and change nothing else**<br>**Partial updates**: only the settings you name change · [Show me](#see-every-change-before-anything-is-written)
+- **Import a native ACF export, or an AI reply with code fences**<br>Sloppy JSON is **normalised**, not rejected · [Show me](#see-every-change-before-anything-is-written)
+- **Know what a patch will do before it runs**<br>A **diff preview**, old value to new, nothing hidden · [Show me](#see-every-change-before-anything-is-written)
+- **Change a field's type without losing content**<br>**Conflicts stop and ask**, with three clear choices · [Show me](#risky-changes-stop-and-ask)
+- **Undo a change**<br>A **snapshot before every write** and one-click rollback · [Show me](#every-change-logged-ready-to-roll-back)
+- **See which groups I can edit from here**<br>The **Dashboard** labels database, PHP and acf-json groups · [Show me](#know-what-is-safe-to-edit)
+- **Apply patches from a deployment**<br>**REST and WP-CLI**, with the same preview and rollback · [Show me](#for-developers)
 
 > [!TIP]
 > Nothing is written until you tick the safety checklist and click **Apply**. Every apply takes a snapshot
@@ -184,11 +182,9 @@ Sloppy JSON is normalised, not rejected: `group` for `field_group`, `description
 FieldPilot scans stored content before a change that could lose it: deleting a field or layout that holds
 data, or changing a field's type. The change is marked **destructive** and nothing is written until you choose.
 
-| Choice | What happens |
-| --- | --- |
-| **Keep existing type** | The type stays. Every other setting in the patch is applied. |
-| **Change the type** | The type changes. Existing content stays in the database but may no longer display. |
-| **Add as a new field** | The original is untouched and a second field with a new name is added. |
+- ****Keep existing type****<br>The type stays. Every other setting in the patch is applied.
+- ****Change the type****<br>The type changes. Existing content stays in the database but may no longer display.
+- ****Add as a new field****<br>The original is untouched and a second field with a new name is added.
 
 A third checkbox must be ticked before **Apply** unlocks for a destructive batch.
 
@@ -242,13 +238,11 @@ field-type schemas.
 
 **FieldPilot > Settings**:
 
-| Setting | Default | What it does |
-| --- | --- | --- |
-| Read-only mode | Off | Previews, validation and exports keep working; applying and rolling back are refused. Also `define( 'ACFJP_READ_ONLY', true );` in `wp-config.php`. |
-| Content detection | On | Scans posts, terms, users and options for a field's content before a delete or type change. |
-| History per field group | 50 | Entries kept for each group before older ones are pruned. |
-| History age limit | 90 days | Entries older than this are pruned. |
-| Delete all FieldPilot data when the plugin is deleted | Off | When on, deleting the plugin removes its settings, history and snapshots. Field groups are never touched. |
+- **Read-only mode** (default: Off)<br>Previews, validation and exports keep working; applying and rolling back are refused. Also `define( 'ACFJP_READ_ONLY', true );` in `wp-config.php`.
+- **Content detection** (default: On)<br>Scans posts, terms, users and options for a field's content before a delete or type change.
+- **History per field group** (default: 50)<br>Entries kept for each group before older ones are pruned.
+- **History age limit** (default: 90 days)<br>Entries older than this are pruned.
+- **Delete all FieldPilot data when the plugin is deleted** (default: Off)<br>When on, deleting the plugin removes its settings, history and snapshots. Field groups are never touched.
 
 ## FAQ
 
@@ -392,13 +386,11 @@ JSON (patch, AI reply or native ACF export)
 <summary><b>Quality gates</b></summary>
 <br>
 
-| Check | What it covers |
-| --- | --- |
-| PHPUnit | 110 unit tests, plus 25 integration tests on a real WordPress with ACF PRO and ACF free |
-| PHPStan | Level 8 on every PHP file |
-| PHPCS | WordPress Coding Standards, zero issues |
-| Plugin Check | The WordPress.org review tool, no errors |
-| Self-test | `wp acfjp self-test` runs the engine end to end on a live site |
+- **PHPUnit**<br>110 unit tests, plus 25 integration tests on a real WordPress with ACF PRO and ACF free
+- **PHPStan**<br>Level 8 on every PHP file
+- **PHPCS**<br>WordPress Coding Standards, zero issues
+- **Plugin Check**<br>The WordPress.org review tool, no errors
+- **Self-test**<br>`wp acfjp self-test` runs the engine end to end on a live site
 
 </details>
 
