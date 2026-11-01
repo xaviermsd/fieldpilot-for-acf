@@ -7,7 +7,7 @@
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Author: Harsh Prajapati
- * Author URI: https://profiles.wordpress.org/xaviermsd/
+ * Author URI: https://github.com/xaviermsd
  * License: GPLv2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: fieldpilot-for-acf
