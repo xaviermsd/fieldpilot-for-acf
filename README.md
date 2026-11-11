@@ -422,5 +422,5 @@ GPL-2.0-or-later. See [LICENSE](LICENSE).
 
 <p align="center">
   <img src="docs/fieldpilot-logo.gif" alt="" width="32"><br>
-  <sub>Made by <a href="https://github.com/xaviermsd">Harsh Prajapati</a>. Also by the same author: <a href="https://wordpress.org/plugins/menunest-smart-menu-manager/">MenuNest, the smart menu manager for WordPress</a>.</sub>
+  <sub>Made by <a href="https://github.com/xaviermsd">Harsh Prajapati</a>, freelance web developer at <a href="https://www.worklancio.in">worklancio.in</a>. <a href="https://www.worklancio.in/work/fieldpilot">Read the case study</a>. Also by the same author: <a href="https://wordpress.org/plugins/menunest-smart-menu-manager/">MenuNest, the smart menu manager for WordPress</a>.</sub>
 </p>
